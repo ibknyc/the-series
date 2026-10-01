@@ -200,6 +200,7 @@ section{margin-bottom:34px}
 .seg button{background:none;border:0;border-radius:10px;padding:11px 6px;font-weight:700;font-size:15px;color:var(--ink-2)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .segnote{margin:10px 0 0;font-size:14px;color:var(--ink-2)}
+.abrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;background:var(--card);border-radius:12px;padding:10px 14px;font-size:15px}
 .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .pills label{display:inline-flex;align-items:center;gap:8px;background:var(--card);border-radius:999px;padding:8px 14px;font-size:15px;cursor:pointer;border:2px solid transparent}
 .pills input{position:absolute;opacity:0;pointer-events:none}
@@ -250,6 +251,7 @@ section{margin-bottom:34px}
     <div class="seg" id="locSeg" style="--n:2"></div>
     <div class="pills" id="eqPills"></div>
     <p class="segnote" id="eqNote"></p>
+    <div class="abrow" id="abRow" hidden><span id="abText"></span><button id="abBtn" class="swapbtn" style="margin:0">Switch</button></div>
   </section>
 
   <section aria-labelledby="recH">
@@ -259,12 +261,12 @@ section{margin-bottom:34px}
 
   <section class="weights" id="weights">
     <div class="switchrow">
-      <label for="dbOn">Dumbbells at home</label>
+      <label for="dbOn" id="dbLabel">Dumbbells at home</label>
       <input type="checkbox" class="switch" id="dbOn" role="switch">
     </div>
     <div class="wgrid">
-      <div class="wfield"><span>Heavy pair</span><div class="inwrap"><input id="wHeavy" type="number" inputmode="numeric" min="0" max="200" step="5" aria-label="Heavy pair in pounds"><span>lb</span></div></div>
-      <div class="wfield"><span>Light pair, for pressing</span><div class="inwrap"><input id="wLight" type="number" inputmode="numeric" min="0" max="200" step="5" aria-label="Light pair in pounds"><span>lb</span></div></div>
+      <div class="wfield"><span id="lbHeavy">Heavy pair</span><div class="inwrap"><input id="wHeavy" type="number" inputmode="numeric" min="0" max="200" step="5" aria-label="Heavy pair in pounds"><span>lb</span></div></div>
+      <div class="wfield"><span id="lbLight">Light pair, for pressing</span><div class="inwrap"><input id="wLight" type="number" inputmode="numeric" min="0" max="200" step="5" aria-label="Light pair in pounds"><span>lb</span></div></div>
     </div>
     <p class="wnote" id="wNote"></p>
   </section>
@@ -568,10 +570,10 @@ function tagUnit(r, o, vi, set, sets, sl){
 }
 function circuit(sets, restSecs, slots){
   const out=[];
-  slots = slots.map((x,i)=> typeof x==="function" ? {slot:"x"+i, v:[x], names:[[].concat(x(""))[0].name]} : x);
+  slots = slots.map((x,i)=> typeof x==="function" ? {slot:"x"+i, v:[x], names:[[].concat(x(""))[0].name]} : x).filter(o=>o && o.v && o.v.length);
   for(let s=1;s<=sets;s++){
     const sl = sets>1 ? `Set ${s} of ${sets}` : "";
-    slots.forEach(o=>out.push(...tagUnit(o.v[0](sl), o, 0, s, sets, sl)));
+    slots.forEach(o=>{ const vi=Math.min(o.di||0, o.v.length-1); out.push(...tagUnit(o.v[vi](sl), o, vi, s, sets, sl)); });
     if (s<sets) out.push(restStep(restSecs));
   }
   return out;
@@ -593,15 +595,15 @@ function intervals(m, rounds){
 
 /* o = {phase, rec, type:'full'|'yoga'|'strength', loc:'home'|'gym', eq:{barbell,machines,rower,climber}, dbOn, W, second} */
 function build(o){
-  const {phase, rec, type, loc, second} = o, eq = o.eq||{}, W = o.W||{heavy:30,light:20};
+  const {phase, rec, type, loc, second} = o, eq = o.eq||{}, W = o.W||{heavy:30,light:20,gymHeavy:40,gymLight:30};
   const G = rec==="green", R = rec==="red", X = G?2:0, out=[];
   const add = (...a)=>a.forEach(x=>Array.isArray(x)?out.push(...x.filter(Boolean)):x&&out.push(x));
   const gym = loc==="gym", useDb = gym || o.dbOn;
-  const wt = w => gym ? "" : `${w} lb`;
+  const wt = w => w>0 ? `${w} lb` : "";
   const dbo = (db, w, track) => ({db, weight: wt(w), track: gym ? track : "", setup: gym ? 10 : 3});
   const mach = gym ? (eq.rower?"rower":eq.climber?"climber":null) : null;
   const mach2 = gym ? (eq.climber?"climber":eq.rower?"rower":null) : null;
-  const H=W.heavy, L=W.light;
+  const H = gym ? (W.gymHeavy||0) : W.heavy, L = gym ? (W.gymLight||0) : W.light;
 
   const EX = {
     goblet: n => sl => useDb
@@ -654,27 +656,49 @@ function build(o){
     return circuit(sets, rest, list);
   }
   function gymStrength(sets, rest){
-    const bb = eq.barbell && phase>=2, mc = eq.machines, main = phase>=4?5:phase===3?6:8;
+    const bb=eq.barbell, sm=eq.smith, mc=eq.machines, bn=eq.bench, main=phase>=4?5:phase===3?6:8;
     const pick = "Pick a weight that leaves 2 to 3 reps in the tank.";
+    const B = o.ab ? 1 : 0; /* which session of the pair */
     const G_ = {
       backsquat: sl=>reps("Back squat","bbtop","bbsquat",main+X,3.5,"strength","Bar on your upper back, brace before every rep, hips and chest rise together. Use the safeties.",{plate:"neck",track:"Back squat",setup:15,chips:[sl]}),
+      smithsquat:sl=>reps("Smith squat","bbtop","bbsquat",main+X+2,3.5,"strength","Feet slightly forward of the bar. The rail holds the path, so drive straight up and don't lean into it. Set the safety pins.",{plate:"neck",track:"Smith squat",setup:15,chips:[sl]}),
       legpress:  sl=>reps("Leg press","lpdown","lpup",10+X,3,"strength","Feet shoulder-width. Lower until your hips want to curl, don't lock the knees. "+pick,{track:"Leg press",setup:12,chips:[sl]}),
       pulldown:  sl=>reps("Lat pulldown","latup","latdown",10+X,3,"strength","Chest up, pull the bar to your collarbone, elbows drive down. "+pick,{track:"Lat pulldown",setup:10,chips:[sl]}),
       cablerow:  sl=>reps("Seated cable row","crowout","crowin",10+X,3,"strength","Sit tall, pull to your belly button, pause, let the shoulders reach forward on the return.",{track:"Seated cable row",setup:10,chips:[sl]}),
+      smithrow:  sl=>reps("Smith row","bbrowdown","bbrowup",8+X,3,"strength","Set the bar low. Hinge to about 45°, flat back, pull to your lower ribs.",{plate:"hands",track:"Smith row",setup:15,chips:[sl]}),
       bbrow:     sl=>reps("Barbell row","bbrowdown","bbrowup",8+X,3,"strength","Hinge to about 45°, flat back, pull to your lower ribs.",{plate:"hands",track:"Barbell row",setup:15,chips:[sl]}),
       bench:     sl=>reps("Bench press","benchdown","benchup",main+X,3,"strength","Shoulder blades pinned, bar touches mid-chest, press up and slightly back. Safeties set.",{plate:"hands",track:"Bench press",setup:15,chips:[sl]}),
+      smithbench:sl=>reps("Smith bench press","benchdown","benchup",main+X+2,3,"strength","Bench set so the bar lands mid-chest. Shoulder blades pinned. Safety catches on.",{plate:"hands",track:"Smith bench press",setup:15,chips:[sl]}),
+      dbbench:   sl=>reps("Dumbbell bench press","benchdown","benchup",8+X,3,"strength","Full range — this is the one you liked. Elbows about 45°, press up and slightly together. Don't clash the bells.",{db:"AB",weight:wt(H),track:"Dumbbell bench press",setup:12,chips:[sl]}),
+      dbincline: sl=>reps("Incline dumbbell press","benchdown","benchup",8+X,3,"strength","Bench at about 30°. Same press, more upper chest and shoulder.",{db:"AB",weight:wt(L),track:"Incline dumbbell press",setup:12,chips:[sl]}),
       deadlift:  sl=>reps("Deadlift","dltop","dlbottom",main+X,4,"strength","Bar over midfoot, lats tight, push the floor away. Reset every rep.",{plate:"hands",track:"Deadlift",setup:15,chips:[sl]}),
       bbrdl:     sl=>reps("Barbell RDL","dltop","rdl",8+X,3.5,"strength","Soft knees, hips back, bar stays against your legs.",{plate:"hands",track:"Barbell RDL",setup:15,chips:[sl]}),
-      ohp:       sl=>reps("Overhead press","bbohdown","bbohup",main+X,3,"strength","Glutes tight, ribs down, head through once the bar passes your face.",{plate:"hands",track:"Overhead press",setup:15,chips:[sl]})
+      smithrdl:  sl=>reps("Smith RDL","dltop","rdl",8+X,3.5,"strength","Soft knees, hips back, bar tracks down your thighs on the rail.",{plate:"hands",track:"Smith RDL",setup:15,chips:[sl]}),
+      ohp:       sl=>reps("Overhead press","bbohdown","bbohup",main+X,3,"strength","Glutes tight, ribs down, head through once the bar passes your face.",{plate:"hands",track:"Overhead press",setup:15,chips:[sl]}),
+      smithohp:  sl=>reps("Smith overhead press","bbohdown","bbohup",main+X+2,3,"strength","Seated or standing under the rail. Glutes tight, ribs down, press straight up.",{plate:"hands",track:"Smith overhead press",setup:15,chips:[sl]})
     };
-    const list = [
-      SL("squat", bb&&G_.backsquat, mc&&G_.legpress, EX.goblet(10+X), EX.split(8+X)),
-      SL("pull", mc&&G_.pulldown, mc&&G_.cablerow, bb&&G_.bbrow, EX.row(8+X)),
-      SL("push", bb&&G_.bench, EX.press(8+X), BW.pushups(10+X)),
-      SL("hinge", bb&&(phase>=4?G_.deadlift:G_.bbrdl), bb&&phase>=4&&G_.bbrdl, EX.rdl(8+X), bridge)
-    ];
-    if (phase>=3) list.push(SL("overhead", bb&&G_.ohp, EX.oh(8+X), BW.pike(8+X)));
-    else if (mc) list.push(SL("pull2", G_.cablerow, EX.row(8+X), EX.renegade(6+X)));
+    const dbrow = sl => sided((f,sd)=>reps("Dumbbell row","rowdown","row",8+X,3,"strength","One knee and hand on the bench, flat back. Pull the elbow past your hip.",{db:"B",weight:wt(H),track:"Dumbbell row",setup:10,flip:f,chips:[sl,sd]}));
+    const dbrdl = sl => reps("Dumbbell RDL","mountain","rdl",10+X,3.5,"strength","Soft knees, push the hips back, bells slide down the thighs. Flat back.",{db:"AB",weight:wt(H),track:"Dumbbell RDL",setup:10,chips:[sl]});
+    const dbsplit = sl => sided((f,sd)=>reps("Split squat","splittop","splitsquat",8+X,3,"strength","Long stance, bells at your sides. Back knee straight down, front heel planted.",{db:"AB",weight:wt(L),track:"Split squat",setup:10,flip:f,chips:[sl,sd]}));
+    const dbgoblet = sl => reps("Goblet squat","gobletup","goblet",10+X,3,"strength","One bell at your chest. Sit between your heels, chest tall, knees out.",{db:"B",weight:wt(H),track:"Goblet squat",setup:10,chips:[sl]});
+    const dbohp = sl => sided((f,sd)=>reps("Single-arm press","ohdown","ohpress",8+X,3,"strength","Glutes and ribs tight so the press comes from the shoulder, not the lower back.",{db:"B",weight:wt(L),track:"Single-arm press",setup:10,flip:f,chips:[sl,sd]}));
+
+    /* each slot lists its variants; B sessions start one variant along */
+    const squat = SL("squat", mc&&G_.legpress, dbgoblet, dbsplit, sm&&G_.smithsquat, bb&&G_.backsquat);
+    const pull  = SL("pull", mc&&G_.pulldown, mc&&G_.cablerow, bn&&dbrow, sm&&G_.smithrow, bb&&G_.bbrow, EX.row(8+X));
+    const push  = SL("push", bn&&G_.dbbench, bn&&G_.dbincline, sm&&G_.smithbench, bb&&G_.bench, EX.press(8+X), BW.pushups(10+X));
+    const hinge = SL("hinge", bn&&dbrdl, sm&&G_.smithrdl, bb&&(phase>=4?G_.deadlift:G_.bbrdl), bridge);
+    const over  = SL("overhead", sm&&G_.smithohp, bb&&G_.ohp, dbohp, BW.pike(8+X));
+    const accessory = phase>=3 ? over : SL("pull2", mc&&G_.cablerow, bn&&dbrow, EX.renegade(6+X));
+    const list = B ? [hinge, pull, squat, push, accessory] : [squat, push, pull, hinge, accessory];
+    list.forEach(sl=>{ if (sl.v.length>1) sl.di = B % sl.v.length; });
+    /* don't run the same movement twice in one session */
+    const taken=new Set();
+    list.forEach(sl=>{
+      let i=Math.min(sl.di||0, sl.v.length-1);
+      for (let k=0;k<sl.v.length;k++){ const j=(i+k)%sl.v.length; if (!taken.has(sl.names[j])){ i=j; break; } }
+      sl.di=i; taken.add(sl.names[i]);
+    });
     return circuit(sets, rest, list);
   }
   const warmMachine = secs => mach ? machineEasy(mach, secs, "Warm-up", "Easy pace, nose breathing. You should be able to hold a conversation.") : null;
@@ -775,7 +799,7 @@ const TYPES = [
   {id:"yoga", name:"Yoga", note:"Flow, standing, core and inversions. No loading. Good first thing in the morning."},
   {id:"strength", name:"Strength", note:"Short warm-up, the lifting, and a quick cool-down. Good for the afternoon."}
 ];
-const EQ = [{id:"barbell",name:"Barbell"},{id:"machines",name:"Cables and machines"},{id:"rower",name:"Rower"},{id:"climber",name:"Ladder climber"}];
+const EQ = [{id:"machines",name:"Cables and machines"},{id:"bench",name:"Bench + dumbbells"},{id:"smith",name:"Smith machine"},{id:"barbell",name:"Free barbell"},{id:"rower",name:"Rower"},{id:"climber",name:"Ladder climber"}];
 
 if (typeof module!=="undefined") module.exports = {POSE, build, RAW};
 
@@ -784,14 +808,17 @@ if (typeof document!=="undefined") (function(){
   const KEY = "the-series-v1";
   const dkey = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
   const today = () => dkey(new Date());
-  let st = { phase:1, rec:"yellow", type:"full", loc:"home", eq:{barbell:true,machines:true,rower:true,climber:true},
-    dbOn:false, heavy:30, light:20, gates:{1:[],2:[],3:[],4:[]}, log:[], sound:0, lifts:{}, aim:{}, secOv:null };
+  let st = { phase:1, rec:"yellow", type:"full", loc:"home", eq:{machines:true,bench:true,smith:true,barbell:false,rower:true,climber:true},
+    dbOn:false, heavy:30, light:20, gymHeavy:40, gymLight:30, gates:{1:[],2:[],3:[],4:[]}, log:[], sound:0, lifts:{}, aim:{}, abOv:null, secOv:null };
   try { const s = JSON.parse(localStorage.getItem(KEY)||"null"); if (s) st = {...st, ...s, gates:{...st.gates, ...(s.gates||{})}, eq:{...st.eq, ...(s.eq||{})}, lifts:{...(s.lifts||{})}, aim:{...(s.aim||{})}}; } catch(e){}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} };
   const reduced = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   const loggedToday = () => st.log.filter(l=>l.d===today());
   const isSecond = () => (st.secOv && st.secOv.d===today()) ? st.secOv.v : loggedToday().length>0;
-  const opts = rec => ({phase:st.phase, rec, type:st.type, loc:st.loc, eq:st.eq, dbOn:st.dbOn, W:{heavy:st.heavy||0, light:st.light||0}, second:isSecond()});
+  const gymCount = () => st.log.filter(l=>l.l==="gym" && l.t!=="yoga").length;
+  const abNext = () => (st.abOv!==null && st.abOv!==undefined) ? st.abOv : (gymCount() % 2);
+  const opts = rec => ({phase:st.phase, rec, type:st.type, loc:st.loc, eq:st.eq, dbOn:st.dbOn, ab:abNext(),
+    W:{heavy:st.heavy||0, light:st.light||0, gymHeavy:st.gymHeavy||0, gymLight:st.gymLight||0}, second:isSecond()});
   const sessionFor = rec => build(opts(rec));
   const total = steps => steps.reduce((a,s)=>a+s.dur,0);
   const TYPE_NAME = {full:"full series", yoga:"yoga", strength:"strength"};
@@ -830,9 +857,8 @@ if (typeof document!=="undefined") (function(){
       pills.appendChild(l);
     });
     $("eqNote").textContent = st.loc==="gym"
-      ? (st.phase===1 && st.eq.barbell ? "Dumbbells are assumed. The barbell waits until Phase 2, so Phase 1 learns the patterns on machines and dumbbells first." : "Dumbbells are assumed. Log what you lift during each set so you know what to beat next time.")
+      ? "Tick what you can actually get to. Anything busy, hit Swap mid-session and it reshuffles."
       : "Mat, your dumbbells, and a wall.";
-    $("weights").hidden = st.loc==="gym";
 
     const rc=$("rec"); rc.innerHTML="";
     RECS.forEach(r=>{
@@ -844,11 +870,24 @@ if (typeof document!=="undefined") (function(){
       rc.appendChild(b);
     });
 
-    $("dbOn").checked=st.dbOn; $("wHeavy").value=st.heavy; $("wLight").value=st.light;
-    $("weights").classList.toggle("off", !st.dbOn);
-    $("wNote").textContent = st.phase===1 && st.type!=="strength"
+    const atGym = st.loc==="gym";
+    $("weights").hidden=false;
+    $("dbLabel").textContent = atGym ? "Dumbbells at the gym" : "Dumbbells at home";
+    $("dbOn").parentElement.style.display = atGym ? "none" : "";
+    $("lbHeavy").textContent = atGym ? "Heavy pair (rows, RDLs, goblet)" : "Heavy pair";
+    $("lbLight").textContent = atGym ? "Light pair (presses, split squats)" : "Light pair, for pressing";
+    $("dbOn").checked=st.dbOn;
+    $("wHeavy").value = atGym ? st.gymHeavy : st.heavy;
+    $("wLight").value = atGym ? st.gymLight : st.light;
+    $("weights").classList.toggle("off", !atGym && !st.dbOn);
+    $("wNote").textContent = atGym
+      ? "What you can actually grab at work. These show as a suggestion — log what you really used during the set."
+      : st.phase===1 && st.type!=="strength"
       ? (st.dbOn ? "Phase 1 full and yoga sessions only load the glute bridge. On purpose." : "Off swaps in bodyweight versions of every loaded move.")
       : (st.dbOn ? "Heavy pair for squats, rows, deadlifts and holds. Light pair for presses." : "Off swaps in bodyweight versions of every loaded move.");
+    const ab=abNext(), abr=$("abRow");
+    abr.hidden = !(atGym && st.type!=="yoga");
+    if (!abr.hidden) $("abText").innerHTML = ab ? "Next: <b>Session B</b> — hinge and pull lead" : "Next: <b>Session A</b> — squat and press lead";
 
     const pn=$("planNote");
     if (st.rec==="red" && st.type==="strength"){ pn.hidden=false; pn.textContent = st.loc==="gym" && (st.eq.rower||st.eq.climber) ? "Red day. Lifting is off. Easy cardio and mobility instead." : "Red day. Lifting is off. This is a mobility session."; }
@@ -917,8 +956,9 @@ if (typeof document!=="undefined") (function(){
   };
   $("secOn").onchange=e=>{ st.secOv={d:today(), v:e.target.checked}; save(); renderHome(); };
   $("dbOn").onchange=e=>{ st.dbOn=e.target.checked; save(); renderHome(); };
-  $("wHeavy").onchange=e=>{ st.heavy=Math.max(0,parseInt(e.target.value)||0); save(); renderHome(); };
-  $("wLight").onchange=e=>{ st.light=Math.max(0,parseInt(e.target.value)||0); save(); renderHome(); };
+  $("wHeavy").onchange=e=>{ const v=Math.max(0,parseInt(e.target.value)||0); if (st.loc==="gym") st.gymHeavy=v; else st.heavy=v; save(); renderHome(); };
+  $("wLight").onchange=e=>{ const v=Math.max(0,parseInt(e.target.value)||0); if (st.loc==="gym") st.gymLight=v; else st.light=v; save(); renderHome(); };
+  $("abBtn").onclick=()=>{ st.abOv = abNext() ? 0 : 1; save(); renderHome(); };
 
   /* ---------- Figure ---------- */
   const svg=$("fig");
@@ -1155,6 +1195,7 @@ if (typeof document!=="undefined") (function(){
     st.log.sort((a,b)=>a.d<b.d?-1:1);
     if (st.log.length>600) st.log=st.log.slice(-600);
     if (d===today()) st.secOv=null;
+    st.abOv=null;
     save();
   }
   function finish(partial){
