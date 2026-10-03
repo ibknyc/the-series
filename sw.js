@@ -1,5 +1,5 @@
 /* The Series - offline shell. Bump CACHE when you change index.html. */
-const CACHE = "series-v10";
+const CACHE = "series-v12";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./local-fonts.css", "./icon-192.png", "./icon-512.png", "./icon-180.png", "./anton-latin-400-normal.woff2", "./atkinson-hyperlegible-latin-400-normal.woff2", "./atkinson-hyperlegible-latin-700-normal.woff2", "./bodoni-moda-latin-700-normal.woff2", "./bodoni-moda-latin-900-normal.woff2", "./bricolage-grotesque-latin-500-normal.woff2", "./bricolage-grotesque-latin-700-normal.woff2", "./bricolage-grotesque-latin-800-normal.woff2", "./chivo-latin-400-normal.woff2", "./chivo-latin-700-normal.woff2", "./familjen-grotesk-latin-400-normal.woff2", "./familjen-grotesk-latin-700-normal.woff2", "./instrument-serif-latin-400-normal.woff2", "./martian-mono-latin-400-normal.woff2", "./martian-mono-latin-700-normal.woff2", "./unbounded-latin-600-normal.woff2", "./unbounded-latin-800-normal.woff2"];
 
 self.addEventListener("install", e => {

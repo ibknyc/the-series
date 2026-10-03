@@ -53,13 +53,14 @@ button{cursor:pointer}
 h2{font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:-.01em;margin:0 0 12px}
 section{margin-bottom:34px}
 
-.phases{display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative}
-.phases::before{content:"";position:absolute;left:12.5%;right:12.5%;top:21px;height:2px;background:var(--line)}
-.phase{background:none;border:0;padding:0;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;text-align:center}
-.phase .num{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--bg);border:2px solid var(--line);font-family:var(--display);font-weight:700;font-size:18px;transition:background .2s,border-color .2s}
-.phase .pname{font-size:13px;line-height:1.25;color:var(--ink-2);max-width:9ch}
+.phases{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;position:relative;overflow:hidden}
+.phases::before{content:"";position:absolute;left:12.5%;right:12.5%;top:calc(clamp(36px,10.5vw,44px)/2 - 1px);height:2px;background:var(--line)}
+.phase{background:none;border:0;padding:0;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;text-align:center;min-width:0;overflow:hidden}
+.phase .num{flex:none;width:clamp(36px,10.5vw,44px);height:clamp(36px,10.5vw,44px);border-radius:50%;display:grid;place-items:center;background:var(--bg);border:2px solid var(--line);font-family:var(--display);font-weight:700;font-size:18px;transition:background .2s,border-color .2s}
+.phase .phlab{font-family:var(--body);font-weight:500;font-size:12px;line-height:1.2;color:var(--ink-2);
+  text-transform:none;letter-spacing:0;hyphens:auto;overflow-wrap:anywhere;width:100%;padding:0 2px}
 .phase[aria-pressed="true"] .num{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.phase[aria-pressed="true"] .pname{color:var(--ink);font-weight:700}
+.phase[aria-pressed="true"] .phlab{color:var(--ink);font-weight:700}
 .phase.cleared .num{border-color:var(--ink)}
 
 .rec{display:grid;gap:10px}
@@ -688,6 +689,9 @@ section{margin-bottom:34px}
 @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
 .seg{display:grid;grid-template-columns:repeat(var(--n,4),1fr);background:var(--card);border-radius:14px;padding:4px;gap:4px}
 #laySeg{grid-template-columns:repeat(3,1fr)}
+#typeSeg{grid-template-columns:repeat(2,1fr)}
+@media (min-width:460px){ #typeSeg{grid-template-columns:repeat(4,1fr)} }
+.seg button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .seg button{background:none;border:0;border-radius:10px;padding:11px 4px;font-weight:700;font-size:14px;color:var(--ink-2)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .segnote{margin:10px 0 0;font-size:14px;color:var(--ink-2)}
@@ -802,6 +806,13 @@ section{margin-bottom:34px}
     <div class="manual" style="margin-top:16px">
       <button id="testSnd">Test sound</button>
       <span id="sndState" style="font-size:13px"></span>
+    </div>
+    <div class="secondbox" style="margin-top:12px">
+      <div class="switchrow">
+        <label for="brOn">Breath and position cues</label>
+        <input type="checkbox" class="switch" id="brOn" role="switch">
+      </div>
+      <p class="wnote">A rising tone on each inhale, a falling one on each exhale, a soft tap on every other pose change. Lets you follow a sun salutation with your eyes closed.</p>
     </div>
     <p class="lognote" id="sndNote" style="font-size:14px">If you hear the voice but no beeps, flip your phone's ring/silent switch to ring and tap Test sound again.</p>
     <div class="manual" style="margin-top:16px">
@@ -999,7 +1010,10 @@ function step(name, block, cue, seq, o={}) {
 }
 function fmtSecs(s){ s=Math.round(s); if (s>=60 && s%60===0) return (s/60)+" min"; if (s>=60) return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); return s+"s"; }
 function hold(name, pose, secs, block, cue, o={}) {
-  return step(name, block, cue, [T(pose, secs, o.label||"Hold", o.flip)], {...o, chips:[...(o.chips||[]), fmtSecs(secs)]});
+  /* strength holds get the same lead-in as a lifted set: time to get into
+     position, counted down, so the hold starts on the GO */
+  const lead = block==="strength" ? [T(pose, o.setup||3, "Get set", o.flip)] : [];
+  return step(name, block, cue, [...lead, T(pose, secs, o.label||"Hold", o.flip)], {...o, chips:[...(o.chips||[]), fmtSecs(secs)]});
 }
 function reps(name, a, b, n, tempo, block, cue, o={}) {
   const f = !!o.flip, seq = [T(a, o.setup||3, "Get set", f)];
@@ -1416,7 +1430,7 @@ if (typeof document!=="undefined") (function(){
   const dkey = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
   const today = () => dkey(new Date());
   let st = { phase:1, rec:"yellow", type:"full", loc:"home", eq:{machines:true,bench:true,smith:true,barbell:false,bar:true,rower:true,elliptical:true,gymbike:true,climber:true,tread:true,run:true,stairs:true,peloton:true,outbike:true,rope:true},
-    dbOn:false, skin:'signal', layout:'split', face:'stadium', finisher:false, heavy:30, light:20, gymHeavy:40, gymLight:30, gates:{1:[],2:[],3:[],4:[]}, log:[], sound:0, lifts:{}, aim:{}, abOv:null, secOv:null };
+    dbOn:false, skin:'signal', layout:'split', face:'stadium', breath:true, finisher:false, heavy:30, light:20, gymHeavy:40, gymLight:30, gates:{1:[],2:[],3:[],4:[]}, log:[], sound:0, lifts:{}, aim:{}, abOv:null, secOv:null };
   try { const s = JSON.parse(localStorage.getItem(KEY)||"null"); if (s) st = {...st, ...s, gates:{...st.gates, ...(s.gates||{})}, eq:{...st.eq, ...(s.eq||{})}, lifts:{...(s.lifts||{})}, aim:{...(s.aim||{})}}; } catch(e){}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} };
   const reduced = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1484,7 +1498,7 @@ if (typeof document!=="undefined") (function(){
       const b=document.createElement("button"); b.className="phase"; b.type="button";
       if ((st.gates[p.n]||[]).filter(Boolean).length===GATES[p.n].length) b.classList.add("cleared");
       b.setAttribute("aria-pressed", String(st.phase===p.n));
-      b.innerHTML=`<span class="num">${p.n}</span><span class="pname">${p.name}</span>`;
+      b.innerHTML=`<span class="num">${p.n}</span><span class="phlab">${p.name}</span>`;
       b.onclick=()=>{ st.phase=p.n; save(); renderHome(); };
       ph.appendChild(b);
     });
@@ -1717,6 +1731,11 @@ if (typeof document!=="undefined") (function(){
     step:  ()=>{ tone(880,.10,.10,0,"bell"); },             /* quiet move-on */
     hold:  ()=>{ tone(560,.07,.09,0,"bell"); },             /* subtle hold countdown */
     hard:  ()=>{ tone(990,.14,.18,0,"blip"); },
+    /* flow cues: a rise on the inhale, a fall on the exhale, a neutral tap
+       for every other pose change. Quiet on purpose. */
+    inhale:()=>{ tone(494,.20,.075,0,"bell",659); },
+    exhale:()=>{ tone(587,.26,.075,0,"bell",392); },
+    move:  ()=>{ tone(700,.06,.05,0,"bell"); },
     easy:  ()=>{ tone(600,.14,.14,0,"bell"); },
     finish:()=>{ tone(659,.18,.16,0,"bell"); tone(988,.45,.16,.17,"bell"); }
   };
@@ -1774,6 +1793,14 @@ if (typeof document!=="undefined") (function(){
       const prev=P.sub; P.sub=j; const q=cs.seq[j]; setPose(q.pose);
       $("pSub").textContent = cs.seq.length>1 || q.label!=="Hold" ? q.label : "";
       if (q.b && prev!==-1 && P.run){ q.label.includes("hard") ? CUE.hard() : CUE.easy(); }
+      /* every pose change in the flow gets a cue you can follow with your eyes shut */
+      if (P.run && prev!==-1 && st.breath!==false && cs.seq.length>1 &&
+          ["flow","standing","close","arrive","capoeira"].includes(cs.block)){
+        const L=(q.label||"").toLowerCase();
+        if (/inhale/.test(L)) CUE.inhale();
+        else if (/exhale|lower down/.test(L)) CUE.exhale();
+        else CUE.move();
+      }
       /* lights out, GO — the moment the lead-in ends and rep 1 starts */
       if (P.run && prev===0 && j===1 && cs.block==="strength" && cs.seq[0].label==="Get set"){
         CUE.go(); lights(-1); P.lastCue=null; setTimeout(()=>lights(null), 650);
@@ -1982,7 +2009,8 @@ if (typeof document!=="undefined") (function(){
     else if (e.key==="ArrowLeft") $("pPrev").click();
     else if (e.key==="Escape") $("pExit").click();
   });
-  const APP_VER="v10";
+  const APP_VER="v12";
+  $("brOn").onchange=e=>{ st.breath=e.target.checked; save(); };
   $("testSnd").onclick=()=>{
     const a=ctx();
     CUE.tick(); setTimeout(()=>CUE.tick(),420); setTimeout(()=>CUE.tick(),840); setTimeout(()=>CUE.go(),1260);
@@ -2020,6 +2048,7 @@ if (typeof document!=="undefined") (function(){
   if ("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
   applySkin();
   renderHome();
+  $("brOn").checked = st.breath!==false;
   $("verNote").textContent = `The Series ${APP_VER} · sound ${["voice + beeps","beeps only","silent"][st.sound||0]}`;
 })();
 
