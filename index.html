@@ -800,11 +800,17 @@ section{margin-bottom:34px}
     <div class="manual"><span>Did it without the timer?</span><select id="manDay" aria-label="Day"></select><input id="manMins" type="number" inputmode="numeric" min="1" max="240" placeholder="min"><button id="manBtn">Log it</button></div>
     <p class="lognote" id="manNote" style="font-size:14px"></p>
     <div class="manual" style="margin-top:16px">
+      <button id="testSnd">Test sound</button>
+      <span id="sndState" style="font-size:13px"></span>
+    </div>
+    <p class="lognote" id="sndNote" style="font-size:14px">If you hear the voice but no beeps, flip your phone's ring/silent switch to ring and tap Test sound again.</p>
+    <div class="manual" style="margin-top:16px">
       <button id="expBtn">Export data</button>
       <button id="impBtn">Import data</button>
       <input id="impFile" type="file" accept="application/json,.json" hidden>
     </div>
     <p class="lognote" id="ioNote" style="font-size:14px">Everything lives on this device. Export now and then so a wiped browser doesn't cost you the log.</p>
+    <p class="lognote" id="verNote" style="font-size:12px;opacity:.6"></p>
   </section>
 
   <div class="startbar"><button id="startBtn">Start</button></div>
@@ -1663,7 +1669,30 @@ if (typeof document!=="undefined") (function(){
 
   /* ---------- Sound + voice ---------- */
   let AC=null; const SOUND_LABELS=["Voice on","Beeps only","Silent"];
-  function ctx(){ try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if (AC.state==="suspended") AC.resume(); return AC; }catch(e){ return null; } }
+  let keepAlive=null, audioReady=false;
+  function ctx(){
+    try{
+      if (!AC){
+        AC = new (window.AudioContext||window.webkitAudioContext)();
+        /* iOS: ask for the playback category so the ring/silent switch doesn't mute us */
+        try{ if (navigator.audioSession) navigator.audioSession.type = "playback"; }catch(e){}
+        /* a permanently running silent source stops iOS suspending the context
+           the moment speechSynthesis grabs the audio session */
+        try{
+          const b=AC.createBuffer(1, AC.sampleRate*2, AC.sampleRate);
+          keepAlive=AC.createBufferSource(); keepAlive.buffer=b; keepAlive.loop=true;
+          const g=AC.createGain(); g.gain.value=0.0001;
+          keepAlive.connect(g); g.connect(AC.destination); keepAlive.start(0);
+        }catch(e){}
+      }
+      if (AC.state!=="running") AC.resume();
+      audioReady = AC.state==="running";
+      return AC;
+    }catch(e){ return null; }
+  }
+  /* any tap is a chance to revive a context iOS put to sleep */
+  ["pointerdown","touchend","click"].forEach(ev=>document.addEventListener(ev, ()=>{ if (AC && AC.state!=="running") AC.resume(); }, {passive:true, capture:true}));
+  document.addEventListener("visibilitychange", ()=>{ if (!document.hidden && AC && AC.state!=="running") AC.resume(); });
   /* one voice. when = seconds from now. shape: 'blip' hard attack, 'bell' soft */
   function tone(freq, dur, vol, when=0, shape="bell", glideTo=0){
     if (st.sound===2) return;
@@ -1699,7 +1728,13 @@ if (typeof document!=="undefined") (function(){
   }
   function say(text){
     if (st.sound!==0 || !("speechSynthesis" in window)) return;
-    try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); speechSynthesis.speak(u); }catch(e){}
+    try{
+      speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(text);
+      /* iOS hands the audio session to speech and leaves Web Audio suspended */
+      u.onend = u.onerror = ()=>{ if (AC && AC.state!=="running") AC.resume(); };
+      speechSynthesis.speak(u);
+    }catch(e){}
   }
   function renderSound(){ $("pSound").textContent=SOUND_LABELS[st.sound]; }
   $("pSound").onclick=()=>{ st.sound=(st.sound+1)%3; save(); renderSound(); if(st.sound===2 && "speechSynthesis" in window) speechSynthesis.cancel(); };
@@ -1947,6 +1982,18 @@ if (typeof document!=="undefined") (function(){
     else if (e.key==="ArrowLeft") $("pPrev").click();
     else if (e.key==="Escape") $("pExit").click();
   });
+  const APP_VER="v10";
+  $("testSnd").onclick=()=>{
+    const a=ctx();
+    CUE.tick(); setTimeout(()=>CUE.tick(),420); setTimeout(()=>CUE.tick(),840); setTimeout(()=>CUE.go(),1260);
+    setTimeout(()=>{
+      const st_ = a ? a.state : "none";
+      $("sndState").textContent = st_==="running" ? "playing — 3 ticks then GO" : `audio is ${st_}`;
+      $("sndNote").textContent = st_==="running"
+        ? "If that was silent, your phone's ring/silent switch is muting it. Flip it to ring."
+        : "The browser blocked audio. Tap Test sound once more.";
+    }, 1500);
+  };
   $("expBtn").onclick=()=>{
     const blob=new Blob([JSON.stringify(st,null,2)],{type:"application/json"});
     const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
@@ -1973,6 +2020,7 @@ if (typeof document!=="undefined") (function(){
   if ("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
   applySkin();
   renderHome();
+  $("verNote").textContent = `The Series ${APP_VER} · sound ${["voice + beeps","beeps only","silent"][st.sound||0]}`;
 })();
 
 </script>
