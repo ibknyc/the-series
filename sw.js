@@ -1,5 +1,5 @@
 /* The Series - offline shell. Bump CACHE when you change index.html. */
-const CACHE = "series-v2";
+const CACHE = "series-v8";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-180.png"];
 
 self.addEventListener("install", e => {
