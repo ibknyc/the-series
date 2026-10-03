@@ -15,7 +15,7 @@
 <link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=Saira+Condensed:wght@600;800&family=Fraunces:opsz,wght,SOFT,WONK@9..144,600,50,1;9..144,900,50,1&family=Archivo:wght@500;700&family=IBM+Plex+Mono:wght@500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#EDF0EB; --card:#F7F9F5; --ink:#1B2420; --ink-2:#5F6A64; --line:#D3D9D2;
@@ -189,6 +189,442 @@ section{margin-bottom:34px}
 .shlink{background:none;border:0;padding:12px 0 0;color:var(--ink-2);text-decoration:underline;font-size:14px}
 .swapbtn{margin-top:10px;background:none;border:2px solid var(--line);border-radius:999px;padding:5px 14px;font-weight:700;font-size:14px}
 
+
+/* =========================================================
+   LAYOUT: PLATE — technical drawing. Framed figure with corner
+   ticks, hairline rules, a spec strip instead of pills, and a
+   small burned-in clock. Nothing is a rounded card.
+   ========================================================= */
+:root[data-layout="plate"] .pbody{grid-template-rows:minmax(0,1fr) auto;padding:0 16px 0}
+:root[data-layout="plate"] .stage{position:relative;padding:14px;border:1px solid var(--line)}
+:root[data-layout="plate"] .stage::before,:root[data-layout="plate"] .stage::after{
+  content:"";position:absolute;width:13px;height:13px;border:2px solid var(--accent)}
+:root[data-layout="plate"] .stage::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+:root[data-layout="plate"] .stage::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+:root[data-layout="plate"] .pinfo{text-align:left;padding:0;border:1px solid var(--line);border-top:0}
+:root[data-layout="plate"] .blocktag{display:flex;padding:7px 12px;border-bottom:1px solid var(--line);
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;justify-content:space-between}
+:root[data-layout="plate"] .blocktag i{border-radius:0;width:8px;height:8px;order:2}
+:root[data-layout="plate"] .pname{font-size:clamp(22px,6.2vw,34px);margin:0;padding:10px 12px 2px;letter-spacing:-.03em}
+:root[data-layout="plate"] .psub{padding:0 12px 9px;font-size:14px;font-weight:500;color:var(--ink-2);
+  text-transform:uppercase;letter-spacing:.1em;min-height:0}
+:root[data-layout="plate"] .chips{justify-content:flex-start;gap:0;margin:0;border-top:1px solid var(--line);min-height:0}
+:root[data-layout="plate"] .chip{background:none;border-radius:0;padding:7px 12px;font-size:12px;
+  letter-spacing:.06em;text-transform:uppercase;border-right:1px solid var(--line)}
+:root[data-layout="plate"] .chip.w{background:none;color:var(--accent)}
+:root[data-layout="plate"] .clock{position:absolute;right:14px;top:4px;font-size:clamp(32px,9.5vw,54px);
+  margin:0;line-height:1;z-index:2}
+:root[data-layout="plate"] .pname{padding-right:clamp(74px,24vw,120px)}
+:root[data-layout="plate"] .lights{position:absolute;right:16px;top:clamp(58px,15.5vw,82px);justify-content:flex-end;margin:0;z-index:2;gap:5px}
+:root[data-layout="plate"] .lights i{width:10px;height:10px;border-radius:0}
+:root[data-layout="plate"] .pinfo{position:relative}
+:root[data-layout="plate"] .pcue{margin:0;max-width:none;padding:10px 12px 12px;border-top:1px solid var(--line);
+  font-size:14px;min-height:0}
+:root[data-layout="plate"] .track{margin:0;border-radius:0;background:none;padding:7px 12px;
+  border-top:1px solid var(--line);width:100%;justify-content:space-between;font-size:12px;
+  letter-spacing:.08em;text-transform:uppercase}
+:root[data-layout="plate"] .track input{border-radius:0;background:none;border-bottom:2px solid var(--accent);
+  width:80px;text-align:right;padding:0 2px 1px}
+:root[data-layout="plate"] .swapbtn{margin:0;border:0;border-top:1px solid var(--line);border-radius:0;
+  width:100%;text-align:left;padding:7px 12px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+:root[data-layout="plate"] .controls{gap:0;padding:10px 16px 16px}
+:root[data-layout="plate"] .controls button{background:none;border:1px solid var(--line);margin-left:-1px;
+  font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:14px 10px;min-width:0;flex:1}
+:root[data-layout="plate"] .controls .big{background:var(--ink);color:var(--bg);border-color:var(--ink);flex:1.6;font-size:15px}
+:root[data-layout="plate"] .feel button{border-radius:0;border:1px solid var(--line)}
+:root[data-layout="plate"] .feel{gap:0}
+:root[data-layout="plate"] .feel button+button{margin-left:-1px}
+:root[data-layout="plate"] .shlist button{border-radius:0}
+:root[data-layout="plate"] .sheetin{border-radius:0;border-top:3px solid var(--accent)}
+:root[data-layout="plate"] .pnext{text-align:left;padding:8px 17px 0;font-size:12px;
+  letter-spacing:.1em;text-transform:uppercase}
+:root[data-layout="plate"] .pprog{border-radius:0;height:3px}
+:root[data-layout="plate"] .controls button{border-radius:2px}
+
+/* =========================================================
+   LAYOUT: TOWER — the clock is the page. Numerals bleed off
+   the left edge, the figure sits small to the right, and every
+   label is small caps hung on the baseline.
+   ========================================================= */
+:root[data-layout="tower"] .pbody{grid-template-rows:auto minmax(0,1fr);gap:0;padding:0}
+:root[data-layout="tower"] .stage{order:2;padding:0;align-items:flex-end;justify-content:flex-end;overflow:hidden}
+:root[data-layout="tower"] .stage svg{max-height:34vh;max-width:none;width:118%;margin-right:-9%;opacity:.95}
+:root[data-layout="tower"] .pinfo{order:1;text-align:left;padding:0 20px;
+  display:grid;grid-template-columns:1fr auto;align-items:end;column-gap:12px}
+:root[data-layout="tower"] .clock{grid-column:1;grid-row:1;font-size:min(58vw,30vh);line-height:.72;
+  letter-spacing:-.075em;margin:0 0 -4px -.055em;font-weight:800}
+:root[data-layout="tower"] .lights{grid-column:2;grid-row:1;justify-content:flex-end;margin:0 0 14px}
+:root[data-layout="tower"] .lights i{width:13px;height:13px}
+:root[data-layout="tower"] .blocktag{grid-column:1/-1;grid-row:2;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;padding-top:8px;border-top:2px solid var(--ink);margin-top:4px}
+:root[data-layout="tower"] .pname{grid-column:1/-1;grid-row:3;font-size:clamp(26px,7.4vw,44px);
+  margin:6px 0 0;letter-spacing:-.035em;line-height:.98}
+:root[data-layout="tower"] .psub{grid-column:1/-1;grid-row:4;font-size:13px;font-weight:500;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin-top:4px;min-height:0}
+:root[data-layout="tower"] .chips{grid-column:1/-1;grid-row:5;justify-content:flex-start;gap:14px;margin:8px 0 0;min-height:0}
+:root[data-layout="tower"] .chip{background:none;padding:0;font-size:12px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-2);border-radius:0}
+:root[data-layout="tower"] .chip.w{background:none;color:var(--accent);font-weight:700}
+:root[data-layout="tower"] .swapbtn{grid-column:1/-1;grid-row:6;justify-self:start;margin:10px 0 0}
+:root[data-layout="tower"] .track{grid-column:1/-1;grid-row:7;justify-self:start;margin:8px 0 0}
+:root[data-layout="tower"] .pcue{grid-column:1/-1;grid-row:8;margin:10px 0 0;max-width:40ch;font-size:14px;min-height:0}
+:root[data-layout="tower"] .track{border-radius:0;background:none;padding:0;gap:8px;font-size:12px;
+  letter-spacing:.1em;text-transform:uppercase}
+:root[data-layout="tower"] .track input{border-radius:0;background:none;border-bottom:2px solid var(--accent);
+  width:74px;text-align:left;padding:0 0 1px}
+:root[data-layout="tower"] .swapbtn{border:0;border-bottom:2px solid var(--accent);border-radius:0;padding:2px 0;
+  font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+:root[data-layout="tower"] .controls{gap:18px;padding:8px 20px 16px;justify-content:flex-start}
+:root[data-layout="tower"] .controls button{background:none;padding:12px 0;min-width:0;font-size:13px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+:root[data-layout="tower"] .controls .big{background:none;color:var(--accent);font-size:20px;
+  font-family:var(--display);letter-spacing:-.01em;text-transform:none;padding:8px 0;margin-right:auto}
+:root[data-layout="tower"] .pnext{text-align:left;padding:6px 20px 0;font-size:12px;
+  letter-spacing:.1em;text-transform:uppercase}
+:root[data-layout="tower"] .ptop{padding:10px 20px 4px}
+:root[data-layout="tower"] .pprog{height:2px;border-radius:0}
+@media (min-width:860px) and (min-height:520px){
+  :root[data-layout="tower"] .pbody{grid-template-columns:1.25fr .75fr;grid-template-rows:1fr}
+  :root[data-layout="tower"] .stage{order:2;align-items:center}
+  :root[data-layout="tower"] .pinfo{order:1;align-content:end}
+  :root[data-layout="tower"] .clock{font-size:min(26vw,40vh)}
+}
+
+/* =========================================================
+   LAYOUT: BLEED — the figure IS the page. Scaled past the
+   viewport, cropped by the edges, type sitting on top of it.
+   ========================================================= */
+:root[data-layout="bleed"] .pbody{position:relative;display:block;max-width:none;overflow:hidden}
+:root[data-layout="bleed"] .stage{position:absolute;inset:-6% -14% 8%;padding:0;z-index:0;pointer-events:none}
+:root[data-layout="bleed"] .stage svg{width:100%;height:100%;max-width:none;max-height:none;opacity:.16}
+:root[data-layout="bleed"] .pinfo{position:relative;z-index:1;height:100%;padding:12px 20px 0;
+  display:flex;flex-direction:column;text-align:left}
+:root[data-layout="bleed"] .blocktag{font-size:11px;letter-spacing:.2em;text-transform:uppercase}
+:root[data-layout="bleed"] .pname{font-size:clamp(34px,10vw,60px);line-height:.92;letter-spacing:-.04em;margin:8px 0 0}
+:root[data-layout="bleed"] .psub{font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+  font-weight:500;color:var(--ink-2);margin-top:8px;min-height:0}
+:root[data-layout="bleed"] .chips{justify-content:flex-start;gap:12px;margin:10px 0 0;min-height:0}
+:root[data-layout="bleed"] .chip{background:none;border-radius:0;padding:0;font-size:12px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+:root[data-layout="bleed"] .chip.w{color:var(--accent);font-weight:700}
+:root[data-layout="bleed"] .swapbtn{align-self:flex-start;margin:12px 0 0;border:0;border-bottom:2px solid var(--accent);
+  border-radius:0;padding:2px 0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+:root[data-layout="bleed"] .track{align-self:flex-start;margin:10px 0 0;background:none;border-radius:0;padding:0;
+  font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+:root[data-layout="bleed"] .track input{border-radius:0;background:none;border-bottom:2px solid var(--accent);width:76px;text-align:left}
+:root[data-layout="bleed"] .pcue{margin:12px 0 0;max-width:36ch;font-size:14px;min-height:0}
+:root[data-layout="bleed"] .lights{margin:auto 0 10px;justify-content:flex-start}
+:root[data-layout="bleed"] .lights i{width:14px;height:14px}
+:root[data-layout="bleed"] .clock{font-size:min(40vw,21vh);line-height:.78;letter-spacing:-.07em;
+  margin:0 0 2px -.055em;font-weight:800}
+:root[data-layout="bleed"] .pinfo{overflow:hidden}
+:root[data-layout="bleed"] .pnext{text-align:left;padding:0 20px 0;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+:root[data-layout="bleed"] .controls{justify-content:flex-start;gap:18px;padding:8px 20px 16px}
+:root[data-layout="bleed"] .controls button{background:none;padding:12px 0;min-width:0;font-size:13px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+:root[data-layout="bleed"] .controls .big{background:none;color:var(--accent);font-size:20px;
+  font-family:var(--display);text-transform:none;letter-spacing:-.01em;margin-right:auto}
+:root[data-layout="bleed"] .ptop{padding:10px 20px 2px}
+:root[data-layout="bleed"] .pprog{height:2px;border-radius:0}
+
+/* =========================================================
+   SPLIT — a hard horizontal division. Figure in an inverted
+   block up top, everything else on the ground below.
+   ========================================================= */
+:root[data-layout="split"] .pbody{grid-template-rows:42vh auto;gap:0;max-width:none;padding:0;position:relative;overflow:hidden}
+:root[data-layout="split"] .stage{background:var(--ink);padding:16px 20px;position:relative}
+:root[data-layout="split"] .stage svg{max-height:none;height:100%;max-width:none;width:100%}
+:root[data-layout="split"] .stage .near,:root[data-layout="split"] .stage #torso,
+:root[data-layout="split"] .stage #nLeg,:root[data-layout="split"] .stage #nArm{stroke:var(--bg)}
+:root[data-layout="split"] .stage .head{fill:var(--bg)}
+:root[data-layout="split"] .stage .far{stroke:var(--ink-2)}
+:root[data-layout="split"] .stage .ground,:root[data-layout="split"] .stage .prop line,
+:root[data-layout="split"] .stage .prop circle,:root[data-layout="split"] .stage .prop path,
+:root[data-layout="split"] .stage .prop rect{stroke:var(--ink-2);opacity:.6}
+:root[data-layout="split"] .blocktag{position:absolute;top:14px;left:20px;color:var(--bg);opacity:.75;
+  font-size:11px;letter-spacing:.2em;text-transform:uppercase;z-index:2}
+:root[data-layout="split"] .clock{position:absolute;right:20px;color:var(--bg);
+  font-size:clamp(50px,15vw,86px);line-height:.85;margin:0;z-index:2;
+  top:calc(42vh - clamp(58px,16vw,92px))}
+:root[data-layout="split"] .lights{position:absolute;left:20px;margin:0;justify-content:flex-start;z-index:2;
+  top:calc(42vh - 34px)}
+:root[data-layout="split"] .lights i{border-color:rgba(128,128,128,.4)}
+:root[data-layout="split"] .pinfo{text-align:left;padding:16px 20px 0;position:static}
+:root[data-layout="split"] .pname{font-size:clamp(28px,8vw,46px);margin:0;letter-spacing:-.035em;line-height:.98}
+:root[data-layout="split"] .psub{font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+  font-weight:500;color:var(--ink-2);margin-top:6px;min-height:0}
+:root[data-layout="split"] .chips{justify-content:flex-start;gap:12px;margin:10px 0 0;min-height:0}
+:root[data-layout="split"] .chip{background:none;border-radius:0;padding:0;font-size:12px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+:root[data-layout="split"] .chip.w{color:var(--accent);font-weight:700}
+:root[data-layout="split"] .swapbtn,:root[data-layout="split"] .track{margin:10px 0 0;border-radius:0;background:none;padding:0}
+:root[data-layout="split"] .swapbtn{border:0;border-bottom:2px solid var(--accent);font-size:12px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+:root[data-layout="split"] .track input{border-radius:0;background:none;border-bottom:2px solid var(--accent);width:76px}
+:root[data-layout="split"] .pcue{margin:12px 0 0;max-width:40ch;font-size:14px;min-height:0}
+:root[data-layout="split"] .pnext{text-align:left;padding:10px 20px 0;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+:root[data-layout="split"] .controls{justify-content:flex-start;gap:16px;padding:8px 20px 16px}
+:root[data-layout="split"] .controls button{background:none;min-width:0;font-size:13px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);padding:12px 0}
+:root[data-layout="split"] .controls .big{background:var(--ink);color:var(--bg);padding:14px 26px;
+  font-size:16px;text-transform:none;letter-spacing:0;margin-right:auto;border-radius:0}
+:root[data-layout="split"] .ptop{padding:10px 20px 6px}
+
+/* =========================================================
+   QUIET — almost nothing. Name and count, centred, enormous
+   leading. The figure is a faint watermark you can ignore.
+   ========================================================= */
+:root[data-layout="quiet"] .pbody{grid-template-rows:1fr;max-width:620px;position:relative;overflow:hidden}
+:root[data-layout="quiet"] .stage{position:absolute;inset:auto 0 -5% 0;height:19vh;padding:0;z-index:0;opacity:.15;pointer-events:none}
+:root[data-layout="quiet"] .stage svg{max-height:19vh}
+:root[data-layout="quiet"] .pinfo{position:relative;z-index:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:0 28px;height:100%}
+:root[data-layout="quiet"] .blocktag{opacity:.5;font-size:11px;letter-spacing:.24em;text-transform:uppercase}
+:root[data-layout="quiet"] .blocktag i{display:none}
+:root[data-layout="quiet"] .pname{font-size:clamp(30px,8.4vw,48px);margin:18px 0 0;letter-spacing:-.03em;line-height:1.02}
+:root[data-layout="quiet"] .psub{font-size:14px;letter-spacing:.16em;text-transform:uppercase;
+  font-weight:500;color:var(--ink-2);margin-top:10px;min-height:0}
+:root[data-layout="quiet"] .clock{font-size:min(40vw,22vh);font-weight:500;letter-spacing:-.05em;
+  line-height:1;margin:18px 0 0;opacity:.9}
+:root[data-layout="quiet"] .chips{gap:14px;margin:14px 0 0;min-height:0}
+:root[data-layout="quiet"] .chip{background:none;border-radius:0;padding:0;font-size:12px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+:root[data-layout="quiet"] .chip.w{color:var(--accent)}
+:root[data-layout="quiet"] .pcue{margin:16px auto 0;max-width:32ch;font-size:14px;min-height:0;opacity:.75}
+:root[data-layout="quiet"] .lights{margin:16px 0 0}
+:root[data-layout="quiet"] .swapbtn,:root[data-layout="quiet"] .track{margin-top:14px;background:none;border-radius:0;padding:0}
+:root[data-layout="quiet"] .swapbtn{border:0;border-bottom:1px solid var(--line);font-size:12px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+:root[data-layout="quiet"] .track input{border-radius:0;background:none;border-bottom:1px solid var(--line);width:76px}
+:root[data-layout="quiet"] .pnext{opacity:.55;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+:root[data-layout="quiet"] .ptop{padding:12px 24px 0;opacity:.65}
+:root[data-layout="quiet"] .pprog{height:1px;border-radius:0}
+:root[data-layout="quiet"] .controls{gap:26px;padding:10px 24px 20px}
+:root[data-layout="quiet"] .controls button{background:none;min-width:0;padding:12px 0;font-size:13px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+:root[data-layout="quiet"] .controls .big{background:none;color:var(--ink);font-family:var(--display);
+  font-size:19px;text-transform:none;letter-spacing:-.01em}
+
+/* ================= START LIGHTS ================= */
+.lights{display:flex;gap:7px;justify-content:center;margin:6px 0 2px}
+.lights i{width:16px;height:16px;border-radius:50%;background:var(--line);border:1px solid var(--line);transition:background .06s linear,box-shadow .06s linear}
+.lights i.on{background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.lights.go i{background:var(--green);box-shadow:0 0 16px var(--green)}
+@media (min-width:860px) and (min-height:520px){ .lights{justify-content:flex-start} }
+
+/* ================= SKIN: PIT WALL ================= */
+:root[data-skin="pit"]{
+  --bg:#10151A; --card:#19212A; --ink:#EEF3F7; --ink-2:#8D9BA9; --line:#2A3642;
+  --accent:#FF2D20; --accent-ink:#FFFFFF;
+  --fig:#EEF3F7; --fig-far:#53636F;
+  --green:#00D47E; --yellow:#FFC01E; --red:#FF2D20;
+  --display:"Saira Condensed","Avenir Next Condensed",system-ui,sans-serif;
+  --body:"Archivo","Segoe UI",system-ui,sans-serif;
+}
+:root[data-skin="pit"] .top h1{letter-spacing:-.01em;text-transform:uppercase}
+:root[data-skin="pit"] .clock{font-variant-numeric:tabular-nums;letter-spacing:-.02em;font-weight:800}
+:root[data-skin="pit"] .pname{text-transform:uppercase;letter-spacing:0}
+:root[data-skin="pit"] .recbtn,:root[data-skin="pit"] .weights,:root[data-skin="pit"] .seg,
+:root[data-skin="pit"] .gates label,:root[data-skin="pit"] .plan .it,:root[data-skin="pit"] .secondbox,
+:root[data-skin="pit"] .abrow,:root[data-skin="pit"] .shlist button,:root[data-skin="pit"] .chip{border-radius:4px}
+:root[data-skin="pit"] .startbar button,:root[data-skin="pit"] .controls button{border-radius:6px}
+:root[data-skin="pit"] .pprog{border-radius:0;height:8px}
+:root[data-skin="pit"] .pprog div{background:var(--accent)}
+:root[data-skin="pit"] .pleft,:root[data-skin="pit"] .recbtn .rm{font-variant-numeric:tabular-nums}
+:root[data-skin="pit"] .blocktag{text-transform:uppercase;letter-spacing:.06em}
+
+/* ================= SKIN: MYSORE ================= */
+:root[data-skin="mysore"]{
+  --bg:#E8CE92; --card:#F3E4C2; --ink:#2B1D12; --ink-2:#7A6244; --line:#CBAE78;
+  --accent:#BC3A1C; --accent-ink:#F7EBD2;
+  --fig:#2B1D12; --fig-far:#A98D5F;
+  --green:#4A7A32; --yellow:#C98A1B; --red:#A52C14;
+  --display:"Fraunces","Iowan Old Style",Georgia,serif;
+  --body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+}
+:root[data-skin="mysore"] .top h1{font-weight:900;letter-spacing:-.02em}
+:root[data-skin="mysore"] h2,:root[data-skin="mysore"] .pname{font-weight:900}
+:root[data-skin="mysore"] .clock{font-weight:900;color:var(--accent)}
+:root[data-skin="mysore"] .plan .it{border-bottom:1.5px solid var(--line)}
+:root[data-skin="mysore"] .phases::before{background:var(--ink);height:1.5px}
+:root[data-skin="mysore"] .blocktag i{border-radius:50%}
+:root[data-skin="mysore"] .lights i{border-color:var(--ink)}
+
+/* ================= SKIN: TIMECODE ================= */
+:root[data-skin="timecode"]{
+  --bg:#22262B; --card:#2C3238; --ink:#D9DFE5; --ink-2:#8A939C; --line:#3A4149;
+  --accent:#FFA319; --accent-ink:#1B1E22;
+  --fig:#D9DFE5; --fig-far:#5A646D;
+  --green:#3FBF7F; --yellow:#FFC93F; --red:#E5484D;
+  --display:"IBM Plex Mono","SF Mono",ui-monospace,monospace;
+  --body:"Archivo","Segoe UI",system-ui,sans-serif;
+}
+:root[data-skin="timecode"] .top h1{letter-spacing:-.04em}
+:root[data-skin="timecode"] .clock{font-variant-numeric:tabular-nums;letter-spacing:-.05em}
+:root[data-skin="timecode"] .pleft,:root[data-skin="timecode"] .recbtn .rm,
+:root[data-skin="timecode"] .plan .it .d{font-family:var(--display);font-variant-numeric:tabular-nums}
+:root[data-skin="timecode"] .recbtn,:root[data-skin="timecode"] .weights,:root[data-skin="timecode"] .seg,
+:root[data-skin="timecode"] .gates label,:root[data-skin="timecode"] .secondbox,:root[data-skin="timecode"] .abrow,
+:root[data-skin="timecode"] .shlist button,:root[data-skin="timecode"] .chip{border-radius:3px}
+:root[data-skin="timecode"] .startbar button,:root[data-skin="timecode"] .controls button{border-radius:4px}
+:root[data-skin="timecode"] .pprog{border-radius:0;height:10px;background:#1A1E22}
+:root[data-skin="timecode"] .pprog div{background:var(--accent)}
+:root[data-skin="timecode"] .blocktag{font-family:var(--display);text-transform:uppercase;letter-spacing:.04em}
+
+/* ================= SKIN: SODIUM ================= */
+:root[data-skin="sodium"]{
+  --bg:#16130F; --card:#221C15; --ink:#F3E7D5; --ink-2:#9C8B74; --line:#362D22;
+  --accent:#FF8A1E; --accent-ink:#1A1208;
+  --fig:#F3E7D5; --fig-far:#6A5A45;
+  --green:#8FBF4A; --yellow:#FFC01E; --red:#E05A2B;
+  --display:"Saira Condensed","Avenir Next Condensed",system-ui,sans-serif;
+  --body:"Archivo","Segoe UI",system-ui,sans-serif;
+}
+:root[data-skin="sodium"] .top h1{text-transform:uppercase;letter-spacing:.01em}
+:root[data-skin="sodium"] .pname{text-transform:uppercase}
+:root[data-skin="sodium"] .clock{font-weight:800;color:var(--accent);text-shadow:0 0 28px rgba(255,138,30,.35)}
+:root[data-skin="sodium"] .lights i.on{box-shadow:0 0 16px var(--accent)}
+:root[data-skin="sodium"] .startbar button{box-shadow:0 0 24px rgba(255,138,30,.25)}
+
+/* ================= SKIN: RISO ================= */
+:root[data-skin="riso"]{
+  --bg:#EFECE3; --card:#FFFFFF; --ink:#171717; --ink-2:#6E6B64; --line:#CFCBC0;
+  --accent:#FF3D8A; --accent-ink:#FFFFFF;
+  --fig:#171717; --fig-far:#2A5FD9;
+  --green:#1E9E6A; --yellow:#E8A020; --red:#FF3D8A;
+  --display:"Space Grotesk","Avenir Next",system-ui,sans-serif;
+  --body:"Archivo","Segoe UI",system-ui,sans-serif;
+}
+:root[data-skin="riso"] .top h1{letter-spacing:-.045em}
+:root[data-skin="riso"] .clock{color:var(--accent);letter-spacing:-.05em}
+:root[data-skin="riso"] .recbtn,:root[data-skin="riso"] .weights,:root[data-skin="riso"] .seg,
+:root[data-skin="riso"] .gates label,:root[data-skin="riso"] .secondbox,:root[data-skin="riso"] .abrow,
+:root[data-skin="riso"] .shlist button{border-radius:2px;box-shadow:3px 3px 0 var(--line)}
+:root[data-skin="riso"] .chip{border-radius:2px}
+:root[data-skin="riso"] .startbar button{border-radius:2px;box-shadow:4px 4px 0 #2A5FD9}
+:root[data-skin="riso"] .controls button{border-radius:2px}
+:root[data-skin="riso"] .pprog div{background:#2A5FD9}
+:root[data-skin="riso"] .blocktag{text-transform:uppercase;letter-spacing:.05em}
+
+/* ================= SKIN: CYANOTYPE ================= */
+:root[data-skin="cyano"]{
+  --bg:#17496E; --card:#1E5880; --ink:#EEF6FB; --ink-2:#A3C4DA; --line:#2E6A94;
+  --accent:#F2FAFF; --accent-ink:#11395A;
+  --fig:#EEF6FB; --fig-far:#5E8FB2;
+  --green:#8FE3C4; --yellow:#FFD98A; --red:#FFA39E;
+  --display:"Archivo","Avenir Next",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+}
+:root[data-skin="cyano"] .top h1{font-weight:700;letter-spacing:-.03em}
+:root[data-skin="cyano"] .clock{font-weight:700}
+:root[data-skin="cyano"] .near,:root[data-skin="cyano"] .far{stroke-linecap:square}
+:root[data-skin="cyano"] .recbtn,:root[data-skin="cyano"] .weights,:root[data-skin="cyano"] .seg,
+:root[data-skin="cyano"] .gates label,:root[data-skin="cyano"] .secondbox,:root[data-skin="cyano"] .abrow,
+:root[data-skin="cyano"] .shlist button,:root[data-skin="cyano"] .chip{border-radius:2px}
+:root[data-skin="cyano"] .startbar button,:root[data-skin="cyano"] .controls button{border-radius:2px}
+:root[data-skin="cyano"] .plan .it{border-bottom:1px solid var(--line)}
+
+/* ================= SKIN: SUMI ================= */
+:root[data-skin="sumi"]{
+  --bg:#DEDCD2; --card:#EFEDE5; --ink:#15140E; --ink-2:#6B685C; --line:#C3BFB0;
+  --accent:#B32317; --accent-ink:#F4F2EA;
+  --fig:#15140E; --fig-far:#A6A294;
+  --green:#4C6B3C; --yellow:#B5821C; --red:#B32317;
+  --display:"Fraunces","Iowan Old Style",Georgia,serif;
+  --body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+}
+:root[data-skin="sumi"] .top h1{font-weight:900}
+:root[data-skin="sumi"] .clock{font-weight:600}
+:root[data-skin="sumi"] .near,:root[data-skin="sumi"] .far{stroke-linecap:round;stroke-width:8}
+:root[data-skin="sumi"] .plan .it{border-bottom:1px solid var(--line)}
+:root[data-skin="sumi"] .chip{border:1px solid var(--line);background:none}
+
+/* ================= SKIN: NEON ================= */
+:root[data-skin="neon"]{
+  --bg:#150A1F; --card:#241233; --ink:#F7EAFF; --ink-2:#A383BE; --line:#38204A;
+  --accent:#FF2E88; --accent-ink:#1A0612;
+  --fig:#F7EAFF; --fig-far:#6B4A86;
+  --green:#39F5B0; --yellow:#FFD93D; --red:#FF2E88;
+  --display:"Space Grotesk","Avenir Next",system-ui,sans-serif;
+  --body:"Archivo","Segoe UI",system-ui,sans-serif;
+}
+:root[data-skin="neon"] .clock{color:var(--accent);text-shadow:0 0 30px rgba(255,46,136,.55)}
+:root[data-skin="neon"] .top h1{letter-spacing:-.04em;text-shadow:0 0 24px rgba(255,46,136,.35)}
+:root[data-skin="neon"] .lights i.on{box-shadow:0 0 18px var(--accent)}
+:root[data-skin="neon"] .startbar button{box-shadow:0 0 28px rgba(255,46,136,.45)}
+:root[data-skin="neon"] .pprog div{box-shadow:0 0 12px var(--accent)}
+
+/* ================= SKIN: TARMAC ================= */
+:root[data-skin="tarmac"]{
+  --bg:#2E302F; --card:#3A3D3B; --ink:#EDEEEC; --ink-2:#9BA09C; --line:#4B4F4C;
+  --accent:#E8F03A; --accent-ink:#1E201F;
+  --fig:#EDEEEC; --fig-far:#6E736F;
+  --green:#8CE03A; --yellow:#E8F03A; --red:#FF6B35;
+  --display:"Saira Condensed","Avenir Next Condensed",system-ui,sans-serif;
+  --body:"Archivo","Segoe UI",system-ui,sans-serif;
+}
+:root[data-skin="tarmac"] .top h1{text-transform:uppercase;letter-spacing:.02em}
+:root[data-skin="tarmac"] .pname{text-transform:uppercase}
+:root[data-skin="tarmac"] .clock{font-weight:800;color:var(--accent)}
+:root[data-skin="tarmac"] .pprog{background:repeating-linear-gradient(90deg,var(--line) 0 14px,transparent 14px 26px);border-radius:0}
+:root[data-skin="tarmac"] .pprog div{background:var(--accent)}
+:root[data-skin="tarmac"] .recbtn,:root[data-skin="tarmac"] .weights,:root[data-skin="tarmac"] .seg,
+:root[data-skin="tarmac"] .gates label,:root[data-skin="tarmac"] .secondbox,:root[data-skin="tarmac"] .abrow,
+:root[data-skin="tarmac"] .shlist button,:root[data-skin="tarmac"] .chip{border-radius:3px}
+
+/* ================= SKIN: TOPO ================= */
+:root[data-skin="topo"]{
+  --bg:#DCE3D2; --card:#EFF3E9; --ink:#26321E; --ink-2:#67745B; --line:#B4C2A6;
+  --accent:#A8521E; --accent-ink:#FBF7EF;
+  --fig:#26321E; --fig-far:#98A98A;
+  --green:#3E7A34; --yellow:#B5861C; --red:#A8521E;
+  --display:"Archivo","Avenir Next",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+}
+:root[data-skin="topo"] .top h1{font-weight:700;letter-spacing:-.03em}
+:root[data-skin="topo"] .clock{color:var(--accent)}
+:root[data-skin="topo"] .plan .it{border-bottom:1px solid var(--line)}
+:root[data-skin="topo"] .phases::before{background:var(--accent);height:1.5px}
+:root[data-skin="topo"] .chip{background:none;border:1px solid var(--line)}
+
+/* ================= SKIN: SIGNAL ================= */
+:root[data-skin="signal"]{
+  --bg:#FFFFFF; --card:#F1F1F1; --ink:#000000; --ink-2:#6A6A6A; --line:#D2D2D2;
+  --accent:#E2231A; --accent-ink:#FFFFFF;
+  --fig:#000000; --fig-far:#A8A8A8;
+  --green:#008A4B; --yellow:#E8A400; --red:#E2231A;
+  --display:"Archivo","Helvetica Neue",system-ui,sans-serif;
+  --body:"Archivo","Helvetica Neue",system-ui,sans-serif;
+}
+:root[data-skin="signal"] .top h1{font-weight:700;letter-spacing:-.045em}
+:root[data-skin="signal"] .clock{letter-spacing:-.06em}
+:root[data-skin="signal"] .recbtn,:root[data-skin="signal"] .weights,:root[data-skin="signal"] .seg,
+:root[data-skin="signal"] .seg button,:root[data-skin="signal"] .gates label,:root[data-skin="signal"] .secondbox,
+:root[data-skin="signal"] .abrow,:root[data-skin="signal"] .shlist button,:root[data-skin="signal"] .chip,
+:root[data-skin="signal"] .startbar button,:root[data-skin="signal"] .controls button,
+:root[data-skin="signal"] .pills label,:root[data-skin="signal"] .skinbtn,:root[data-skin="signal"] .skinbtn .sw span,
+:root[data-skin="signal"] .gatebtn,:root[data-skin="signal"] .swapbtn,:root[data-skin="signal"] .feel button,
+:root[data-skin="signal"] .sheetin,:root[data-skin="signal"] .track,:root[data-skin="signal"] .track input,
+:root[data-skin="signal"] .manual input,:root[data-skin="signal"] .manual select,:root[data-skin="signal"] .manual button,
+:root[data-skin="signal"] .wfield .inwrap,:root[data-skin="signal"] #done button{border-radius:0}
+:root[data-skin="signal"] .pills label .tick{border-radius:0}
+:root[data-skin="signal"] .week .pip{border-radius:0}
+:root[data-skin="signal"] .week .pip b{border-radius:0}
+:root[data-skin="signal"] .phase .num{border-radius:0}
+:root[data-skin="signal"] .pprog{border-radius:0}
+:root[data-skin="signal"] .plan .it{border-bottom:1px solid #000}
+:root[data-skin="signal"] .blocktag{text-transform:uppercase;letter-spacing:.08em}
+
+/* ================= SKIN PICKER ================= */
+.skins{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (max-width:420px){.skins{grid-template-columns:repeat(3,1fr)}}
+.skinbtn{position:relative;border:2px solid transparent;border-radius:14px;background:var(--card);padding:10px;text-align:left;overflow:hidden}
+.skinbtn[aria-pressed="true"]{border-color:var(--ink)}
+.skinbtn .sw{display:flex;gap:4px;margin-bottom:8px}
+.skinbtn .sw span{width:16px;height:16px;border-radius:4px;border:1px solid rgba(128,128,128,.35)}
+.skinbtn b{display:block;font-family:var(--display);font-size:15px;line-height:1.1}
+.skinbtn small{display:block;color:var(--ink-2);font-size:12px;line-height:1.3;margin-top:2px}
+
 /* ---------- Done ---------- */
 #done{max-width:560px;margin:0 auto;padding:18vh 24px 40px;text-align:left}
 #done h1{font-family:var(--display);font-weight:800;font-size:clamp(44px,12vw,72px);line-height:.95;letter-spacing:-.03em;margin:0 0 14px}
@@ -196,8 +632,9 @@ section{margin-bottom:34px}
 #done button{margin-top:22px;background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:15px 26px;font-family:var(--display);font-weight:700;font-size:18px}
 
 @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
-.seg{display:grid;grid-template-columns:repeat(var(--n,3),1fr);background:var(--card);border-radius:14px;padding:4px;gap:4px}
-.seg button{background:none;border:0;border-radius:10px;padding:11px 6px;font-weight:700;font-size:15px;color:var(--ink-2)}
+.seg{display:grid;grid-template-columns:repeat(var(--n,4),1fr);background:var(--card);border-radius:14px;padding:4px;gap:4px}
+#laySeg{grid-template-columns:repeat(3,1fr)}
+.seg button{background:none;border:0;border-radius:10px;padding:11px 4px;font-weight:700;font-size:14px;color:var(--ink-2)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .segnote{margin:10px 0 0;font-size:14px;color:var(--ink-2)}
 .abrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;background:var(--card);border-radius:12px;padding:10px 14px;font-size:15px}
@@ -237,6 +674,13 @@ section{margin-bottom:34px}
     <h2 id="tyH">Session</h2>
     <div class="seg" id="typeSeg"></div>
     <p class="segnote" id="typeNote"></p>
+    <div class="secondbox" id="finBox" hidden>
+      <div class="switchrow">
+        <label for="finOn">Finish with two lifts</label>
+        <input type="checkbox" class="switch" id="finOn" role="switch">
+      </div>
+      <p class="wnote" id="finNote"></p>
+    </div>
     <div class="secondbox">
       <div class="switchrow">
         <label for="secOn">Second session today</label>
@@ -284,6 +728,14 @@ section{margin-bottom:34px}
     <button class="gatebtn" id="gateBtn" hidden></button>
   </section>
 
+  <section aria-labelledby="skH">
+    <h2 id="skH">Look</h2>
+    <div class="seg" id="laySeg" style="--n:3;margin-bottom:12px"></div>
+    <p class="segnote" id="layNote" style="margin:0 0 14px"></p>
+    <div class="skins" id="skins"></div>
+    <p class="segnote" id="skNote"></p>
+  </section>
+
   <section class="log">
     <h2>Last 7 days</h2>
     <p class="segnote" id="weekNote" style="margin:0 0 10px"></p>
@@ -317,6 +769,7 @@ section{margin-bottom:34px}
       <div class="chips" id="pChips"></div>
       <button class="swapbtn" id="pSwap" hidden>Station taken? Swap</button><br>
       <label class="track" id="pTrack" hidden><span>Weight used</span><input id="pTrackIn" type="number" inputmode="decimal" step="2.5" min="0"><span>lb</span></label>
+      <div class="lights" id="lights" hidden aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
       <div class="clock" id="pTime" aria-live="off"></div>
       <p class="pcue" id="pCue"></p>
     </div>
@@ -431,20 +884,39 @@ const RAW = {
   bbohdown:     "100,40 100,55 100,105 108,74 106,54 109,74 107,54 98,141 98,177 102,141 102,177",
   bbohup:       "100,40 100,55 100,105 104,31 106,8 105,31 107,8 98,141 98,177 102,141 102,177",
   bbrowdown:    "153,97 140,99 92,108 139,122 139,146 140,122 140,146 104,142 100,177 106,143 102,177",
-  bbrowup:      "153,97 140,99 92,108 123,86 125,110 124,86 126,110 104,142 100,177 106,143 102,177"
+  bbrowup:      "153,97 140,99 92,108 123,86 125,110 124,86 126,110 104,142 100,177 106,143 102,177",
+  ellipA:       "100,42 100,57 100,110 112,80 126,66 88,82 74,96 124,130 140,156 80,140 62,168",
+  ellipB:       "100,42 100,57 100,110 88,82 74,96 112,80 126,66 80,140 62,168 124,130 140,156",
+  bikeA:        "96,64 98,78 92,122 116,94 136,102 118,96 138,104 114,128 122,138 112,138 120,170",
+  bikeB:        "96,64 98,78 92,122 116,94 136,102 118,96 138,104 112,138 120,170 114,128 122,138",
+  runA:         "100,38 100,54 100,104 116,78 128,62 86,80 74,64 122,122 134,142 84,138 64,166",
+  runB:         "100,38 100,54 100,104 86,80 74,64 116,78 128,62 84,138 64,166 122,122 134,142",
+  ropeA:        "100,36 100,51 100,104 84,82 74,94 116,82 126,94 98,138 98,164 102,138 102,164",
+  ropeB:        "100,46 100,61 100,114 84,92 74,104 116,92 126,104 98,148 98,177 102,148 102,177",
+  stairA:       "96,50 98,64 94,114 110,86 122,72 82,88 70,100 124,118 142,142 94,146 88,174",
+  stairB:       "92,38 94,52 92,102 78,76 66,88 108,74 120,60 128,108 150,130 100,130 112,154",
+  hang:         "100,62 100,76 100,126 99,44 98,16 101,44 102,16 98,158 98,178 102,158 102,178",
+  pullup:       "100,36 100,50 100,100 96,30 96,16 104,30 104,16 96,132 92,160 104,132 108,160"
 };
 const POSE = {};
 for (const k in RAW) POSE[k] = RAW[k].trim().split(/\s+/).map(s => s.split(',').map(Number));
 const WALL = { legsupwall:153, headtuck:78, lhandstand:151 };
 const PROP_OF = { rowcatch:"rower", rowfinish:"rower", climbA:"climber", climbB:"climber", latup:"lat", latdown:"lat",
-  crowout:"cable", crowin:"cable", lpdown:"legpress", lpup:"legpress", benchdown:"bench", benchup:"bench" };
+  crowout:"cable", crowin:"cable", lpdown:"legpress", lpup:"legpress", benchdown:"bench", benchup:"bench",
+  ellipA:"elliptical", ellipB:"elliptical", bikeA:"bike", bikeB:"bike",
+  ropeA:"rope", ropeB:"rope", stairA:"stairs", stairB:"stairs", hang:"bar", pullup:"bar" };
 const PROPS = {
   rower:`<line x1="30" y1="172" x2="160" y2="172"/><line x1="150" y1="146" x2="150" y2="172"/><circle cx="174" cy="150" r="14"/>`,
   climber:`<line x1="150" y1="178" x2="130" y2="8"/><line x1="136" y1="178" x2="164" y2="178"/>`,
   lat:`<rect x="72" y="140" width="50" height="6" rx="2"/><line x1="97" y1="146" x2="97" y2="178"/><rect x="126" y="125" width="16" height="7" rx="3"/><line x1="170" y1="4" x2="170" y2="178"/><line x1="100" y1="6" x2="170" y2="6"/>`,
   cable:`<rect x="40" y="160" width="60" height="6" rx="2"/><line x1="152" y1="178" x2="152" y2="148"/><rect x="166" y="60" width="18" height="118" rx="2"/>`,
   legpress:`<line x1="38" y1="100" x2="84" y2="166"/><line x1="70" y1="170" x2="110" y2="170"/><line x1="100" y1="178" x2="186" y2="108"/>`,
-  bench:`<rect x="28" y="152" width="90" height="7" rx="2"/><line x1="40" y1="159" x2="40" y2="178"/><line x1="106" y1="159" x2="106" y2="178"/>`
+  bench:`<rect x="28" y="152" width="90" height="7" rx="2"/><line x1="40" y1="159" x2="40" y2="178"/><line x1="106" y1="159" x2="106" y2="178"/>`,
+  elliptical:`<line x1="168" y1="24" x2="168" y2="178"/><line x1="40" y1="178" x2="178" y2="178"/><line x1="48" y1="170" x2="150" y2="158"/><line x1="48" y1="162" x2="150" y2="150"/><line x1="156" y1="44" x2="180" y2="32"/><line x1="156" y1="44" x2="180" y2="58"/>`,
+  bike:`<circle cx="62" cy="158" r="19"/><circle cx="152" cy="158" r="19"/><path d="M62 158 L112 150 L152 158 M112 150 L140 102 M140 102 L152 158 M140 102 L96 120"/>`,
+  rope:`<path d="M74 98 C 40 10, 160 10, 126 98"/>`,
+  stairs:`<path d="M14 178 V174 H78 V158 H112 V142 H150 V126 H192"/>`,
+  bar:`<line x1="46" y1="14" x2="160" y2="14"/><line x1="52" y1="14" x2="52" y2="0"/><line x1="154" y1="14" x2="154" y2="0"/>`
 };
 
 const BLOCKS = {
@@ -579,18 +1051,39 @@ function circuit(sets, restSecs, slots){
   return out;
 }
 
-const MNAME = {rower:"Rower", climber:"Ladder climber"};
-function cardioSeq(m, secs, tempo, label, beepFirst){
-  const [a,b] = m==="rower" ? ["rowcatch","rowfinish"] : ["climbA","climbB"];
+const CARDIO = {
+  rower:     {name:"Rower",          a:"rowcatch",b:"rowfinish",tempo:2.4, gym:1},
+  elliptical:{name:"Elliptical",     a:"ellipA",  b:"ellipB",   tempo:2.0, gym:1},
+  gymbike:   {name:"Gym bike",       a:"bikeA",   b:"bikeB",    tempo:1.8, gym:1},
+  climber:   {name:"Ladder climber", a:"climbA",  b:"climbB",   tempo:2.4, gym:1},
+  tread:     {name:"Treadmill",      a:"runA",    b:"runB",     tempo:1.6, gym:1},
+  run:       {name:"Running",        a:"runA",    b:"runB",     tempo:1.6, gym:0},
+  stairs:    {name:"Park stairs",    a:"stairA",  b:"stairB",   tempo:1.5, gym:0},
+  peloton:   {name:"Peloton",        a:"bikeA",   b:"bikeB",    tempo:1.8, gym:0},
+  outbike:   {name:"Bike ride",      a:"bikeA",   b:"bikeB",    tempo:1.8, gym:0},
+  rope:      {name:"Jump rope",      a:"ropeA",   b:"ropeB",    tempo:0.9, gym:0}
+};
+const MNAME = k => (CARDIO[k]||{}).name || k;
+function cardioSeq(m, secs, tempoMul, label, beepFirst){
+  const C=CARDIO[m]||CARDIO.rower, tempo=C.tempo*tempoMul;
   const s=[]; let t=0, i=0;
-  while (t < secs-0.01){ const d=Math.min(tempo/2, secs-t); s.push(T(i%2?b:a, d, label, false, beepFirst && i===0)); t+=d; i++; }
+  while (t < secs-0.01){ const d=Math.min(tempo/2, secs-t); s.push(T(i%2?C.b:C.a, d, label, false, beepFirst && i===0)); t+=d; i++; }
   return s;
 }
-function machineEasy(m, secs, name, cue){ return step(name,"cardio",cue,cardioSeq(m,secs,2.4,"Easy pace"),{chips:[MNAME[m], fmtSecs(secs)]}); }
-function intervals(m, rounds){
+function machineEasy(m, secs, name, cue){ return step(name,"cardio",cue,cardioSeq(m,secs,1,"Easy pace"),{chips:[MNAME(m), fmtSecs(secs)]}); }
+function steady(m, secs, name, cue){ return step(name,"cardio",cue,cardioSeq(m,secs,.85,"Steady"),{chips:[MNAME(m), fmtSecs(secs)]}); }
+function intervals(m, rounds, work=30, easy=30){
   const seq=[];
-  for(let i=1;i<=rounds;i++) seq.push(...cardioSeq(m,30,1.2,`Round ${i} of ${rounds}: hard`,true), ...cardioSeq(m,30,2.4,`Round ${i} of ${rounds}: easy`,true));
-  return step("Intervals","cardio","30 seconds hard, 30 easy. Hard means you can't talk, not that your form falls apart.",seq,{chips:[MNAME[m], `${rounds} rounds`]});
+  for(let i=1;i<=rounds;i++) seq.push(...cardioSeq(m,work,.5,`Round ${i} of ${rounds}: hard`,true), ...cardioSeq(m,easy,1,`Round ${i} of ${rounds}: easy`,true));
+  return step("Intervals","cardio",`${work} seconds hard, ${easy} easy. Hard means you can't talk, not that your form falls apart.`,seq,{chips:[MNAME(m), `${rounds} rounds`]});
+}
+function stairLoop(rounds, runSecs){
+  const seq=[];
+  for(let i=1;i<=rounds;i++){
+    seq.push(...cardioSeq("stairs",70,.5,`Set ${i} of ${rounds}: up the stairs`,true));
+    seq.push(...cardioSeq("run",runSecs,1,`Set ${i} of ${rounds}: run to the next one`,true));
+  }
+  return step("Stair loop","cardio","Hard up, jog the flat between. Short strides on the way up, eyes a few steps ahead.",seq,{chips:["Prospect Park", `${rounds} sets`]});
 }
 
 /* o = {phase, rec, type:'full'|'yoga'|'strength', loc:'home'|'gym', eq:{barbell,machines,rower,climber}, dbOn, W, second} */
@@ -601,8 +1094,11 @@ function build(o){
   const gym = loc==="gym", useDb = gym || o.dbOn;
   const wt = w => w>0 ? `${w} lb` : "";
   const dbo = (db, w, track) => ({db, weight: wt(w), track: gym ? track : "", setup: gym ? 10 : 3});
-  const mach = gym ? (eq.rower?"rower":eq.climber?"climber":null) : null;
-  const mach2 = gym ? (eq.climber?"climber":eq.rower?"rower":null) : null;
+  const CARDIO_ORDER = gym ? ["rower","elliptical","gymbike","climber","tread"] : ["run","stairs","peloton","outbike","rope"];
+  const avail = CARDIO_ORDER.filter(k=>eq[k]);
+  const spin = avail.length ? avail.slice((o.ab||0)*2 % avail.length).concat(avail.slice(0,(o.ab||0)*2 % avail.length)) : [];
+  const pick = i => spin.length ? spin[i % spin.length] : null;
+  const mach = pick(0), mach2 = spin.length>1 ? pick(1) : mach;
   const H = gym ? (W.gymHeavy||0) : W.heavy, L = gym ? (W.gymLight||0) : W.light;
 
   const EX = {
@@ -739,6 +1235,52 @@ function build(o){
     return out;
   }
 
+  /* ---------- Cardio ---------- */
+  if (type==="cardio"){
+    const m1=pick(0), m2=pick(1), m3=pick(2);
+    const hasBar = !!eq.bar;
+    const FIN = SL("finish",
+      hasBar && (sl=>reps("Pull-ups","hang","pullup",R?3:G?7:5,3.5,"strength","Dead hang, shoulders down, chin over the bar. Band or jump-and-lower if you run out.",{track:"Pull-ups",setup:8,chips:[sl]})),
+      hasBar && (sl=>hold("Free hang","hang",G?45:35,"strength","Full dead hang. Let the shoulders stretch, grip relaxed but honest.",{track:"Free hang",chips:[sl]})),
+      gym && eq.machines && (sl=>reps("Lat pulldown","latup","latdown",10,3,"strength","Chest up, pull to your collarbone. Pick a weight that leaves 2 to 3 reps in the tank.",{track:"Lat pulldown",setup:10,chips:[sl]})),
+      (gym || o.dbOn) && EX.row(8),
+      BW.pushups(12)
+    );
+    const finisher = () => (FIN.v.length ? circuit(R?1:2, 45, [FIN]) : []);
+
+    if (!m1){ /* nothing ticked: conditioning on the floor */
+      add(arrive(30), wrists(), catcow(), ...sunA(2,null), ginga(60));
+      if (!R) for (let i=0;i<(G?4:3);i++) add(ginga(32), cocorinha(),
+        reps("Air squats","mountain","squat",15,2,"cardio","Quick but controlled. Heels down.",{chips:[`Round ${i+1}`]}),
+        step("Mountain climbers","cardio","Plank position, drive the knees in fast. Hips stay level.",repeat(16,()=>[T("plank",.7,"Drive"),T("chaturanga",.7,"Drive")]),{chips:[`Round ${i+1}`,"30s"]}),
+        step("Breathe","cardio","Stand, hands on your head, nose breathing.",[T("mountain",G?30:45,"Recover")],{chips:[fmtSecs(G?30:45)]}));
+      add(standing(false), finisher(), shortClose());
+      return out;
+    }
+
+    /* the stair loop is its own shape */
+    if (m1==="stairs" || (m2==="stairs" && !R)){
+      add(machineEasy("run", R?360:420, "Easy jog", "Out to the park. Conversational the whole way — this is the warm-up, not the workout."));
+      if (R) add(steady("run", 8*60, "Easy miles", "Red day. Flat ground only, skip the stairs, keep it easy."));
+      else add(stairLoop(G?5:4, G?100:120));
+      add(machineEasy("run", 300, "Jog home", "Easy. Let the heart rate fall before you stop."));
+      add(finisher(), shortClose());
+      return out;
+    }
+
+    /* mixed: warm up on one, work on the next, flush on a third */
+    add(machineEasy(m1, R?300:480, "Warm-up", `${MNAME(m1)} first. Easy pace, nose breathing — you should be able to hold a conversation.`));
+    if (R) add(steady(m2, 12*60, "Zone 2", `Move to the ${MNAME(m2).toLowerCase()}. Twelve minutes steady. If you can't speak a full sentence, back off.`));
+    else {
+      add(steady(m2, G?300:360, "Zone 2", `Switch to the ${MNAME(m2).toLowerCase()}. Steady, building.`));
+      add(intervals(m2, G?8:6, m2==="rope"?20:30, 30));
+    }
+    if (m3 && m3!==m1 && m3!==m2) add(machineEasy(m3, R?240:360, "Flush", `Last switch, onto the ${MNAME(m3).toLowerCase()}. Easy — let the heart rate come down.`));
+    else add(machineEasy(m1, R?180:240, "Flush", "Back where you started. Easy, let the heart rate come down."));
+    add(finisher(), shortClose());
+    return out;
+  }
+
   /* ---------- Full series ---------- */
   if (gym){
     add(warmMachine(second?180:300), catcow(), downdog(), sunA(G?3:2,null), standing(false));
@@ -797,9 +1339,12 @@ const RECS = [
 const TYPES = [
   {id:"full", name:"Full series", note:"Everything in one go."},
   {id:"yoga", name:"Yoga", note:"Flow, standing, core and inversions. No loading. Good first thing in the morning."},
-  {id:"strength", name:"Strength", note:"Short warm-up, the lifting, and a quick cool-down. Good for the afternoon."}
+  {id:"strength", name:"Strength", note:"Short warm-up, the lifting, and a quick cool-down. Good for the afternoon."},
+  {id:"cardio", name:"Cardio", note:"Warm up on one machine, work on the next, flush on a third. Always ends with one pulling movement."}
 ];
-const EQ = [{id:"machines",name:"Cables and machines"},{id:"bench",name:"Bench + dumbbells"},{id:"smith",name:"Smith machine"},{id:"barbell",name:"Free barbell"},{id:"rower",name:"Rower"},{id:"climber",name:"Ladder climber"}];
+const EQ_GYM = [{id:"machines",name:"Cables and machines"},{id:"bench",name:"Bench + dumbbells"},{id:"smith",name:"Smith machine"},{id:"barbell",name:"Free barbell"},{id:"bar",name:"Pull-up bar"},
+  {id:"rower",name:"Rower"},{id:"elliptical",name:"Elliptical"},{id:"gymbike",name:"Gym bike"},{id:"climber",name:"Ladder climber"},{id:"tread",name:"Treadmill"}];
+const EQ_HOME = [{id:"bar",name:"Pull-up bar"},{id:"run",name:"Running"},{id:"stairs",name:"Park stairs"},{id:"peloton",name:"Peloton"},{id:"outbike",name:"Bike ride"},{id:"rope",name:"Jump rope"}];
 
 if (typeof module!=="undefined") module.exports = {POSE, build, RAW};
 
@@ -808,20 +1353,47 @@ if (typeof document!=="undefined") (function(){
   const KEY = "the-series-v1";
   const dkey = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
   const today = () => dkey(new Date());
-  let st = { phase:1, rec:"yellow", type:"full", loc:"home", eq:{machines:true,bench:true,smith:true,barbell:false,rower:true,climber:true},
-    dbOn:false, heavy:30, light:20, gymHeavy:40, gymLight:30, gates:{1:[],2:[],3:[],4:[]}, log:[], sound:0, lifts:{}, aim:{}, abOv:null, secOv:null };
+  let st = { phase:1, rec:"yellow", type:"full", loc:"home", eq:{machines:true,bench:true,smith:true,barbell:false,bar:true,rower:true,elliptical:true,gymbike:true,climber:true,tread:true,run:true,stairs:true,peloton:true,outbike:true,rope:true},
+    dbOn:false, skin:'signal', layout:'plate', finisher:false, heavy:30, light:20, gymHeavy:40, gymLight:30, gates:{1:[],2:[],3:[],4:[]}, log:[], sound:0, lifts:{}, aim:{}, abOv:null, secOv:null };
   try { const s = JSON.parse(localStorage.getItem(KEY)||"null"); if (s) st = {...st, ...s, gates:{...st.gates, ...(s.gates||{})}, eq:{...st.eq, ...(s.eq||{})}, lifts:{...(s.lifts||{})}, aim:{...(s.aim||{})}}; } catch(e){}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} };
   const reduced = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const SKINS=[
+    {id:"plain",   name:"Plain",     note:"Sage and ink. Follows your phone's light or dark setting.", sw:["#EDF0EB","#1B2420","#3447B0"]},
+    {id:"pit",     name:"Pit Wall",  note:"Race timing tower. Gunmetal, start-light red, condensed numerals. Built for the lifting half.", sw:["#10151A","#EEF3F7","#FF2D20"]},
+    {id:"timecode",name:"Timecode",  note:"Edit-suite slate with a record-amber accent and monospaced timing figures. Everything reads as a running clock.", sw:["#22262B","#D9DFE5","#FFA319"]},
+    {id:"sodium",  name:"Sodium",    note:"Streetlight orange on warm asphalt black. The clock glows. Easiest of the dark skins on tired eyes.", sw:["#16130F","#F3E7D5","#FF8A1E"]},
+    {id:"mysore",  name:"Mysore",    note:"Turmeric ground, vermilion ink, heavy serif. Built for the morning flow.", sw:["#E8CE92","#2B1D12","#BC3A1C"]},
+    {id:"riso",    name:"Riso",      note:"Risograph print. Newsprint grey, white cards with hard offset shadows, fluorescent pink and blue.", sw:["#EFECE3","#171717","#FF3D8A"]},
+    {id:"cyano",   name:"Cyanotype", note:"Prussian blue ground, paper-white marks, square line ends. The figure reads like a blueprint.", sw:["#17496E","#EEF6FB","#A3C4DA"]},
+    {id:"sumi",    name:"Sumi",      note:"Ink on raw paper. Thicker brush strokes for the figure, one seal-red accent, nothing else.", sw:["#DEDCD2","#15140E","#B32317"]},
+    {id:"neon",    name:"Neon",      note:"Hot pink on deep purple-black, everything glowing. The loudest of the twelve.", sw:["#150A1F","#F7EAFF","#FF2E88"]},
+    {id:"tarmac",  name:"Tarmac",    note:"Asphalt grey with hi-vis yellow. The progress bar is a dashed road marking.", sw:["#2E302F","#EDEEEC","#E8F03A"]},
+    {id:"topo",    name:"Topo",      note:"Contour-map sage and paper with a burnt-orange contour line. Prospect Park on a trail map.", sw:["#DCE3D2","#26321E","#A8521E"]},
+    {id:"signal",  name:"Signal",    note:"Swiss poster. Pure white, pure black, one signal red, zero rounded corners.", sw:["#FFFFFF","#000000","#E2231A"]}
+  ];
+  const LAYOUTS=[
+    {id:"stacked", name:"Stacked", note:"Centered column, rounded cards, figure on top. The safe one."},
+    {id:"plate",   name:"Plate",   note:"Technical drawing. The figure sits in a framed panel with corner ticks, the clock burns into the top corner, and the metadata becomes a ruled spec strip. No cards anywhere."},
+    {id:"tower",   name:"Tower",   note:"The clock is the page — numerals bleed off the left edge at half the screen width. Everything else is small caps hung on hairlines, with the figure dropped underneath."},
+    {id:"bleed",   name:"Bleed",   note:"The figure is blown up past the edges of the screen and faded back, with the type sitting straight on top of it. Poster, not app."},
+    {id:"split",   name:"Split",   note:"A hard horizontal cut. The figure sits in an inverted block up top with the clock reversed out of it; everything else lives on the ground below."},
+    {id:"quiet",   name:"Quiet",   note:"Almost nothing. Centred name, a light-weight clock, and a faint figure at the bottom. No frames, no boxes, a lot of air."}
+  ];
+  function applySkin(){ document.documentElement.setAttribute("data-skin", st.skin||"plain");
+    document.documentElement.setAttribute("data-layout", st.layout||"stacked");
+    const m=document.querySelector('meta[name="theme-color"]'); if (m) m.remove();
+    const c=getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+    const t=document.createElement("meta"); t.name="theme-color"; t.content=c||"#EDF0EB"; document.head.appendChild(t); }
   const loggedToday = () => st.log.filter(l=>l.d===today());
   const isSecond = () => (st.secOv && st.secOv.d===today()) ? st.secOv.v : loggedToday().length>0;
-  const gymCount = () => st.log.filter(l=>l.l==="gym" && l.t!=="yoga").length;
+  const gymCount = () => st.type==="cardio" ? st.log.filter(l=>l.t==="cardio").length : st.log.filter(l=>l.l==="gym" && l.t!=="yoga").length;
   const abNext = () => (st.abOv!==null && st.abOv!==undefined) ? st.abOv : (gymCount() % 2);
-  const opts = rec => ({phase:st.phase, rec, type:st.type, loc:st.loc, eq:st.eq, dbOn:st.dbOn, ab:abNext(),
+  const opts = rec => ({phase:st.phase, rec, type:st.type, loc:st.loc, eq:st.eq, dbOn:st.dbOn, ab:abNext(), finisher:!!st.finisher,
     W:{heavy:st.heavy||0, light:st.light||0, gymHeavy:st.gymHeavy||0, gymLight:st.gymLight||0}, second:isSecond()});
   const sessionFor = rec => build(opts(rec));
   const total = steps => steps.reduce((a,s)=>a+s.dur,0);
-  const TYPE_NAME = {full:"full series", yoga:"yoga", strength:"strength"};
+  const TYPE_NAME = {full:"full series", yoga:"yoga", strength:"strength", cardio:"cardio"};
 
   function seg(el, items, current, onPick){
     el.innerHTML="";
@@ -842,6 +1414,7 @@ if (typeof document!=="undefined") (function(){
 
     seg($("typeSeg"), TYPES, st.type, id=>{ st.type=id; save(); renderHome(); });
     $("typeNote").textContent = TYPES.find(t=>t.id===st.type).note;
+    $("finBox").hidden = true;
     const sec = isSecond(), lt = loggedToday();
     $("secOn").checked = sec;
     $("secNote").textContent = sec
@@ -849,16 +1422,20 @@ if (typeof document!=="undefined") (function(){
       : "First thing today. Full warm-up.";
 
     seg($("locSeg"), [{id:"home",name:"Home"},{id:"gym",name:"Work gym"}], st.loc, id=>{ st.loc=id; save(); renderHome(); });
-    const pills=$("eqPills"); pills.innerHTML=""; pills.hidden = st.loc!=="gym";
-    EQ.forEach(e=>{
+    const pills=$("eqPills"); pills.innerHTML=""; pills.hidden=false;
+    (st.loc==="gym" ? EQ_GYM : EQ_HOME).forEach(e=>{
       const l=document.createElement("label");
       l.innerHTML=`<input type="checkbox" ${st.eq[e.id]?"checked":""}><span class="tick"></span>${e.name}`;
       l.querySelector("input").onchange=ev=>{ st.eq[e.id]=ev.target.checked; save(); renderHome(); };
       pills.appendChild(l);
     });
-    $("eqNote").textContent = st.loc==="gym"
-      ? "Tick what you can actually get to. Anything busy, hit Swap mid-session and it reshuffles."
-      : "Mat, your dumbbells, and a wall.";
+    const av=(st.loc==="gym"?["rower","elliptical","gymbike","climber","tread"]:["run","stairs","peloton","outbike","rope"]).filter(k=>st.eq[k]);
+    $("eqNote").textContent = st.type==="cardio"
+      ? (av.length>1 ? `Cardio rotates through these, a different one each session. Right now: ${av.map(k=>CARDIO[k].name.toLowerCase()).join(", ")}.`
+         : av.length ? `Only ${CARDIO[av[0]].name.toLowerCase()} is ticked, so every block runs on it. Tick more to mix.`
+         : "Nothing ticked, so cardio falls back to capoeira and bodyweight conditioning.")
+      : st.loc==="gym" ? "Tick what you can actually get to. Anything busy, hit Swap mid-session and it reshuffles."
+      : "Mat, your dumbbells, a wall, and whatever you've ticked above.";
 
     const rc=$("rec"); rc.innerHTML="";
     RECS.forEach(r=>{
@@ -886,8 +1463,12 @@ if (typeof document!=="undefined") (function(){
       ? (st.dbOn ? "Phase 1 full and yoga sessions only load the glute bridge. On purpose." : "Off swaps in bodyweight versions of every loaded move.")
       : (st.dbOn ? "Heavy pair for squats, rows, deadlifts and holds. Light pair for presses." : "Off swaps in bodyweight versions of every loaded move.");
     const ab=abNext(), abr=$("abRow");
-    abr.hidden = !(atGym && st.type!=="yoga");
-    if (!abr.hidden) $("abText").innerHTML = ab ? "Next: <b>Session B</b> — hinge and pull lead" : "Next: <b>Session A</b> — squat and press lead";
+    abr.hidden = !((atGym || st.type==="cardio") && st.type!=="yoga");
+    if (st.type==="cardio"){
+      abr.hidden = av.length<2;
+      if (!abr.hidden){ const sp=av.slice((ab*2)%av.length).concat(av.slice(0,(ab*2)%av.length));
+        $("abText").innerHTML = `Next: <b>${sp.slice(0,3).map(k=>CARDIO[k].name).join(" → ")}</b>`; }
+    } else if (!abr.hidden) $("abText").innerHTML = ab ? "Next: <b>Session B</b> — hinge and pull lead" : "Next: <b>Session A</b> — squat and press lead";
 
     const pn=$("planNote");
     if (st.rec==="red" && st.type==="strength"){ pn.hidden=false; pn.textContent = st.loc==="gym" && (st.eq.rower||st.eq.climber) ? "Red day. Lifting is off. Easy cardio and mobility instead." : "Red day. Lifting is off. This is a mobility session."; }
@@ -931,6 +1512,15 @@ if (typeof document!=="undefined") (function(){
       el.title = es.length ? es.map(e=>`${TYPE_NAME[e.t]||"session"}, ${e.m} min`).join("; ") : key;
       wk.appendChild(el);
     }
+    seg($("laySeg"), LAYOUTS, st.layout||"stacked", id=>{ st.layout=id; save(); applySkin(); renderHome(); });
+    $("layNote").textContent = (LAYOUTS.find(l=>l.id===(st.layout||"stacked"))||LAYOUTS[0]).note;
+    const sk=$("skins"); sk.innerHTML="";
+    SKINS.forEach(k=>{ const b=document.createElement("button"); b.className="skinbtn"; b.type="button";
+      b.setAttribute("aria-pressed", String((st.skin||"plain")===k.id));
+      b.innerHTML=`<span class="sw">${k.sw.map(c=>`<span style="background:${c}"></span>`).join("")}</span><b>${k.name}</b>`;
+      b.onclick=()=>{ st.skin=k.id; save(); applySkin(); renderHome(); };
+      sk.appendChild(b); });
+    $("skNote").textContent = (SKINS.find(k=>k.id===(st.skin||"plain"))||SKINS[0]).note;
     fillManDay();
     $("manNote").textContent = `Logs as ${TYPE_NAME[st.type]}, Phase ${st.phase}, ${st.loc==="gym"?"work gym":"home"}. Change those above first if that's not what you did.`;
     $("weekNote").textContent = `Rolling week, oldest on the left. Today is ${new Date().toLocaleDateString(undefined,{weekday:"long"})}, on the right.`;
@@ -955,6 +1545,7 @@ if (typeof document!=="undefined") (function(){
     $("manMins").value=""; renderHome();
   };
   $("secOn").onchange=e=>{ st.secOv={d:today(), v:e.target.checked}; save(); renderHome(); };
+  $("finOn").onchange=e=>{ st.finisher=e.target.checked; save(); renderHome(); };
   $("dbOn").onchange=e=>{ st.dbOn=e.target.checked; save(); renderHome(); };
   $("wHeavy").onchange=e=>{ const v=Math.max(0,parseInt(e.target.value)||0); if (st.loc==="gym") st.gymHeavy=v; else st.heavy=v; save(); renderHome(); };
   $("wLight").onchange=e=>{ const v=Math.max(0,parseInt(e.target.value)||0); if (st.loc==="gym") st.gymLight=v; else st.light=v; save(); renderHome(); };
@@ -994,12 +1585,39 @@ if (typeof document!=="undefined") (function(){
 
   /* ---------- Sound + voice ---------- */
   let AC=null; const SOUND_LABELS=["Voice on","Beeps only","Silent"];
-  function beep(freq=660, dur=.12, vol=.18){
+  function ctx(){ try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if (AC.state==="suspended") AC.resume(); return AC; }catch(e){ return null; } }
+  /* one voice. when = seconds from now. shape: 'blip' hard attack, 'bell' soft */
+  function tone(freq, dur, vol, when=0, shape="bell", glideTo=0){
     if (st.sound===2) return;
-    try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if (AC.state==="suspended") AC.resume();
-      const o=AC.createOscillator(), g=AC.createGain(); o.type="sine"; o.frequency.value=freq;
-      g.gain.setValueAtTime(vol,AC.currentTime); g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+dur);
-      o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime+dur+.02); }catch(e){}
+    const a=ctx(); if (!a) return;
+    const t0=a.currentTime+when;
+    const o=a.createOscillator(), g=a.createGain(), f=a.createBiquadFilter();
+    o.type = shape==="blip" ? "square" : "sine";
+    o.frequency.setValueAtTime(freq, t0);
+    if (glideTo) o.frequency.exponentialRampToValueAtTime(glideTo, t0+dur);
+    f.type="lowpass"; f.frequency.setValueAtTime(shape==="blip"?2600:1800, t0); f.Q.value=.7;
+    g.gain.setValueAtTime(.0001, t0);
+    g.gain.exponentialRampToValueAtTime(vol, t0 + (shape==="blip"?.004:.02));
+    g.gain.exponentialRampToValueAtTime(.0001, t0+dur);
+    o.connect(f); f.connect(g); g.connect(a.destination);
+    o.start(t0); o.stop(t0+dur+.03);
+  }
+  const beep = (f=660,d=.12,v=.18)=>tone(f,d,v,0,"bell");
+  const CUE = {
+    tick:  ()=>{ tone(760,.085,.20,0,"blip"); },            /* 3 .. 2 .. 1 */
+    go:    ()=>{ tone(1180,.50,.26,0,"blip"); tone(1770,.50,.09,.004,"bell"); },  /* beeeeep */
+    setEnd:()=>{ tone(784,.16,.13,0,"bell"); tone(523,.34,.11,.11,"bell"); },     /* soft two-note down */
+    step:  ()=>{ tone(880,.10,.10,0,"bell"); },             /* quiet move-on */
+    hold:  ()=>{ tone(560,.07,.09,0,"bell"); },             /* subtle hold countdown */
+    hard:  ()=>{ tone(990,.14,.18,0,"blip"); },
+    easy:  ()=>{ tone(600,.14,.14,0,"bell"); },
+    finish:()=>{ tone(659,.18,.16,0,"bell"); tone(988,.45,.16,.17,"bell"); }
+  };
+  function lights(n){ /* n = 0..5 lit, -1 = GO (all out), null = hide */
+    const el=$("lights"); if (!el) return;
+    el.hidden = (n===null || n===undefined);
+    el.classList.toggle("go", n===-1);
+    [...el.children].forEach((d,i)=>d.classList.toggle("on", n>0 && i<n));
   }
   function say(text){
     if (st.sound!==0 || !("speechSynthesis" in window)) return;
@@ -1009,7 +1627,7 @@ if (typeof document!=="undefined") (function(){
   $("pSound").onclick=()=>{ st.sound=(st.sound+1)%3; save(); renderSound(); if(st.sound===2 && "speechSynthesis" in window) speechSynthesis.cancel(); };
 
   /* ---------- Player ---------- */
-  const P={ sheet:false, feel:null, steps:[], i:0, t:0, run:false, last:0, sub:-1, lastSec:-1, total:0, raf:0, lock:null, type:"full", loc:"home" };
+  const P={ sheet:false, feel:null, lastCue:null, steps:[], i:0, t:0, run:false, last:0, sub:-1, lastSec:-1, total:0, raf:0, lock:null, type:"full", loc:"home" };
   function subAt(step,t){ let c=0; for(let j=0;j<step.seq.length;j++){ c+=step.seq[j].t; if (t<c) return j; } return step.seq.length-1; }
   function announce(){
     const s=P.steps[P.i], extra=s.chips.filter(c=>/side|reps|Round|rounds/.test(c)).join(", ");
@@ -1034,7 +1652,7 @@ if (typeof document!=="undefined") (function(){
     P.sub=-1; P.lastSec=-1;
   }
   $("pTrackIn").onchange=e=>{ const s=P.steps[P.i]; if (!s||!s.track) return; const v=parseFloat(e.target.value); if (v>0) st.lifts[s.track]=v; else delete st.lifts[s.track]; save(); };
-  function go(i){ if (i>=P.steps.length){ finish(); return; } P.i=Math.max(0,i); P.t=0; showStep(); beep(880,.18); announce(); }
+  function go(i){ if (i>=P.steps.length){ finish(); return; } P.i=Math.max(0,i); P.t=0; P.lastCue=null; lights(null); showStep(); if (!(P.steps[P.i].block==="strength"&&!P.steps[P.i].isRest)) CUE.step(); announce(); }
   function frame(now){
     const dt=P.last?Math.min(.25,(now-P.last)/1000):0; P.last=now;
     if (P.run && !P.sheet){ P.t+=dt; if (P.t>=P.steps[P.i].dur){ advance(); if ($("player").hidden) return; } }
@@ -1042,15 +1660,28 @@ if (typeof document!=="undefined") (function(){
     if (j!==P.sub){
       const prev=P.sub; P.sub=j; const q=cs.seq[j]; setPose(q.pose);
       $("pSub").textContent = cs.seq.length>1 || q.label!=="Hold" ? q.label : "";
-      if (q.b && prev!==-1 && P.run) beep(q.label.includes("hard")?990:600,.15,.16);
+      if (q.b && prev!==-1 && P.run){ q.label.includes("hard") ? CUE.hard() : CUE.easy(); }
+      /* lights out, GO — the moment the lead-in ends and rep 1 starts */
+      if (P.run && prev===0 && j===1 && cs.block==="strength" && cs.seq[0].label==="Get set"){
+        CUE.go(); lights(-1); P.lastCue=null; setTimeout(()=>lights(null), 650);
+      }
     }
     const q=cs.seq[P.sub];
     drawFigure(now, q.flip, cs.db, cs.plate);
     const rem=Math.max(0,Math.ceil(cs.dur-P.t));
+
+    /* --- race start: count down the last 3s of the lead-in, GO on the first rep --- */
+    const racing = cs.block==="strength" && !cs.isRest && P.sub===0 && cs.seq[0].label==="Get set";
+    if (racing && P.run){
+      const cdRem = cs.seq[0].t - P.t, n = Math.ceil(cdRem);
+      if (n!==P.lastCue && n<=3 && n>=1){ P.lastCue=n; CUE.tick(); lights(n===3?2:n===2?4:5); }
+      if (cdRem>3.05) lights(null);
+    } else if (!racing && P.lastCue!==null && !P.sheet){ /* cleared by the GO handler */ }
+
     if (rem!==P.lastSec){
       P.lastSec=rem;
       $("pTime").textContent = rem>=60 ? Math.floor(rem/60)+":"+String(rem%60).padStart(2,"0") : String(rem);
-      if (P.run && rem<=3 && rem>0) beep(520,.08,.12);
+      if (P.run && rem<=3 && rem>0 && !racing && !cs.isRest && cs.block!=="strength") CUE.hold();
       let el=0; for(let k=0;k<P.i;k++) el+=P.steps[k].dur; el+=P.t;
       $("pBar").style.width=(100*el/P.total).toFixed(2)+"%";
       $("pLeft").textContent=Math.max(0,Math.round((P.total-el)/60))+" min";
@@ -1062,7 +1693,7 @@ if (typeof document!=="undefined") (function(){
   function advance(){ if (unitEnds(P.i)) openSheet(); else go(P.i+1); }
   const retotal = () => { P.total = total(P.steps); P.lastSec=-1; };
   const INC = k => /Back squat|Deadlift|Bench|Barbell|Overhead press|Leg press|Lat pulldown|cable row/.test(k) ? 10 : 5;
-  function sheetShow(on){ P.sheet=on; $("sheet").hidden=!on; if (on){ P.run=false; if ("speechSynthesis" in window) speechSynthesis.cancel(); } else { setRun(true); } }
+  function sheetShow(on){ P.sheet=on; $("sheet").hidden=!on; if (on){ P.run=false; P.lastCue=null; lights(null); if ("speechSynthesis" in window) speechSynthesis.cancel(); } else { setRun(true); } }
   function adviceFor(cur, feel){
     const key=cur.track, w = key ? st.lifts[key] : null;
     if (!feel) return "";
@@ -1146,7 +1777,7 @@ if (typeof document!=="undefined") (function(){
     if (cur.track){ $("shTrackIn").value=st.lifts[cur.track]||""; $("shTrackIn").onchange=e=>{ const v=parseFloat(e.target.value); if (v>0) st.lifts[cur.track]=v; else delete st.lifts[cur.track]; save(); if (P.feel) $("shAdvice").innerHTML=adviceFor(cur,P.feel); }; }
     $("shRest").checked=false;
     renderNext(cur);
-    sheetShow(true); beep(700,.15); say("Set done. How did that feel?");
+    sheetShow(true); CUE.setEnd(); say("Set done. How did that feel?");
   }
   function openSwap(){
     const cur=P.steps[P.i];
@@ -1177,7 +1808,7 @@ if (typeof document!=="undefined") (function(){
   }
   $("pSwap").onclick=()=>openSwap();
 
-  function setRun(r){ P.run=r; $("pPlay").textContent=r?"Pause":"Resume"; if(!r && "speechSynthesis" in window) speechSynthesis.cancel(); }
+  function setRun(r){ P.run=r; $("pPlay").textContent=r?"Pause":"Resume"; if (!r) lights(null); if(!r && "speechSynthesis" in window) speechSynthesis.cancel(); }
   async function wake(on){ try{ if (on && "wakeLock" in navigator) P.lock=await navigator.wakeLock.request("screen"); else if (!on && P.lock){ await P.lock.release(); P.lock=null; } }catch(e){} }
   document.addEventListener("visibilitychange",()=>{ if (!document.hidden && !$("player").hidden && P.run) wake(true); });
 
@@ -1188,7 +1819,7 @@ if (typeof document!=="undefined") (function(){
     setRun(true); go(0); wake(true);
     cancelAnimationFrame(P.raf); P.raf=requestAnimationFrame(frame);
   }
-  function stop(){ cancelAnimationFrame(P.raf); P.run=false; P.sheet=false; $("sheet").hidden=true; wake(false); if ("speechSynthesis" in window) speechSynthesis.cancel(); }
+  function stop(){ cancelAnimationFrame(P.raf); P.run=false; P.sheet=false; P.lastCue=null; lights(null); $("sheet").hidden=true; wake(false); if ("speechSynthesis" in window) speechSynthesis.cancel(); }
   function logSession(mins, partial, day){
     const d=day||today();
     st.log.push({d, p:st.phase, r:st.rec, m:mins, t:P.type||st.type, l:P.loc||st.loc, partial:!!partial});
@@ -1211,7 +1842,7 @@ if (typeof document!=="undefined") (function(){
       : P.type==="yoga" ? `${mins} minutes of Phase ${st.phase} yoga. Logged. If you lift later, the app will know it's your second session.`
       : P.type==="strength" ? `${mins} minutes of strength. Logged, along with any weights you entered. Beat one of them next time.`
       : `${mins} minutes of Phase ${st.phase}. Logged. If a gate felt close today, test it next time you're green.`;
-    beep(660,.15); setTimeout(()=>beep(990,.25),170); say("Practice done.");
+    CUE.finish(); say("Practice done.");
   }
   $("startBtn").onclick=()=>{ try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); AC.resume(); }catch(e){} start(); };
   $("pPlay").onclick=()=>{ setRun(!P.run); if (P.run) wake(true); };
@@ -1262,6 +1893,7 @@ if (typeof document!=="undefined") (function(){
     r.readAsText(f);
   };
   if ("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+  applySkin();
   renderHome();
 })();
 
