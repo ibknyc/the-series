@@ -408,6 +408,8 @@ section{margin-bottom:34px}
 .lights{display:flex;gap:7px;justify-content:center;margin:6px 0 2px}
 .lights i{width:16px;height:16px;border-radius:50%;background:var(--line);border:1px solid var(--line);transition:background .06s linear,box-shadow .06s linear}
 .lights i.on{background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.clock.cd{color:var(--accent)}
+.clock.over{color:var(--ink-2)}
 .lights.go i{background:var(--green);box-shadow:0 0 16px var(--green)}
 @media (min-width:860px) and (min-height:520px){ .lights{justify-content:flex-start} }
 
@@ -687,6 +689,24 @@ section{margin-bottom:34px}
 #done button{margin-top:22px;background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:15px 26px;font-family:var(--display);font-weight:700;font-size:18px}
 
 @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+.wgrid.tri{grid-template-columns:repeat(3,minmax(0,1fr))}
+.wgrid.tri .wfield input{font-size:20px}
+.feel.rir{grid-template-columns:repeat(5,1fr)}
+.feel.rir button{font-family:var(--display);font-size:20px;padding:10px 4px}
+.shfields{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.shfields .track{margin-top:0}
+.rpeh{font-family:var(--display);font-size:20px;margin:30px 0 4px}
+.rpekey{font-size:14px!important;margin:0 0 12px}
+.rpegrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.rpegrid button{background:var(--card);border:2px solid transparent;border-radius:10px;padding:12px 0;font-family:var(--display);font-weight:700;font-size:18px;margin:0!important;color:var(--ink)}
+.rpegrid button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+#done button.ghost{display:block;background:none;color:var(--ink);border:2px solid var(--ink);margin-top:14px}
+#doneNotes{display:block;width:100%;margin-top:14px;border:0;border-radius:12px;background:var(--card);padding:12px 14px;font:inherit;font-size:16px;color:var(--ink);resize:vertical}
+.gtest{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 0 34px;font-size:14px}
+.gtest input{flex:1;min-width:140px;border:0;background:var(--bg);border-radius:8px;padding:8px 10px;font-size:15px;color:var(--ink)}
+.gtest button,.glink{background:none;border:2px solid var(--ink);border-radius:999px;padding:5px 12px;font-weight:700;font-size:13px;color:var(--ink)}
+.glink{border:0;padding:4px 0 0 34px;text-decoration:underline;color:var(--ink-2);font-weight:400}
+.glast{display:block;font-size:13px;color:var(--ink-2)}
 .seg{display:grid;grid-template-columns:repeat(var(--n,4),1fr);background:var(--card);border-radius:14px;padding:4px;gap:4px}
 #laySeg{grid-template-columns:repeat(3,1fr)}
 #typeSeg{grid-template-columns:repeat(2,1fr)}
@@ -732,6 +752,12 @@ section{margin-bottom:34px}
     <h2 id="tyH">Session</h2>
     <div class="seg" id="typeSeg"></div>
     <p class="segnote" id="typeNote"></p>
+    <div class="secondbox" id="stairBox" hidden>
+      <div class="switchrow"><label for="bikeTo">Citi Bike to the park</label><input type="checkbox" class="switch" id="bikeTo" role="switch"></div>
+      <div class="switchrow" style="margin-top:12px"><label for="bikeHome">Citi Bike home</label><input type="checkbox" class="switch" id="bikeHome" role="switch"></div>
+      <div class="switchrow" style="margin-top:12px"><label for="stOn">Moves at the top of each stair</label><input type="checkbox" class="switch" id="stOn" role="switch"></div>
+      <p class="wnote" id="stairNote"></p>
+    </div>
     <div class="secondbox" id="finBox" hidden>
       <div class="switchrow">
         <label for="finOn">Finish with two lifts</label>
@@ -801,7 +827,7 @@ section{margin-bottom:34px}
     <p class="segnote" id="weekNote" style="margin:0 0 10px"></p>
     <div class="week" id="week"></div>
     <p class="lognote" id="logNote"></p>
-    <div class="manual"><span>Did it without the timer?</span><select id="manDay" aria-label="Day"></select><input id="manMins" type="number" inputmode="numeric" min="1" max="240" placeholder="min"><button id="manBtn">Log it</button></div>
+    <div class="manual"><span>Did it without the timer?</span><select id="manDay" aria-label="Day"></select><input id="manTime" type="time" aria-label="Start time" style="width:auto"><input id="manMins" type="number" inputmode="numeric" min="1" max="240" placeholder="min" aria-label="Minutes"><button id="manBtn">Log it</button><button id="skipBtn">Log a skipped day</button></div>
     <p class="lognote" id="manNote" style="font-size:14px"></p>
     <div class="manual" style="margin-top:16px">
       <button id="testSnd">Test sound</button>
@@ -814,14 +840,16 @@ section{margin-bottom:34px}
       </div>
       <p class="wnote">A rising tone on each inhale, a falling one on each exhale, a soft tap on every other pose change. Lets you follow a sun salutation with your eyes closed.</p>
     </div>
-    <p class="lognote" id="sndNote" style="font-size:14px">If you hear the voice but no beeps, flip your phone's ring/silent switch to ring and tap Test sound again.</p>
+    <p class="lognote" id="sndNote" style="font-size:14px">Tap Test sound once after each update. You should hear three ticks and a GO.</p>
     <div class="manual" style="margin-top:16px">
-      <button id="expBtn">Export data</button>
-      <button id="impBtn">Import data</button>
+      <button id="csvBtn">Export for analysis</button>
+      <button id="lastBtn">Export last session</button>
+      <button id="expBtn">Back up</button>
+      <button id="impBtn">Restore backup</button>
       <input id="impFile" type="file" accept="application/json,.json" hidden>
     </div>
-    <p class="lognote" id="ioNote" style="font-size:14px">Everything lives on this device. Export now and then so a wiped browser doesn't cost you the log.</p>
-    <p class="lognote" id="verNote" style="font-size:12px;opacity:.6"></p>
+    <p class="lognote" id="ioNote" style="font-size:14px">Export for analysis gives you a .zip of CSVs (sessions, sets, cardio, gates) with your full history, for matching to WHOOP. Back up saves one file you can restore from. Everything lives on this device, so back up now and then.</p>
+    <div class="manual" style="margin-top:16px"><span id="verNote" style="font-size:12px;opacity:.7"></span><button id="fuBtn">Force update</button></div>
   </section>
 
   <div class="startbar"><button id="startBtn">Start</button></div>
@@ -840,8 +868,8 @@ section{margin-bottom:34px}
       <h2 class="pname" id="pName"></h2>
       <p class="psub" id="pSub"></p>
       <div class="chips" id="pChips"></div>
-      <button class="swapbtn" id="pSwap" hidden>Station taken? Swap</button><br>
-      <label class="track" id="pTrack" hidden><span>Weight used</span><input id="pTrackIn" type="number" inputmode="decimal" step="2.5" min="0"><span>lb</span></label>
+      <button class="swapbtn" id="pSwap" hidden>Swap</button><br>
+      <label class="track" id="pTrack" hidden><span>Weight used</span><input id="pTrackIn" type="number" inputmode="decimal" step="2.5" min="0"><span id="pTrackU">lb</span></label>
       <div class="lights" id="lights" hidden aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
       <div class="clock" id="pTime" aria-live="off"></div>
       <p class="pcue" id="pCue"></p>
@@ -861,8 +889,12 @@ section{margin-bottom:34px}
     <p class="shkick" id="shKick"></p>
     <h3 id="shTitle"></h3>
     <div id="shRate">
-      <div class="feel" id="shFeel"></div>
-      <label class="track" id="shTrack" hidden><span>Weight used</span><input id="shTrackIn" type="number" inputmode="decimal" step="2.5" min="0"><span>lb</span></label>
+      <h4 style="margin-top:0">Reps left in the tank</h4>
+      <div class="feel rir" id="shFeel"></div>
+      <div class="shfields">
+        <label class="track" id="shReps"><span id="shRepsLab">Reps done</span><input id="shRepsIn" type="number" inputmode="numeric" min="0" max="300"></label>
+        <label class="track" id="shTrack" hidden><span>Weight</span><input id="shTrackIn" type="number" inputmode="decimal" step="2.5" min="0"><span id="shTrackU">lb</span></label>
+      </div>
       <p class="shadvice" id="shAdvice"></p>
     </div>
     <h4 id="shNextH">What's next?</h4>
@@ -875,6 +907,11 @@ section{margin-bottom:34px}
 <section id="done" hidden>
   <h1>Practice done.</h1>
   <p id="doneNote"></p>
+  <h2 class="rpeh">How hard was the whole session?</h2>
+  <p class="rpekey">1 barely working · 5 moderate · 7 hard · 10 everything you had</p>
+  <div class="rpegrid" id="rpeGrid"></div>
+  <textarea id="doneNotes" rows="3" placeholder="Notes, optional. What felt off, what you swapped, how you slept."></textarea>
+  <button id="doneExp" type="button" class="ghost">Export this session</button>
   <button id="doneBtn">Back to the series</button>
 </section>
 
@@ -1013,12 +1050,12 @@ function hold(name, pose, secs, block, cue, o={}) {
   /* strength holds get the same lead-in as a lifted set: time to get into
      position, counted down, so the hold starts on the GO */
   const lead = block==="strength" ? [T(pose, o.setup||3, "Get set", o.flip)] : [];
-  return step(name, block, cue, [...lead, T(pose, secs, o.label||"Hold", o.flip)], {...o, chips:[...(o.chips||[]), fmtSecs(secs)]});
+  const r = step(name, block, cue, [...lead, T(pose, secs, o.label||"Hold", o.flip)], {...o, chips:[...(o.chips||[]), fmtSecs(secs)]}); r.secs=secs; return r;
 }
 function reps(name, a, b, n, tempo, block, cue, o={}) {
   const f = !!o.flip, seq = [T(a, o.setup||3, "Get set", f)];
   for (let i=1;i<=n;i++){ seq.push(T(b, tempo/2, `Rep ${i} of ${n}`, f), T(a, tempo/2, `Rep ${i} of ${n}`, f)); }
-  return step(name, block, cue, seq, {...o, chips:[`${n} reps`, ...(o.chips||[])]});
+  const r = step(name, block, cue, seq, {...o, chips:[`${n} reps`, ...(o.chips||[])]}); r.reps=n; return r;
 }
 function sided(make){ return [make(false,"Right side"), make(true,"Left side")]; }
 function repeat(n, fn){ const o=[]; for(let i=0;i<n;i++) o.push(...fn(i)); return o; }
@@ -1137,7 +1174,9 @@ const CARDIO = {
   stairs:    {name:"Park stairs",    a:"stairA",  b:"stairB",   tempo:1.5, gym:0},
   peloton:   {name:"Peloton",        a:"bikeA",   b:"bikeB",    tempo:1.8, gym:0},
   outbike:   {name:"Bike ride",      a:"bikeA",   b:"bikeB",    tempo:1.8, gym:0},
-  rope:      {name:"Jump rope",      a:"ropeA",   b:"ropeB",    tempo:0.9, gym:0}
+  rope:      {name:"Jump rope",      a:"ropeA",   b:"ropeB",    tempo:0.9, gym:0},
+  citibike:  {name:"Citi Bike",      a:"bikeA",   b:"bikeB",    tempo:1.8, gym:0},
+  walk:      {name:"Walking",        a:"runA",    b:"runB",     tempo:2.6, gym:0}
 };
 const MNAME = k => (CARDIO[k]||{}).name || k;
 function cardioSeq(m, secs, tempoMul, label, beepFirst){
@@ -1146,12 +1185,74 @@ function cardioSeq(m, secs, tempoMul, label, beepFirst){
   while (t < secs-0.01){ const d=Math.min(tempo/2, secs-t); s.push(T(i%2?C.b:C.a, d, label, false, beepFirst && i===0)); t+=d; i++; }
   return s;
 }
-function machineEasy(m, secs, name, cue){ return step(name,"cardio",cue,cardioSeq(m,secs,1,"Easy pace"),{chips:[MNAME(m), fmtSecs(secs)]}); }
-function steady(m, secs, name, cue){ return step(name,"cardio",cue,cardioSeq(m,secs,.85,"Steady"),{chips:[MNAME(m), fmtSecs(secs)]}); }
+function machineEasy(m, secs, name, cue){ const s=step(name,"cardio",cue,cardioSeq(m,secs,1,"Easy pace"),{chips:[MNAME(m), fmtSecs(secs)]}); s.mach=m; s.zone="Z1"; return s; }
+function steady(m, secs, name, cue){ const s=step(name,"cardio",cue,cardioSeq(m,secs,.85,"Steady"),{chips:[MNAME(m), fmtSecs(secs)]}); s.mach=m; s.zone="Z2"; return s; }
 function intervals(m, rounds, work=30, easy=30){
   const seq=[];
   for(let i=1;i<=rounds;i++) seq.push(...cardioSeq(m,work,.5,`Round ${i} of ${rounds}: hard`,true), ...cardioSeq(m,easy,1,`Round ${i} of ${rounds}: easy`,true));
-  return step("Intervals","cardio",`${work} seconds hard, ${easy} easy. Hard means you can't talk, not that your form falls apart.`,seq,{chips:[MNAME(m), `${rounds} rounds`]});
+  const s=step("Intervals","cardio",`${work} seconds hard, ${easy} easy. Hard means you can't talk, not that your form falls apart.`,seq,{chips:[MNAME(m), `${rounds} rounds`]}); s.mach=m; s.zone="Z4-5"; s.ivl=`${rounds}x${work}s/${easy}s`; return s;
+}
+/* a leg you finish by tapping. target = your last time on that leg, else a starting guess. */
+function lapStep(name, m, target, cue, done, o={}){
+  const t = (o.lapT && o.lapT[name]) || target;
+  const s=step(name,"cardio",cue,cardioSeq(m,t,o.tempo||1,o.label||name),{chips:[...(o.chips||[]), `About ${fmtSecs(t)}`]});
+  Object.assign(s,{lap:true, target:t, doneLabel:done, mod:m, zone:o.zone||"", noGap:!o.climb, climb:!!o.climb});
+  return s;
+}
+/* Prospect Park, around Lookout Hill. Four sets of stairs: front (by Center Dr),
+   back (the long one), hidden (by the Maryland Monument), small (north side).
+   Up the stairs, down the paths, never down the stairs. The small stairs are the hub:
+   every top has a path down to them, and from their top you can jog to any other stair.
+   So the loop is big stair, path down, small stairs, path over, next big stair.
+   o.stairN = stair sessions already done in this phase: each adds 2 reps, up to +6. */
+const STAIRS = {
+  front: {name:"Front stairs",  t:45,  cue:"Find a rhythm, don't sprint it.", down:75,  over:120},
+  back:  {name:"Back stairs",   t:105, cue:"The long one. Steady rhythm, short steps, eyes a few steps ahead. Drive through the whole foot.", down:60, over:90},
+  hidden:{name:"Hidden stairs", t:45,  cue:"Quick feet all the way up.", down:45, over:60}
+};
+function stairPark(o){
+  const ph=o.phase, T=o.lapT||{}, out=[], b=Math.min(3,o.stairN||0)*2, X=o.G?2:0, mv=o.stations!==false;
+  const L=(n,m,t,c,d,x={})=>lapStep(n,m,t,c,d,{...x,lapT:T});
+  const climb=(n,t,chip,cue)=>L(n,"stairs",t,cue,"At the top",{climb:true, zone:"Z4", tempo:.5, label:"Climb", chips:[chip]});
+  /* which big stairs, in order. The small stairs go between each pair. */
+  const order = [["front","back","front"], ["front","back","hidden","front"],
+                 ["front","back","hidden","back","hidden","front"], ["front","back","hidden","front","back","hidden","front"]][ph-1];
+  const moveAt = {
+    front: c => ph<=2
+      ? [reps("Incline push-ups","plank","chaturanga",8+2*(ph-1)+b+X,2.6,"strength","Hands on the stone wall at the top, body in one line, chest to the wall.",{chips:[c],setup:3})]
+      : [reps("Push-ups","plank","chaturanga",10+2*(ph-3)+b+X,2.8,"strength","Full push-ups on the landing. Knees down once the form breaks.",{chips:[c],setup:3})],
+    back: c => ph<=2
+      ? [reps("Air squats","mountain","squat",12+2*(ph-1)+b+X,2.4,"strength","Legs are hot, so stay smooth. Heels down, chest up.",{chips:[c],setup:3})]
+      : ph===3 ? sided((f,sd)=>reps("Split squats","splittop","splitsquat",8+b/2+X/2,2.8,"strength","Long stance on the flat. Back knee straight down.",{flip:f,chips:[c,sd],setup:3}))
+      : [reps("Squat jumps","mountain","squat",8+b/2+X,2,"strength","Land soft and quiet, sink straight into the next one.",{chips:[c],setup:3})],
+    hidden: c => [reps("Walking lunges","splittop","splitsquat",[12,16,20,20][ph-1]+b+X,2.4,"strength","On the flat at the top. Long steps, back knee kisses the ground, keep walking.",{chips:[c],setup:3,unitWord:"steps"})],
+    small: c => ph===1 ? [ginga(30)] : ph===2 ? [ginga(24), cocorinha()] : ph===3 ? [ginga(24), esquiva()] : [ginga(24), esquiva(), ...negativa()]
+  };
+  if (o.bikeTo){
+    out.push(L("Citi Bike to the park","citibike",420,"Easy spin. Dock as close to the front stairs as you can.","Docked",{zone:"Z1"}));
+    out.push(L("Easy jog to the front stairs","run",300,"Five easy minutes so the legs are warm before the first climb.","At the front stairs",{zone:"Z2"}));
+  } else out.push(L("Jog to the park","run",900,"Easy enough to talk, under about 140. Last time your heart rate hit 150 on the way in, so save it for the stairs.","At the front stairs",{zone:"Z2"}));
+  const nSmall = order.length-1, capoAt = Math.floor((nSmall-1)/2);
+  order.forEach((k,i)=>{
+    const S=STAIRS[k], c=`Climb ${i+1} of ${order.length}`;
+    out.push(climb(S.name, S.t, c, S.cue));
+    if (mv && (k!=="front" || i===0 || i===order.length-1)) out.push(...moveAt[k](S.name.replace(" stairs","")));
+    if (i===order.length-1) return;
+    /* down the path to the hub, up the small stairs, over to the next one */
+    const nx=STAIRS[order[i+1]], j=i;
+    out.push(L(`Down from the ${k} stairs to the small stairs`,"run",S.down,"Down the path, not the stairs. Let the legs float.","At the small stairs",{zone:"Z2"}));
+    out.push(climb("Small stairs",30,`Small ${j+1} of ${nSmall}`,"Short and sharp. Run them."));
+    if (mv && j===capoAt) out.push(...moveAt.small("Small"));
+    out.push(L(`Over to the ${order[i+1]} stairs`,"run",nx.over,`Jog over to the bottom of the ${order[i+1]} stairs. Easy, keep it moving.`,"At the bottom",{zone:"Z2"}));
+  });
+  if (o.G){
+    out.push(L("Down from the front stairs to the small stairs","run",75,"Green day bonus. Down the path to the hub.","At the small stairs",{zone:"Z2"}));
+    out.push(climb("Small stairs",30,"Bonus","One more, all out."));
+  }
+  out.push(o.bikeHome
+    ? L("Citi Bike home","citibike",480,"Easy spin. Legs are cooked, so this is the cool-down.","Home",{zone:"Z1"})
+    : L("Jog home","run",900,"Easy. Walking the last stretch is fine.","Home",{zone:"Z1"}));
+  return out;
 }
 function stairLoop(rounds, runSecs){
   const seq=[];
@@ -1159,7 +1260,8 @@ function stairLoop(rounds, runSecs){
     seq.push(...cardioSeq("stairs",70,.5,`Set ${i} of ${rounds}: up the stairs`,true));
     seq.push(...cardioSeq("run",runSecs,1,`Set ${i} of ${rounds}: run to the next one`,true));
   }
-  return step("Stair loop","cardio","Hard up, jog the flat between. Short strides on the way up, eyes a few steps ahead.",seq,{chips:["Prospect Park", `${rounds} sets`]});
+  const s=step("Stair loop","cardio","Hard up, jog the flat between. Short strides on the way up, eyes a few steps ahead.",seq,{chips:["Prospect Park", `${rounds} sets`]});
+  s.mod="stairs"; s.zone="Z4"; s.ivl=`${rounds}x70s stairs/${runSecs}s jog`; return s;
 }
 
 /* o = {phase, rec, type:'full'|'yoga'|'strength', loc:'home'|'gym', eq:{barbell,machines,rower,climber}, dbOn, W, second} */
@@ -1169,7 +1271,7 @@ function build(o){
   const add = (...a)=>a.forEach(x=>Array.isArray(x)?out.push(...x.filter(Boolean)):x&&out.push(x));
   const gym = loc==="gym", useDb = gym || o.dbOn;
   const wt = w => w>0 ? `${w} lb` : "";
-  const dbo = (db, w, track) => ({db, weight: wt(w), track: gym ? track : "", setup: gym ? 10 : 3});
+  const dbo = (db, w, track) => ({db, weight: wt(w), track, setup: gym ? 10 : 3});
   const CARDIO_ORDER = gym ? ["rower","elliptical","gymbike","climber","tread"] : ["run","stairs","peloton","outbike","rope"];
   const avail = CARDIO_ORDER.filter(k=>eq[k]);
   const spin = avail.length ? avail.slice((o.ab||0)*2 % avail.length).concat(avail.slice(0,(o.ab||0)*2 % avail.length)) : [];
@@ -1336,10 +1438,11 @@ function build(o){
 
     /* the stair loop is its own shape */
     if (m1==="stairs" || (m2==="stairs" && !R)){
-      add(machineEasy("run", R?360:420, "Easy jog", "Out to the park. Conversational the whole way — this is the warm-up, not the workout."));
-      if (R) add(steady("run", 8*60, "Easy miles", "Red day. Flat ground only, skip the stairs, keep it easy."));
-      else add(stairLoop(G?5:4, G?100:120));
-      add(machineEasy("run", 300, "Jog home", "Easy. Let the heart rate fall before you stop."));
+      if (R){
+        add(machineEasy("run", 360, "Easy jog", "Out to the park. Conversational the whole way."));
+        add(steady("run", 8*60, "Easy miles", "Red day. Flat ground only, skip the stairs, keep it easy."));
+        add(machineEasy("run", 300, "Jog home", "Easy. Let the heart rate fall before you stop."));
+      } else add(stairPark({phase, G, bikeTo:o.bikeTo, bikeHome:o.bikeHome, lapT:o.lapT, stairN:o.stairN, stations:o.stations}));
       add(finisher(), shortClose());
       return out;
     }
@@ -1430,9 +1533,24 @@ if (typeof document!=="undefined") (function(){
   const dkey = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
   const today = () => dkey(new Date());
   let st = { phase:1, rec:"yellow", type:"full", loc:"home", eq:{machines:true,bench:true,smith:true,barbell:false,bar:true,rower:true,elliptical:true,gymbike:true,climber:true,tread:true,run:true,stairs:true,peloton:true,outbike:true,rope:true},
-    dbOn:false, skin:'signal', layout:'split', face:'stadium', breath:true, finisher:false, heavy:30, light:20, gymHeavy:40, gymLight:30, gates:{1:[],2:[],3:[],4:[]}, log:[], sound:0, lifts:{}, aim:{}, abOv:null, secOv:null };
+    dbOn:false, skin:'signal', layout:'split', face:'stadium', breath:true, finisher:false, heavy:30, light:20, gymHeavy:40, gymLight:30, gates:{1:[],2:[],3:[],4:[]}, log:[], sound:0, lifts:{}, aim:{}, abOv:null, secOv:null, sets:[], cardio:[], gateLog:[], daily:{} };
   try { const s = JSON.parse(localStorage.getItem(KEY)||"null"); if (s) st = {...st, ...s, gates:{...st.gates, ...(s.gates||{})}, eq:{...st.eq, ...(s.eq||{})}, lifts:{...(s.lifts||{})}, aim:{...(s.aim||{})}}; } catch(e){}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} };
+  /* ---------- export model: sessions, sets, cardio, gates, daily ---------- */
+  const TZ = (()=>{ try{ return Intl.DateTimeFormat().resolvedOptions().timeZone||""; }catch(e){ return ""; } })();
+  const hhmm = d => String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+  function migrate(){
+    ["sets","cardio","gateLog"].forEach(k=>{ if (!Array.isArray(st[k])) st[k]=[]; });
+    if (!st.daily || typeof st.daily!=="object") st.daily={};
+    st.log.forEach((l,i)=>{
+      if (!l.id) l.id=`s_${l.d.replace(/-/g,"")}_legacy${i+1}`;
+      if (!l.done) l.done = l.partial ? "partial" : "full";
+      /* a session the phone killed mid-way: keep it, as partial */
+      if (l.live){ l.live=false; l.done="partial"; if (!l.end && l.lastAt) l.end=l.lastAt; }
+    });
+  }
+  migrate();
+  const realLog = () => st.log.filter(l=>l.done!=="skipped");
   const reduced = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   const SKINS=[
     {id:"plain",   name:"Plain",     note:"Sage and ink. Follows your phone's light or dark setting.", sw:["#EDF0EB","#1B2420","#3447B0"]},
@@ -1476,11 +1594,12 @@ if (typeof document!=="undefined") (function(){
     const m=document.querySelector('meta[name="theme-color"]'); if (m) m.remove();
     const c=getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
     const t=document.createElement("meta"); t.name="theme-color"; t.content=c||"#EDF0EB"; document.head.appendChild(t); }
-  const loggedToday = () => st.log.filter(l=>l.d===today());
+  const loggedToday = () => realLog().filter(l=>l.d===today());
   const isSecond = () => (st.secOv && st.secOv.d===today()) ? st.secOv.v : loggedToday().length>0;
-  const gymCount = () => st.type==="cardio" ? st.log.filter(l=>l.t==="cardio").length : st.log.filter(l=>l.l==="gym" && l.t!=="yoga").length;
+  const gymCount = () => st.type==="cardio" ? realLog().filter(l=>l.t==="cardio").length : realLog().filter(l=>l.l==="gym" && l.t!=="yoga").length;
   const abNext = () => (st.abOv!==null && st.abOv!==undefined) ? st.abOv : (gymCount() % 2);
-  const opts = rec => ({phase:st.phase, rec, type:st.type, loc:st.loc, eq:st.eq, dbOn:st.dbOn, ab:abNext(), finisher:!!st.finisher,
+  const opts = rec => ({phase:st.phase, rec, type:st.type, loc:st.loc, eq:st.eq, dbOn:st.dbOn, ab:abNext(), finisher:!!st.finisher, bikeTo:!!st.bikeTo, bikeHome:!!st.bikeHome, lapT:st.lapLast||{}, stations:st.stations!==false,
+    stairN: realLog().filter(l=>l.p===st.phase && (st.cardio||[]).some(c=>c.session_id===l.id && c.modality==="stairs")).length,
     W:{heavy:st.heavy||0, light:st.light||0, gymHeavy:st.gymHeavy||0, gymLight:st.gymLight||0}, second:isSecond()});
   const sessionFor = rec => build(opts(rec));
   const total = steps => steps.reduce((a,s)=>a+s.dur,0);
@@ -1506,6 +1625,12 @@ if (typeof document!=="undefined") (function(){
     seg($("typeSeg"), TYPES, st.type, id=>{ st.type=id; save(); renderHome(); });
     $("typeNote").textContent = TYPES.find(t=>t.id===st.type).note;
     $("finBox").hidden = true;
+    const stairsToday = sessionFor(st.rec).some(x=>x.climb);
+    $("stairBox").hidden = !stairsToday;
+    if (stairsToday){ $("bikeTo").checked=!!st.bikeTo; $("bikeHome").checked=!!st.bikeHome; $("stOn").checked=st.stations!==false;
+      const best=st.stairs&&st.stairs["Back stairs"];
+      $("stairNote").textContent = (st.bikeTo ? "Ride there, five minutes of easy jogging, then the stairs. " : "Jog there, about 15 minutes. ")
+        + "Up the stairs, down the paths: each big stair, then down to the small stairs, then over to the next. Tap at every top and every arrival; your times become next session's targets. Moves at the top add 2 reps every stair day this phase, up to +6." + (best ? ` Back stairs best: ${fmtSecs(best.best)}.` : ""); }
     const sec = isSecond(), lt = loggedToday();
     $("secOn").checked = sec;
     $("secNote").textContent = sec
@@ -1582,8 +1707,18 @@ if (typeof document!=="undefined") (function(){
     const gl=$("gateList"); gl.innerHTML="";
     g.forEach((t,i)=>{
       const li=document.createElement("li"), id=`g${st.phase}_${i}`;
-      li.innerHTML=`<label for="${id}"><input type="checkbox" id="${id}" ${gs[i]?"checked":""}><span>${t}</span></label>`;
-      li.querySelector("input").onchange=e=>{ st.gates[st.phase]=st.gates[st.phase]||[]; st.gates[st.phase][i]=e.target.checked; save(); renderHome(); };
+      const tests=st.gateLog.filter(x=>x.gate===t), last=tests[tests.length-1];
+      li.innerHTML=`<label for="${id}"><input type="checkbox" id="${id}" ${gs[i]?"checked":""}><span>${t}${last?`<span class="glast">Last test ${last.date}: ${last.result||"—"} (${last.pass==="y"?"passed":"not yet"})</span>`:""}</span></label>
+        <button class="glink" type="button">Log a test</button>
+        <div class="gtest" hidden><input type="text" placeholder="Result, e.g. crow 4s" aria-label="Result"><button type="button" data-p="y">Passed</button><button type="button" data-p="n">Not yet</button></div>`;
+      li.querySelector("input[type=checkbox]").onchange=e=>{ st.gates[st.phase]=st.gates[st.phase]||[]; st.gates[st.phase][i]=e.target.checked;
+        if (e.target.checked) st.gateLog.push({date:today(), gate:t, result:"", pass:"y"}); save(); renderHome(); };
+      const form=li.querySelector(".gtest");
+      li.querySelector(".glink").onclick=()=>{ form.hidden=!form.hidden; if (!form.hidden) form.querySelector("input").focus(); };
+      form.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+        const pass=b.dataset.p; st.gateLog.push({date:today(), gate:t, result:form.querySelector("input").value.trim(), pass});
+        if (pass==="y"){ st.gates[st.phase]=st.gates[st.phase]||[]; st.gates[st.phase][i]=true; }
+        save(); renderHome(); });
       gl.appendChild(li);
     });
     const done=g.every((_,i)=>gs[i]), gb=$("gateBtn");
@@ -1595,7 +1730,7 @@ if (typeof document!=="undefined") (function(){
     const letters=["Su","Mo","Tu","We","Th","Fr","Sa"]; let days=0, sessions=0;
     for(let i=6;i>=0;i--){
       const d=new Date(); d.setDate(d.getDate()-i); const key=dkey(d);
-      const es=st.log.filter(l=>l.d===key), last=es[es.length-1];
+      const es=realLog().filter(l=>l.d===key), last=es[es.length-1];
       if (es.length){ days++; sessions+=es.length; }
       const el=document.createElement("div"); el.className="day";
       if (i===0) el.classList.add("istoday");
@@ -1622,7 +1757,7 @@ if (typeof document!=="undefined") (function(){
     fillManDay();
     $("manNote").textContent = `Logs as ${TYPE_NAME[st.type]}, Phase ${st.phase}, ${st.loc==="gym"?"work gym":"home"}. Change those above first if that's not what you did.`;
     $("weekNote").textContent = `Rolling week, oldest on the left. Today is ${new Date().toLocaleDateString(undefined,{weekday:"long"})}, on the right.`;
-    const inPhase=st.log.filter(l=>l.p===st.phase).length;
+    const inPhase=realLog().filter(l=>l.p===st.phase).length;
     $("logNote").textContent = days===0 ? "Nothing logged this week. Today's a good day to start." :
       `${days} of 7 days, ${sessions} ${sessions===1?"session":"sessions"}. ${inPhase} logged in Phase ${st.phase}.`;
   }
@@ -1637,12 +1772,18 @@ if (typeof document!=="undefined") (function(){
     if (keep && [...sel.options].some(o=>o.value===keep)) sel.value=keep;
   }
   $("manBtn").onclick=()=>{
-    const v=parseInt($("manMins").value)||0, day=$("manDay").value;
+    const v=parseInt($("manMins").value)||0, day=$("manDay").value, tm=$("manTime").value;
     if (v<1){ $("manMins").focus(); return; }
-    P.type=st.type; P.loc=st.loc; logSession(Math.min(240,v), false, day);
-    $("manMins").value=""; renderHome();
+    const m=Math.min(240,v);
+    let end=""; if (tm){ const [h,mi]=tm.split(":").map(Number), e=new Date(2000,0,1,h,mi+m); end=hhmm(e); }
+    newEntry({d:day, start:tm||"", end, m, done:"full", manual:true});
+    $("manMins").value=""; $("manTime").value=""; renderHome();
   };
+  $("skipBtn").onclick=()=>{ newEntry({d:$("manDay").value, start:"", end:"", m:0, done:"skipped"}); $("manNote").textContent="Skipped day logged. It shows in the export but doesn't count toward the week."; };
   $("secOn").onchange=e=>{ st.secOv={d:today(), v:e.target.checked}; save(); renderHome(); };
+  $("bikeTo").onchange=e=>{ st.bikeTo=e.target.checked; save(); renderHome(); };
+  $("bikeHome").onchange=e=>{ st.bikeHome=e.target.checked; save(); renderHome(); };
+  $("stOn").onchange=e=>{ st.stations=e.target.checked; save(); renderHome(); };
   $("finOn").onchange=e=>{ st.finisher=e.target.checked; save(); renderHome(); };
   $("dbOn").onchange=e=>{ st.dbOn=e.target.checked; save(); renderHome(); };
   $("wHeavy").onchange=e=>{ const v=Math.max(0,parseInt(e.target.value)||0); if (st.loc==="gym") st.gymHeavy=v; else st.heavy=v; save(); renderHome(); };
@@ -1723,8 +1864,7 @@ if (typeof document!=="undefined") (function(){
     o.connect(f); f.connect(g); g.connect(a.destination);
     o.start(t0); o.stop(t0+dur+.03);
   }
-  const beep = (f=660,d=.12,v=.18)=>tone(f,d,v,0,"bell");
-  const CUE = {
+  const WCUE = {
     tick:  ()=>{ tone(760,.085,.20,0,"blip"); },            /* 3 .. 2 .. 1 */
     go:    ()=>{ tone(1180,.50,.26,0,"blip"); tone(1770,.50,.09,.004,"bell"); },  /* beeeeep */
     setEnd:()=>{ tone(784,.16,.13,0,"bell"); tone(523,.34,.11,.11,"bell"); },     /* soft two-note down */
@@ -1739,6 +1879,60 @@ if (typeof document!=="undefined") (function(){
     easy:  ()=>{ tone(600,.14,.14,0,"bell"); },
     finish:()=>{ tone(659,.18,.16,0,"bell"); tone(988,.45,.16,.17,"bell"); }
   };
+  /* ---- Media-element cues. iOS mutes Web Audio with the ring/silent switch
+     and suspends it whenever speech plays; <audio> elements don't have either
+     problem. Each cue is rendered once to a WAV and played from a small pool. ---- */
+  const CUE_SPEC = {
+    tick:  [[760,.085,.20,0,"blip"]],
+    go:    [[1180,.50,.26,0,"blip"],[1770,.50,.09,.004,"bell"]],
+    setEnd:[[784,.16,.13,0,"bell"],[523,.34,.11,.11,"bell"]],
+    step:  [[880,.10,.10,0,"bell"]],
+    hold:  [[560,.07,.09,0,"bell"]],
+    hard:  [[990,.14,.18,0,"blip"]],
+    inhale:[[494,.20,.075,0,"bell",659]],
+    exhale:[[587,.26,.075,0,"bell",392]],
+    move:  [[700,.06,.05,0,"bell"]],
+    easy:  [[600,.14,.14,0,"bell"]],
+    finish:[[659,.18,.16,0,"bell"],[988,.45,.16,.17,"bell"]]
+  };
+  function renderWav(parts){
+    const SR=22050, end=Math.max(...parts.map(p=>p[3]+p[1]))+.04, n=Math.ceil(SR*end), buf=new Float32Array(n);
+    parts.forEach(([f,d,v,when,shape,glide])=>{
+      const s0=Math.floor(when*SR), len=Math.floor(d*SR), att=shape==="blip"?.004:.02; let ph=0;
+      for(let i=0;i<len && s0+i<n;i++){
+        const t=i/SR, fr = glide ? f*Math.pow(glide/f, t/d) : f;
+        ph += 2*Math.PI*fr/SR;
+        const x = shape==="blip" ? Math.sin(ph)+0.3*Math.sin(3*ph)+0.12*Math.sin(5*ph) : Math.sin(ph);
+        const env = t<att ? t/att : Math.exp(-4.6*(t-att)/Math.max(.01,d-att));
+        buf[s0+i] += x*env*v*3.4;
+      }
+    });
+    const ab=new ArrayBuffer(44+n*2), dv=new DataView(ab), w=(o,str)=>{ for(let i=0;i<str.length;i++) dv.setUint8(o+i,str.charCodeAt(i)); };
+    w(0,"RIFF"); dv.setUint32(4,36+n*2,true); w(8,"WAVE"); w(12,"fmt "); dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,1,true);
+    dv.setUint32(24,SR,true); dv.setUint32(28,SR*2,true); dv.setUint16(32,2,true); dv.setUint16(34,16,true); w(36,"data"); dv.setUint32(40,n*2,true);
+    for(let i=0;i<n;i++){ const v=Math.max(-1,Math.min(1,buf[i])); dv.setInt16(44+i*2, v*32767, true); }
+    return URL.createObjectURL(new Blob([ab],{type:"audio/wav"}));
+  }
+  const POOL={}, POOL_N=3; let poolIx={}, unlocked=false;
+  try{ for (const k in CUE_SPEC){ const url=renderWav(CUE_SPEC[k]); POOL[k]=[]; poolIx[k]=0;
+    for(let i=0;i<POOL_N;i++){ const a=new Audio(url); a.preload="auto"; a.setAttribute("playsinline",""); POOL[k].push(a); } } }catch(e){}
+  /* must run inside a tap: plays every element once, muted, so iOS lets it play later on its own */
+  function unlockAudio(){
+    try{ if (navigator.audioSession) navigator.audioSession.type="playback"; }catch(e){}
+    ctx();
+    if (unlocked) return; unlocked=true;
+    for (const k in POOL) POOL[k].forEach(a=>{ a.muted=true; const p=a.play(); if (p&&p.then) p.then(()=>{ a.pause(); a.currentTime=0; a.muted=false; }).catch(()=>{ a.muted=false; unlocked=false; }); else { a.pause(); a.muted=false; } });
+  }
+  document.addEventListener("pointerdown", unlockAudio, {passive:true, capture:true});
+  document.addEventListener("touchend", unlockAudio, {passive:true, capture:true});
+  function playCue(k){
+    if (st.sound===2) return;
+    const list=POOL[k]; if (!list || !list.length){ WCUE[k] && WCUE[k](); return; }
+    const a=list[poolIx[k]++ % list.length];
+    try{ a.muted=false; a.currentTime=0; const p=a.play(); if (p&&p.catch) p.catch(()=>{ WCUE[k] && WCUE[k](); }); }catch(e){ WCUE[k] && WCUE[k](); }
+  }
+  const CUE = {}; Object.keys(CUE_SPEC).forEach(k=>CUE[k]=()=>playCue(k));
+
   function lights(n){ /* n = 0..5 lit, -1 = GO (all out), null = hide */
     const el=$("lights"); if (!el) return;
     el.hidden = (n===null || n===undefined);
@@ -1761,10 +1955,12 @@ if (typeof document!=="undefined") (function(){
   /* ---------- Player ---------- */
   const P={ sheet:false, feel:null, lastCue:null, steps:[], i:0, t:0, run:false, last:0, sub:-1, lastSec:-1, total:0, raf:0, lock:null, type:"full", loc:"home" };
   function subAt(step,t){ let c=0; for(let j=0;j<step.seq.length;j++){ c+=step.seq[j].t; if (t<c) return j; } return step.seq.length-1; }
+  const defW = s => parseFloat(s.weight)||0;
+  const curW = s => (s.track && (st.aim[s.track] || st.lifts[s.track])) || defW(s);
   function announce(){
     const s=P.steps[P.i], extra=s.chips.filter(c=>/side|reps|Round|rounds/.test(c)).join(", ");
-    const last = s.track && st.lifts[s.track] ? `. Last time ${st.lifts[s.track]} pounds` : "";
-    say(`${s.name}${extra?". "+extra:""}${s.weight?". "+s.weight.replace("lb","pounds"):""}${last}`);
+    const w=curW(s);
+    say(`${s.name}${extra?". "+extra:""}${w?`. ${w} pounds`:""}`);
   }
   function showStep(){
     const s=P.steps[P.i], b=BLOCKS[s.block];
@@ -1772,23 +1968,71 @@ if (typeof document!=="undefined") (function(){
     $("pName").textContent=s.name; $("pCue").textContent=s.cue;
     const ch=$("pChips"); ch.innerHTML="";
     s.chips.forEach(c=>{ const e=document.createElement("span"); e.className="chip"; e.textContent=c; ch.appendChild(e); });
-    if (s.weight){ const e=document.createElement("span"); e.className="chip w"; e.textContent=s.weight; ch.appendChild(e); }
-    if (s.track && st.aim[s.track]){ const e=document.createElement("span"); e.className="chip w"; e.textContent=`Aim ${st.aim[s.track]} lb`; ch.appendChild(e); }
-    $("pSwap").hidden = !(s.variants && s.variants.length>1);
-    $("pSkip").textContent = s.unit ? "Done" : "Skip";
+    const w=curW(s);
+    if (s.plannedW===undefined){ const sib=P.steps.filter(x=>x.unit && x.unit===s.unit); (sib.length?sib:[s]).forEach(x=>{ if (x.plannedW===undefined) x.plannedW = w||""; }); }
+    $("pTrackU").textContent = s.db==="AB" ? "lb each" : "lb";
+    if (w){ const e=document.createElement("span"); e.className="chip w"; e.textContent = (s.track && st.aim[s.track] ? "Aim " : "") + w + (s.db==="AB" ? " lb each" : " lb"); ch.appendChild(e); }
+    $("pSwap").hidden = !(s.unit || s.mach);
+    $("pSkip").textContent = s.lap ? s.doneLabel : s.unit ? "Done" : "Skip";
+    if (s.climb){ const r=(st.stairs||{})[s.name]; if (r){ const e=document.createElement("span"); e.className="chip w"; e.textContent=`Last ${fmtSecs(r.last)} · Best ${fmtSecs(r.best)}`; ch.appendChild(e); } }
     const tr=$("pTrack"); tr.hidden=!s.track;
-    if (s.track){ $("pTrackIn").value = st.lifts[s.track]||""; $("pTrackIn").placeholder="—"; }
+    if (s.track){ $("pTrackIn").value = st.aim[s.track] || st.lifts[s.track] || defW(s) || ""; $("pTrackIn").placeholder="—"; }
     const n=P.steps[P.i+1];
     $("pNextWrap").style.visibility = n?"visible":"hidden";
     if (n){ const sd=n.chips.find(c=>/side/.test(c)); $("pNext").textContent = n.name + (sd?`, ${sd.toLowerCase()}`:""); }
     P.sub=-1; P.lastSec=-1;
   }
-  $("pTrackIn").onchange=e=>{ const s=P.steps[P.i]; if (!s||!s.track) return; const v=parseFloat(e.target.value); if (v>0) st.lifts[s.track]=v; else delete st.lifts[s.track]; save(); };
-  function go(i){ if (i>=P.steps.length){ finish(); return; } P.i=Math.max(0,i); P.t=0; P.lastCue=null; lights(null); showStep(); if (!(P.steps[P.i].block==="strength"&&!P.steps[P.i].isRest)) CUE.step(); announce(); }
+  function logW(track, raw){ const v=parseFloat(raw); if (v>0){ st.lifts[track]=v; if (st.aim[track] && st.aim[track]!==v) delete st.aim[track]; } save(); }
+  $("pTrackIn").oninput=$("pTrackIn").onchange=e=>{ const s=P.steps[P.i]; if (s && s.track) logW(s.track, e.target.value); };
+  const BLOCK_OUT = s => s.block==="cardio" ? "cardio" : s.block==="close" ? "cooldown"
+    : ["strength","core","invert"].includes(s.block) ? "main"
+    : (P.type==="yoga" && ["flow","standing"].includes(s.block)) ? "main" : "warmup";
+  const LOAD_TYPE = s => /Pull-ups|Free hang/.test(s.name) ? "bodyweight" : s.db==="AB" ? "per_hand" : s.db==="B" ? "single_db"
+    : s.plate ? "barbell" : s.track ? "machine_stack" : "bodyweight";
+  const sideOf = s => { const c=s.chips.find(c=>/side/.test(c)); return c ? (c.startsWith("Right")?"R":"L") : ""; };
+  function touch(){ const e=st.log.find(l=>l.id===P.sid); if (e) e.lastAt=hhmm(new Date()); }
+  function setRow(s, o){
+    return { session_id:P.sid, block:BLOCK_OUT(s), exercise:s.name, set_no:s.set||1, side:sideOf(s),
+      reps_or_seconds:o.amount, measure:o.measure, load:o.load??"", load_type:LOAD_TYPE(s), RIR:o.rir??"",
+      planned_load: s.plannedW||"", planned_reps: s.reps||s.secs||"", swapped_from: s.swappedFrom||"" };
+  }
+  /* steps that aren't lifted sets get logged when you move past them */
+  function logLeaving(target){
+    const s=P.steps[P.i];
+    if (!P.sid || !s || s.logged || s.isRest || s.unit || target<=P.i) return;
+    const actual = s.lap ? P.t : Math.min(P.t, s.dur); if (actual<3) return;
+    s.logged=true;
+    if (s.mach || s.mod){
+      st.cardio.push({ session_id:P.sid, modality:s.mach||s.mod, segment:s.name, seconds:Math.round(actual), duration_min:+(actual/60).toFixed(1), intervals:s.ivl||"",
+        target_zone:s.zone||"", target_seconds:s.lap?s.target:"", swapped_from:s.machFrom||"" });
+      if (s.lap){ st.lapLast=st.lapLast||{}; st.lapLast[s.name]=Math.round(actual); }
+      if (s.climb){ st.stairs=st.stairs||{}; const r=st.stairs[s.name]||{}; const v=Math.round(actual);
+        st.stairs[s.name]={last:v, best: r.best ? Math.min(r.best,v) : v}; }
+    } else {
+      const full = actual >= s.dur*0.8;
+      st.sets.push(setRow(s, s.reps ? {amount: full ? s.reps : Math.round(s.reps*actual/s.dur), measure:"reps"} : {amount: Math.round(actual), measure:"seconds"}));
+    }
+    touch(); save();
+  }
+  /* a 3-2-1 before each exercise. Lifts already have it built into "Get set";
+     rests don't need one, and back-to-back rounds of the same flow keep moving. */
+  const GAP = 3;
+  function needsGap(i){
+    const s=P.steps[i], prev=P.steps[i-1];
+    if (!s || s.isRest || s.noGap || s.seq[0].label==="Get set") return false;
+    if (prev && prev.name===s.name && s.block==="flow") return false;
+    return true;
+  }
+  function go(i){ logLeaving(i); if (i>=P.steps.length){ finish(); return; } P.i=Math.max(0,i); P.t=0; P.lastCue=null; lights(null); showStep();
+    P.gap = needsGap(P.i) ? GAP : 0;
+    if (!P.gap && !(P.steps[P.i].block==="strength"&&!P.steps[P.i].isRest)) CUE.step(); announce(); }
   function frame(now){
     const dt=P.last?Math.min(.25,(now-P.last)/1000):0; P.last=now;
-    if (P.run && !P.sheet){ P.t+=dt; if (P.t>=P.steps[P.i].dur){ advance(); if ($("player").hidden) return; } }
-    const cs=P.steps[P.i], j=subAt(cs,P.t); curStepSlow = cs.block==="flow" || cs.block==="standing" || cs.block==="close" || cs.block==="arrive";
+    if (P.run && !P.sheet){
+      if (P.gap>0){ P.gap-=dt; if (P.gap<=0){ P.gap=0; P.lastCue=null; CUE.go(); lights(-1); setTimeout(()=>lights(null), 650); } }
+      else { P.t+=dt; if (!P.steps[P.i].lap && P.t>=P.steps[P.i].dur){ advance(); if ($("player").hidden) return; } }
+    }
+    const cs=P.steps[P.i], j=subAt(cs, cs.lap ? P.t % cs.dur : P.t); curStepSlow = cs.block==="flow" || cs.block==="standing" || cs.block==="close" || cs.block==="arrive";
     if (j!==P.sub){
       const prev=P.sub; P.sub=j; const q=cs.seq[j]; setPose(q.pose);
       $("pSub").textContent = cs.seq.length>1 || q.label!=="Hold" ? q.label : "";
@@ -1808,20 +2052,22 @@ if (typeof document!=="undefined") (function(){
     }
     const q=cs.seq[P.sub];
     drawFigure(now, q.flip, cs.db, cs.plate);
-    const rem=Math.max(0,Math.ceil(cs.dur-P.t));
-
     /* --- race start: count down the last 3s of the lead-in, GO on the first rep --- */
-    const racing = cs.block==="strength" && !cs.isRest && P.sub===0 && cs.seq[0].label==="Get set";
+    const racing = P.gap>0 || (cs.block==="strength" && !cs.isRest && P.sub===0 && cs.seq[0].label==="Get set");
+    const cdRem = P.gap>0 ? P.gap : racing ? cs.seq[0].t - P.t : 0;
+    const rem = racing ? Math.max(1,Math.ceil(cdRem)) : cs.lap ? Math.floor(P.t) : Math.max(0,Math.ceil(cs.dur-P.t));
     if (racing && P.run){
-      const cdRem = cs.seq[0].t - P.t, n = Math.ceil(cdRem);
+      const n = Math.ceil(cdRem);
       if (n!==P.lastCue && n<=3 && n>=1){ P.lastCue=n; CUE.tick(); lights(n===3?2:n===2?4:5); }
       if (cdRem>3.05) lights(null);
     } else if (!racing && P.lastCue!==null && !P.sheet){ /* cleared by the GO handler */ }
 
-    if (rem!==P.lastSec){
-      P.lastSec=rem;
+    if (rem!==P.lastSec || racing!==P.lastRacing){
+      P.lastSec=rem; P.lastRacing=racing;
+      $("pTime").classList.toggle("cd", racing);
       $("pTime").textContent = rem>=60 ? Math.floor(rem/60)+":"+String(rem%60).padStart(2,"0") : String(rem);
-      if (P.run && rem<=3 && rem>0 && !racing && !cs.isRest && cs.block!=="strength") CUE.hold();
+      if (P.run && rem<=3 && rem>0 && !racing && !cs.lap && !cs.isRest && cs.block!=="strength") CUE.hold();
+      if (cs.lap && !racing) $("pTime").classList.toggle("over", P.t>cs.target);
       let el=0; for(let k=0;k<P.i;k++) el+=P.steps[k].dur; el+=P.t;
       $("pBar").style.width=(100*el/P.total).toFixed(2)+"%";
       $("pLeft").textContent=Math.max(0,Math.round((P.total-el)/60))+" min";
@@ -1844,7 +2090,7 @@ if (typeof document!=="undefined") (function(){
       st.aim[key]=Math.max(0,w-inc); save(); return `Drop to <b>${Math.max(0,w-inc)} lb</b>, or stay at ${w} and stop 2 reps short.`;
     }
     if (key) return feel==="easy" ? "Log the weight above and I'll tell you where to go next." : feel==="solid" ? "Log the weight above so next time has a target." : "Log the weight above, then go lighter next set.";
-    if (cur.weight) return feel==="easy" ? "Your dumbbells are fixed, so make it harder: <b>add 2 reps</b> or take 3 seconds on the way down." : feel==="solid" ? "Same again next set." : "Stop 2 reps short next set. Form over numbers.";
+    if (cur.weight && !key) return feel==="easy" ? "Your dumbbells are fixed, so make it harder: <b>add 2 reps</b> or take 3 seconds on the way down." : feel==="solid" ? "Same again next set." : "Stop 2 reps short next set. Form over numbers.";
     return feel==="easy" ? "<b>Add 2 reps</b> next set, or slow the lowering down." : feel==="solid" ? "Same again next set." : "Take 2 reps off next set.";
   }
   function remainingUnitsInSet(cur){
@@ -1906,26 +2152,70 @@ if (typeof document!=="undefined") (function(){
     $("shRate").hidden=false;
     $("shKick").textContent = cur.sl ? `${cur.sl} done` : "Set done";
     $("shTitle").textContent = cur.name;
+    P.feel=null; $("shAdvice").innerHTML="";
+    $("shTrack").hidden=!cur.track; $("shTrackU").textContent = cur.db==="AB" ? "lb each" : "lb";
+    if (cur.track){
+      /* whatever was in the field during the set counts as what you used */
+      const used = parseFloat($("pTrackIn").value) || st.lifts[cur.track] || defW(cur);
+      if (used>0){ st.lifts[cur.track]=used; save(); }
+      $("shTrackIn").value = st.lifts[cur.track] || ""; }
+    /* one row per step in this set (both sides of a single-arm move) */
+    const unitSteps=P.steps.filter(x=>x.unit===cur.unit);
+    st.sets = st.sets.filter(r=>!(r.session_id===P.sid && r._u===cur.unit));
+    const isReps = !!cur.reps;
+    const rows = unitSteps.map(x=>{ const r=setRow(x, {amount: isReps ? x.reps : x.secs, measure: isReps?"reps":"seconds",
+      load: cur.track ? (st.lifts[cur.track]||"") : (defW(x)||"")}); r._u=cur.unit; return r; });
+    if (P.sid){ st.sets.push(...rows); touch(); save(); }
+    $("shRepsLab").textContent = isReps ? (unitSteps.length>1 ? "Reps per side" : "Reps done") : "Seconds held";
+    $("shRepsIn").value = isReps ? cur.reps : (cur.secs||"");
+    $("shRepsIn").oninput = e=>{ const v=parseInt(e.target.value); rows.forEach(r=>r.reps_or_seconds = v>=0 ? v : ""); save(); };
+    if (cur.track) $("shTrackIn").oninput=$("shTrackIn").onchange=e=>{ logW(cur.track, e.target.value); const v=parseFloat(e.target.value); rows.forEach(r=>r.load = v>0 ? v : ""); save(); if (P.feel) $("shAdvice").innerHTML=adviceFor(cur,P.feel); };
     const fe=$("shFeel"); fe.innerHTML="";
-    [["easy","Easy","3+ left in the tank"],["solid","Solid","2–3 left"],["hard","Hard","0–1 left"]].forEach(([id,l,sub])=>{
-      const b=document.createElement("button"); b.innerHTML=`${l}<small>${sub}</small>`; b.setAttribute("aria-pressed","false");
-      b.onclick=()=>{ fe.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); P.feel=id; $("shAdvice").innerHTML=adviceFor(cur,id); };
+    [0,1,2,3,4].forEach(n=>{
+      const b=document.createElement("button"); b.type="button"; b.textContent = n===4 ? "4+" : String(n); b.setAttribute("aria-pressed","false");
+      b.setAttribute("aria-label", `${n===4?"4 or more":n} reps in reserve`);
+      b.onclick=()=>{ fe.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+        rows.forEach(r=>r.RIR=n); save();
+        const feel = n<=1 ? "hard" : n<=3 ? "solid" : "easy"; P.feel=feel; $("shAdvice").innerHTML=adviceFor(cur,feel); };
       fe.appendChild(b);
     });
-    P.feel=null; $("shAdvice").innerHTML="";
-    $("shTrack").hidden=!cur.track;
-    if (cur.track){ $("shTrackIn").value=st.lifts[cur.track]||""; $("shTrackIn").onchange=e=>{ const v=parseFloat(e.target.value); if (v>0) st.lifts[cur.track]=v; else delete st.lifts[cur.track]; save(); if (P.feel) $("shAdvice").innerHTML=adviceFor(cur,P.feel); }; }
     $("shRest").checked=false;
     renderNext(cur);
-    sheetShow(true); CUE.setEnd(); say("Set done. How did that feel?");
+    sheetShow(true); CUE.setEnd(); say("Set done. How many reps were left?");
+  }
+  const MACH_HOME=["run","peloton","outbike","rope"], MACH_GYM=["rower","elliptical","gymbike","climber","tread"];
+  function swapMachine(from, to){
+    const A=CARDIO[from], B=CARDIO[to];
+    for (let k=P.i;k<P.steps.length;k++){ const s=P.steps[k]; if (s.mach!==from) continue;
+      s.seq=s.seq.map(q=>({...q, pose: q.pose===A.a?B.a : q.pose===A.b?B.b : q.pose}));
+      s.chips=s.chips.map(c=>c===A.name?B.name:c);
+      s.cue=s.cue.split(A.name).join(B.name).split(A.name.toLowerCase()).join(B.name.toLowerCase());
+      if (!s.machFrom) s.machFrom=from; if (s.machFrom===to) delete s.machFrom; s.mach=to; }
+    const t=P.t; showStep(); P.t=t; sheetShow(false);
+  }
+  function dropSlot(cur){
+    const start=P.steps.findIndex(s=>s.unit===cur.unit);
+    P.steps=P.steps.filter((s,k)=>!(k>=start && s.slot===cur.slot));
+    P.steps=P.steps.filter((s,k,a)=>!(s.isRest && k>=start && (!a[k+1] || a[k+1].isRest || a[k+1].block!=="strength" || (a[k-1] && a[k-1].isRest))));
+    retotal(); if (start>=P.steps.length){ sheetShow(false); finish(); return; } continueTo(start);
   }
   function openSwap(){
     const cur=P.steps[P.i];
     $("shRate").hidden=true; $("shRestWrap").hidden=true; $("shDrop").hidden=true;
-    $("shKick").textContent="Station taken?"; $("shTitle").textContent=`Instead of ${cur.name.toLowerCase()}`;
-    $("shNextH").textContent="Swap to";
     $("shNext").innerHTML="";
-    cur.vnames.forEach((n,vi)=>{ if (vi===cur.vi) return; nextBtn(n, "Also swaps the remaining sets", false, ()=>swapTo(cur.slot, vi)); });
+    if (cur.mach){
+      const pool=(P.loc==="gym"?MACH_GYM:MACH_HOME).filter(k=>k!==cur.mach);
+      const ticked=pool.filter(k=>st.eq[k]), list=ticked.length?ticked:pool;
+      $("shKick").textContent="Not feeling it, or it's taken?"; $("shTitle").textContent=`Instead of the ${MNAME(cur.mach).toLowerCase()}`;
+      $("shNextH").textContent="Switch to";
+      list.forEach(k=>nextBtn(MNAME(k), `Every ${MNAME(cur.mach).toLowerCase()} block left today`, false, ()=>swapMachine(cur.mach,k)));
+      nextBtn("Never mind", "", true, ()=>sheetShow(false));
+      sheetShow(true); return;
+    }
+    $("shKick").textContent="Station taken, or not feeling it?"; $("shTitle").textContent=`Instead of ${cur.name.toLowerCase()}`;
+    $("shNextH").textContent = cur.vnames && cur.vnames.length>1 ? "Swap to" : "Options";
+    (cur.vnames||[]).forEach((n,vi)=>{ if (vi===cur.vi) return; nextBtn(n, "Also swaps the remaining sets", false, ()=>swapTo(cur.slot, vi)); });
+    nextBtn(`Skip ${cur.name.toLowerCase()} today`, "Drops every set of it", false, ()=>dropSlot(cur));
     const units=remainingUnitsInSet(cur).filter(u=>u!==cur.unit);
     if (units.length){
       units.forEach(u=>{ const first=P.steps.find((s,k)=>k>P.i && s.unit===u); nextBtn(`Do ${first.name.toLowerCase()} first`, "Come back to this one", false, ()=>{
@@ -1941,7 +2231,9 @@ if (typeof document!=="undefined") (function(){
     const start=P.steps.findIndex(s=>s.unit===P.steps[P.i].unit), out=P.steps.slice(0,start), seen=new Set();
     for (let k=start;k<P.steps.length;k++){
       const s=P.steps[k];
-      if (s.slot===slot){ if (!seen.has(s.unit)){ seen.add(s.unit); out.push(...tagUnit(s.variants[vi](s.sl), {slot, v:s.variants, names:s.vnames}, vi, s.set, s.sets, s.sl)); } }
+      if (s.slot===slot){ if (!seen.has(s.unit)){ seen.add(s.unit); const from=s.swappedFrom||s.name;
+        const nu=tagUnit(s.variants[vi](s.sl), {slot, v:s.variants, names:s.vnames}, vi, s.set, s.sets, s.sl);
+        nu.forEach(x=>{ if (x.name!==from) x.swappedFrom=from; }); out.push(...nu); } }
       else out.push(s);
     }
     P.steps=out; P.i=start; continueTo(start);
@@ -1954,25 +2246,39 @@ if (typeof document!=="undefined") (function(){
 
   function start(){
     P.steps=sessionFor(st.rec); P.total=total(P.steps); P.last=0; P.type=st.type; P.loc=st.loc; P.startedAt=Date.now();
+    P.sid = newEntry({d:today(), start:hhmm(new Date()), end:"", m:0, done:"partial", live:true}).id;
     $("home").hidden=true; $("done").hidden=true; $("player").hidden=false;
     renderSound(); snapPose(P.steps[0].seq[0].pose);
     setRun(true); go(0); wake(true);
     cancelAnimationFrame(P.raf); P.raf=requestAnimationFrame(frame);
   }
   function stop(){ cancelAnimationFrame(P.raf); P.run=false; P.sheet=false; P.lastCue=null; lights(null); $("sheet").hidden=true; wake(false); if ("speechSynthesis" in window) speechSynthesis.cancel(); }
-  function logSession(mins, partial, day){
-    const d=day||today();
-    st.log.push({d, p:st.phase, r:st.rec, m:mins, t:P.type||st.type, l:P.loc||st.loc, partial:!!partial});
-    st.log.sort((a,b)=>a.d<b.d?-1:1);
-    if (st.log.length>600) st.log=st.log.slice(-600);
-    if (d===today()) st.secOv=null;
-    st.abOv=null;
-    save();
+  function newEntry(o){
+    const d=o.d||today(), base=`s_${d.replace(/-/g,"")}_${(o.start||"").replace(":","")||o.done}`;
+    let id=base, n=2; while (st.log.some(l=>l.id===id)) id=`${base}_${n++}`;
+    const e={id, d, start:o.start||"", end:o.end||"", tz:TZ, p:st.phase, r:st.rec, m:o.m||0, t:st.type, l:st.loc,
+      rpe:"", notes:"", done:o.done, partial:o.done==="partial", live:!!o.live, manual:!!o.manual};
+    st.log.push(e); st.log.sort((a,b)=>{ const x=a.d+(a.start||""), y=b.d+(b.start||""); return x<y?-1:x>y?1:0; });
+    if (!o.live){ if (d===today()) st.secOv=null; st.abOv=null; }
+    save(); return e;
+  }
+  function closeEntry(partial){
+    const e=st.log.find(l=>l.id===P.sid); if (!e) return null;
+    e.end=hhmm(new Date()); e.m=Math.max(1, Math.round((Date.now()-P.startedAt)/60000));
+    e.done=partial?"partial":"full"; e.partial=!!partial; e.live=false;
+    if (e.d===today()) st.secOv=null; st.abOv=null;
+    save(); return e;
   }
   function finish(partial){
-    stop();
-    const mins=Math.max(1, Math.round((Date.now()-P.startedAt)/60000));
-    logSession(mins, partial);
+    logLeaving(Infinity); stop();
+    const entry=closeEntry(partial), mins=entry ? entry.m : Math.max(1, Math.round((Date.now()-P.startedAt)/60000));
+    P.doneId = entry && entry.id; P.sid=null;
+    const rg=$("rpeGrid"); rg.innerHTML="";
+    for (let n=1;n<=10;n++){ const b=document.createElement("button"); b.type="button"; b.textContent=n; b.setAttribute("aria-pressed","false");
+      b.onclick=()=>{ rg.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); const e=st.log.find(l=>l.id===P.doneId); if (e){ e.rpe=n; save(); } };
+      rg.appendChild(b); }
+    $("doneNotes").value="";
+    $("doneNotes").oninput=e=>{ const en=st.log.find(l=>l.id===P.doneId); if (en){ en.notes=e.target.value; save(); } };
     $("player").hidden=true; $("done").hidden=false;
     document.querySelector("#done h1").textContent = partial ? "Logged." : "Practice done.";
     $("doneNote").textContent = partial
@@ -1984,11 +2290,12 @@ if (typeof document!=="undefined") (function(){
       : `${mins} minutes of Phase ${st.phase}. Logged. If a gate felt close today, test it next time you're green.`;
     CUE.finish(); say("Practice done.");
   }
-  $("startBtn").onclick=()=>{ try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); AC.resume(); }catch(e){} start(); };
+  $("startBtn").onclick=()=>{ unlockAudio(); start(); };
   $("pPlay").onclick=()=>{ setRun(!P.run); if (P.run) wake(true); };
   $("pSkip").onclick=()=>advance();
   $("pPrev").onclick=()=>{ if (P.t>3) go(P.i); else go(P.i-1); };
-  function leaveWithoutLogging(){ stop(); $("player").hidden=true; $("home").hidden=false; renderHome(); }
+  function leaveWithoutLogging(){ stop();
+    if (P.sid){ st.log=st.log.filter(l=>l.id!==P.sid); st.sets=st.sets.filter(r=>r.session_id!==P.sid); st.cardio=st.cardio.filter(r=>r.session_id!==P.sid); P.sid=null; save(); } $("player").hidden=true; $("home").hidden=false; renderHome(); }
   $("pExit").onclick=()=>{
     const mins=Math.max(0, Math.round((Date.now()-P.startedAt)/60000));
     if (mins<3){ leaveWithoutLogging(); return; }
@@ -2009,18 +2316,100 @@ if (typeof document!=="undefined") (function(){
     else if (e.key==="ArrowLeft") $("pPrev").click();
     else if (e.key==="Escape") $("pExit").click();
   });
-  const APP_VER="v12";
+  const APP_VER="v21";
   $("brOn").onchange=e=>{ st.breath=e.target.checked; save(); };
   $("testSnd").onclick=()=>{
-    const a=ctx();
+    unlockAudio(); const a=ctx();
     CUE.tick(); setTimeout(()=>CUE.tick(),420); setTimeout(()=>CUE.tick(),840); setTimeout(()=>CUE.go(),1260);
     setTimeout(()=>{
-      const st_ = a ? a.state : "none";
-      $("sndState").textContent = st_==="running" ? "playing — 3 ticks then GO" : `audio is ${st_}`;
-      $("sndNote").textContent = st_==="running"
-        ? "If that was silent, your phone's ring/silent switch is muting it. Flip it to ring."
-        : "The browser blocked audio. Tap Test sound once more.";
+      $("sndState").textContent = "3 ticks, then GO";
+      $("sndNote").textContent = "Beeps now play like media, so the silent switch shouldn't block them. Still nothing? Turn the media volume up (buttons on the side while this page is open), then tap Test sound again.";
     }, 1500);
+  };
+  function csv(rows, cols){
+    const esc=v=>{ v = v===undefined||v===null ? "" : String(v); return /[",\n\r]/.test(v) ? `"${v.replace(/"/g,'""')}"` : v; };
+    return [cols.join(","), ...rows.map(r=>cols.map(c=>esc(r[c])).join(","))].join("\r\n")+"\r\n";
+  }
+  const CRC=(()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = c&1 ? 0xEDB88320^(c>>>1) : c>>>1; t[n]=c>>>0; } return t; })();
+  function crc32(b){ let c=0xFFFFFFFF; for(let i=0;i<b.length;i++) c=CRC[(c^b[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+  /* minimal stored (uncompressed) zip, so it opens in Files with no libraries */
+  function zip(files){
+    const enc=new TextEncoder(), parts=[], cen=[]; let off=0;
+    const now=new Date(), dt=((now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1)), dd=(((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate());
+    files.forEach(f=>{
+      const name=enc.encode(f.name), data=enc.encode(f.text), crc=crc32(data);
+      const h=new DataView(new ArrayBuffer(30)); h.setUint32(0,0x04034b50,true); h.setUint16(4,20,true); h.setUint16(6,0x0800,true); h.setUint16(8,0,true);
+      h.setUint16(10,dt,true); h.setUint16(12,dd,true); h.setUint32(14,crc,true); h.setUint32(18,data.length,true); h.setUint32(22,data.length,true); h.setUint16(26,name.length,true); h.setUint16(28,0,true);
+      parts.push(new Uint8Array(h.buffer), name, data);
+      const c=new DataView(new ArrayBuffer(46)); c.setUint32(0,0x02014b50,true); c.setUint16(4,20,true); c.setUint16(6,20,true); c.setUint16(8,0x0800,true); c.setUint16(10,0,true);
+      c.setUint16(12,dt,true); c.setUint16(14,dd,true); c.setUint32(16,crc,true); c.setUint32(20,data.length,true); c.setUint32(24,data.length,true); c.setUint16(28,name.length,true);
+      c.setUint32(42,off,true); cen.push(new Uint8Array(c.buffer), name);
+      off += 30+name.length+data.length;
+    });
+    const csize=cen.reduce((a,b)=>a+b.length,0), e=new DataView(new ArrayBuffer(22));
+    e.setUint32(0,0x06054b50,true); e.setUint16(8,files.length,true); e.setUint16(10,files.length,true); e.setUint32(12,csize,true); e.setUint32(16,off,true);
+    return new Blob([...parts, ...cen, new Uint8Array(e.buffer)], {type:"application/zip"});
+  }
+  const TEMPLATE = {full:"Full", yoga:"Yoga", strength:"Strength", cardio:"Cardio"};
+  const COLS = {
+    sessions:["session_id","date","start_time","end_time","tz","location","phase","template","session_rpe","completed","notes","duration_min","recovery_color","entry"],
+    sets:["session_id","block","exercise","set_no","side","reps_or_seconds","measure","load","load_type","RIR","planned_load","planned_reps","swapped_from"],
+    cardio:["session_id","modality","segment","seconds","duration_min","intervals","target_zone","target_seconds","swapped_from"],
+    gates:["date","gate","result","pass"]
+  };
+  function tables(){
+    const sessions = [...st.log].sort((a,b)=>{ const x=a.d+(a.start||""), y=b.d+(b.start||""); return x<y?-1:x>y?1:0; }).map(l=>({
+      session_id:l.id, date:l.d, start_time:l.start||"", end_time:l.end||"", tz:l.tz||(l.start?TZ:""), location:l.l, phase:l.p, template:TEMPLATE[l.t]||l.t,
+      session_rpe:l.rpe||"", completed:l.done, notes:l.notes||"", duration_min:l.m, recovery_color:l.r,
+      entry: l.manual ? "manual" : l.id.includes("legacy") ? "legacy" : l.done==="skipped" ? "skipped" : "timer" }));
+    const sets = st.sets.map(({_u,...r})=>r);
+    return {sessions, sets, cardio:st.cardio, gates:st.gateLog};
+  }
+  const README = `The Series export. One CSV per table, full history every time. Column names are stable.
+
+sessions.csv  one row per session. start_time/end_time are local 24h HH:MM in tz. completed = full | partial | skipped.
+              entry = timer | manual | legacy | skipped. Legacy rows predate timestamps, so their times are blank.
+              session_rpe 1-10. recovery_color is the green/yellow/red picked in the app. duration_min is time on the timer.
+sets.csv      one row per set, per side for single-arm or single-leg moves (side = R | L | blank).
+              reps_or_seconds is read with measure = reps | seconds. load is in lb.
+              load_type: per_hand = the weight of ONE dumbbell, two in use | single_db = one dumbbell | machine_stack | barbell | bodyweight.
+              RIR = reps in reserve, 4 means 4 or more, blank = not rated. planned_* is what the app prescribed.
+              swapped_from is the exercise it replaced. Warm-up, flow and cooldown moves are logged with seconds done.
+cardio.csv    one row per cardio block or leg. segment names it ("Back stairs", "Jog to the park").
+              seconds is the actual time. On tapped legs (the stair route) it's exactly when you tapped;
+              target_seconds is the usual time. target_zone Z1 easy, Z2 steady, Z4 climbs, Z4-5 intervals.
+gates.csv     one row per gate test. pass = y | n.
+`;
+  function download(blob, name){
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+  }
+  function sessionSummary(T){
+    const L=[];
+    T.sessions.forEach(x=>{
+      L.push(`${x.date} ${x.start_time||"?"}–${x.end_time||"?"} ${x.tz}  ${x.template}, ${x.location}, phase ${x.phase}, ${x.duration_min} min, ${x.completed}${x.session_rpe?`, RPE ${x.session_rpe}`:""}`);
+      if (x.notes) L.push(`Notes: ${x.notes}`);
+      const cr=T.cardio.filter(c=>c.session_id===x.session_id);
+      if (cr.length){ L.push("","Cardio"); cr.forEach(c=>L.push(`  ${c.segment||c.modality}  ${fmtSecs(c.seconds||c.duration_min*60)}${c.target_seconds?` (usual ${fmtSecs(c.target_seconds)})`:""}  ${c.target_zone}`)); }
+      const sr=T.sets.filter(r=>r.session_id===x.session_id && r.block!=="warmup" && r.block!=="cooldown");
+      if (sr.length){ L.push("","Sets"); sr.forEach(r=>L.push(`  ${r.exercise}${r.side?" "+r.side:""}  set ${r.set_no}  ${r.reps_or_seconds} ${r.measure}${r.load?` @ ${r.load} lb ${r.load_type}`:""}${r.RIR!==""?`  RIR ${r.RIR}`:""}${r.swapped_from?`  (swapped from ${r.swapped_from})`:""}`)); }
+      L.push("");
+    });
+    return L.join("\n");
+  }
+  function exportZip(sid){
+    let T=tables();
+    if (sid) T={sessions:T.sessions.filter(x=>x.session_id===sid), sets:T.sets.filter(x=>x.session_id===sid), cardio:T.cardio.filter(x=>x.session_id===sid), gates:T.gates.filter(g=>T.sessions.some(x=>x.session_id===sid && x.date===g.date))};
+    const files=Object.keys(COLS).map(k=>({name:`${k}.csv`, text:csv(T[k], COLS[k])}));
+    files.push({name:"summary.txt", text:sessionSummary(T)}, {name:"tables.json", text:JSON.stringify(T,null,1)}, {name:"README.txt", text:README});
+    download(zip(files), sid ? `the-series-${sid}.zip` : `the-series-export-${today()}.zip`);
+    return T;
+  }
+  $("doneExp").onclick=()=>{ if (P.doneId) exportZip(P.doneId); };
+  $("lastBtn").onclick=()=>{ const l=[...st.log].reverse().find(x=>x.done!=="skipped"); if (l){ exportZip(l.id); $("ioNote").textContent=`Exported ${l.d}${l.start?" "+l.start:""}.`; } };
+  $("csvBtn").onclick=()=>{
+    const T=exportZip();
+    $("ioNote").textContent=`Exported ${T.sessions.length} sessions, ${T.sets.length} sets, ${T.cardio.length} cardio blocks, ${T.gates.length} gate tests.`;
   };
   $("expBtn").onclick=()=>{
     const blob=new Blob([JSON.stringify(st,null,2)],{type:"application/json"});
@@ -2039,13 +2428,23 @@ if (typeof document!=="undefined") (function(){
         if (!d || typeof d!=="object" || !("phase" in d)) throw new Error("not a Series export");
         if (!confirm("Replace everything on this device with the imported file?")) return;
         st={...st, ...d, gates:{...(d.gates||{})}, eq:{...st.eq, ...(d.eq||{})}, lifts:{...(d.lifts||{})}, aim:{...(d.aim||{})}, log:d.log||[]};
-        save(); renderHome(); $("ioNote").textContent="Imported.";
+        migrate(); save(); renderHome(); $("ioNote").textContent="Imported.";
       }catch(err){ $("ioNote").textContent="That file didn't look like a Series export. Nothing changed."; }
       e.target.value="";
     };
     r.readAsText(f);
   };
-  if ("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+  if ("serviceWorker" in navigator){
+    window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{}));
+    let reloaded=false;
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{ if (reloaded || !$("player").hidden) return; reloaded=true; location.reload(); });
+  }
+  $("fuBtn").onclick=async()=>{
+    $("fuBtn").textContent="Updating…";
+    try{ if (window.caches) for (const k of await caches.keys()) await caches.delete(k); }catch(e){}
+    try{ if (navigator.serviceWorker) for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister(); }catch(e){}
+    location.reload();
+  };
   applySkin();
   renderHome();
   $("brOn").checked = st.breath!==false;
