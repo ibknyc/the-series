@@ -1,5 +1,7 @@
-/* The Series - offline shell. Bump CACHE when you change index.html. */
-const CACHE = "series-v12";
+/* The Series - offline shell.
+   Pages: network first, so a new version shows on the first launch.
+   Fonts and icons: cache first, they never change. */
+const CACHE = "series-v21";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./local-fonts.css", "./icon-192.png", "./icon-512.png", "./icon-180.png", "./anton-latin-400-normal.woff2", "./atkinson-hyperlegible-latin-400-normal.woff2", "./atkinson-hyperlegible-latin-700-normal.woff2", "./bodoni-moda-latin-700-normal.woff2", "./bodoni-moda-latin-900-normal.woff2", "./bricolage-grotesque-latin-500-normal.woff2", "./bricolage-grotesque-latin-700-normal.woff2", "./bricolage-grotesque-latin-800-normal.woff2", "./chivo-latin-400-normal.woff2", "./chivo-latin-700-normal.woff2", "./familjen-grotesk-latin-400-normal.woff2", "./familjen-grotesk-latin-700-normal.woff2", "./instrument-serif-latin-400-normal.woff2", "./martian-mono-latin-400-normal.woff2", "./martian-mono-latin-700-normal.woff2", "./unbounded-latin-600-normal.woff2", "./unbounded-latin-800-normal.woff2"];
 
 self.addEventListener("install", e => {
@@ -9,22 +11,19 @@ self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 self.addEventListener("fetch", e => {
-  const url = new URL(e.request.url);
-  if (e.request.method !== "GET") return;
-  if (url.origin === location.origin) {
-    /* app shell: cache first, refresh in the background */
-    e.respondWith(caches.match(e.request).then(hit => {
-      const net = fetch(e.request).then(res => {
-        if (res && res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
-        return res;
-      }).catch(() => hit);
-      return hit || net;
-    }));
-  } else {
-    /* fonts: network, fall back to cache */
-    e.respondWith(fetch(e.request).then(res => {
-      if (res && res.ok) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(e.request, cp)); }
+  const req = e.request;
+  if (req.method !== "GET") return;
+  const url = new URL(req.url);
+  const isPage = req.mode === "navigate" || url.pathname.endsWith("/") || url.pathname.endsWith(".html") || url.pathname.endsWith("sw.js");
+  if (url.origin === location.origin && isPage) {
+    e.respondWith(fetch(req, {cache: "no-store"}).then(res => {
+      if (res && res.ok) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(req, cp)); }
       return res;
-    }).catch(() => caches.match(e.request)));
+    }).catch(() => caches.match(req).then(hit => hit || caches.match("./index.html"))));
+    return;
   }
+  e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
+    if (res && res.ok) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(req, cp)); }
+    return res;
+  })));
 });
