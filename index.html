@@ -409,6 +409,9 @@ section{margin-bottom:34px}
 .lights i{width:16px;height:16px;border-radius:50%;background:var(--line);border:1px solid var(--line);transition:background .06s linear,box-shadow .06s linear}
 .lights i.on{background:var(--accent);box-shadow:0 0 12px var(--accent)}
 .clock.cd{color:var(--accent)}
+.resume{background:var(--card);border-left:4px solid var(--accent);border-radius:8px;padding:12px 14px;margin:0 0 22px}
+.resume p{margin:0;font-weight:700}
+.paway{margin:0 auto;max-width:44ch;text-align:center;font-size:14px;color:var(--accent);font-weight:700;padding:0 20px}
 .clock.over{color:var(--ink-2)}
 .lights.go i{background:var(--green);box-shadow:0 0 16px var(--green)}
 @media (min-width:860px) and (min-height:520px){ .lights{justify-content:flex-start} }
@@ -738,6 +741,10 @@ section{margin-bottom:34px}
 </head>
 <body>
 <main id="home">
+  <div class="resume" id="resumeBox" hidden>
+    <p id="resumeText"></p>
+    <div class="manual" style="margin-top:8px"><button id="resumeBtn">Resume</button><button id="resumeEnd">Log it as partial</button></div>
+  </div>
   <header class="top">
     <h1>The Series</h1>
     <p class="lede">One practice, done most days. It grows when you pass the gates, not when the calendar says so.</p>
@@ -755,6 +762,7 @@ section{margin-bottom:34px}
     <div class="secondbox" id="stairBox" hidden>
       <div class="switchrow"><label for="bikeTo">Citi Bike to the park</label><input type="checkbox" class="switch" id="bikeTo" role="switch"></div>
       <div class="switchrow" style="margin-top:12px"><label for="bikeHome">Citi Bike home</label><input type="checkbox" class="switch" id="bikeHome" role="switch"></div>
+      <div class="switchrow" style="margin-top:12px"><label for="ldOn">Long day: one more loop</label><input type="checkbox" class="switch" id="ldOn" role="switch"></div>
       <div class="switchrow" style="margin-top:12px"><label for="stOn">Moves at the top of each stair</label><input type="checkbox" class="switch" id="stOn" role="switch"></div>
       <p class="wnote" id="stairNote"></p>
     </div>
@@ -875,6 +883,7 @@ section{margin-bottom:34px}
       <p class="pcue" id="pCue"></p>
     </div>
   </div>
+  <p class="paway" id="pAway" hidden></p>
   <div class="pnext" id="pNextWrap">Next: <b id="pNext"></b></div>
   <div class="controls">
     <button id="pPrev" aria-label="Previous step">Back</button>
@@ -1006,7 +1015,17 @@ const RAW = {
   stairA:       "96,50 98,64 94,114 110,86 122,72 82,88 70,100 124,118 142,142 94,146 88,174",
   stairB:       "92,38 94,52 92,102 78,76 66,88 108,74 120,60 128,108 150,130 100,130 112,154",
   hang:         "100,62 100,76 100,126 99,44 98,16 101,44 102,16 98,158 98,178 102,158 102,178",
-  pullup:       "100,36 100,50 100,100 96,30 96,16 104,30 104,16 96,132 92,160 104,132 108,160"
+  pullup:       "100,36 100,50 100,100 96,30 96,16 104,30 104,16 96,132 92,160 104,132 108,160",
+  trxRowA:      "71,88 80,100 100,128 92,88 104,76 94,87 106,75 114,152 128,177 116,153 130,177",
+  trxRowB:      "71,88 80,100 100,128 70,111 93,91 72,112 95,90 114,152 128,177 116,153 130,177",
+  trxY:         "71,88 80,100 100,128 84,80 88,62 86,80 90,61 114,152 128,177 116,153 130,177",
+  trxPlank:     "154,121 142,127 96,146 142,152 142,177 144,152 144,177 62,154 28,156 63,155 29,157",
+  trxPushDown:  "155,150 142,154 94,152 127,149 140,177 129,149 142,177 62,155 28,156 63,156 29,157",
+  trxTuck:      "154,124 142,130 104,124 142,154 142,177 144,154 144,177 120,150 92,156 121,151 93,157",
+  trxSquatUp:   "100,40 100,55 100,105 114,72 130,70 116,73 132,71 98,141 98,177 102,141 102,177",
+  trxSquatDown: "114,82 108,95 86,140 131,97 155,98 132,98 156,99 124,150 100,177 126,151 102,177",
+  trxHamOut:    "40,170 55,172 100,160 78,176 100,177 79,176 101,177 135,150 168,142 136,151 169,143",
+  trxHamIn:     "40,170 55,172 98,142 78,176 100,177 79,176 101,177 128,130 126,160 129,131 127,160"
 };
 const POSE = {};
 for (const k in RAW) POSE[k] = RAW[k].trim().split(/\s+/).map(s => s.split(',').map(Number));
@@ -1014,7 +1033,9 @@ const WALL = { legsupwall:153, headtuck:78, lhandstand:151 };
 const PROP_OF = { rowcatch:"rower", rowfinish:"rower", climbA:"climber", climbB:"climber", latup:"lat", latdown:"lat",
   crowout:"cable", crowin:"cable", lpdown:"legpress", lpup:"legpress", benchdown:"bench", benchup:"bench",
   ellipA:"elliptical", ellipB:"elliptical", bikeA:"bike", bikeB:"bike",
-  ropeA:"rope", ropeB:"rope", stairA:"stairs", stairB:"stairs", hang:"bar", pullup:"bar" };
+  ropeA:"rope", ropeB:"rope", stairA:"stairs", stairB:"stairs", hang:"bar", pullup:"bar",
+  trxRowA:"trxRowA", trxRowB:"trxRowB", trxY:"trxY", trxPlank:"trxPlank", trxPushDown:"trxPlank", trxTuck:"trxTuck",
+  trxSquatUp:"trxSquatUp", trxSquatDown:"trxSquatDown", trxHamOut:"trxHamOut", trxHamIn:"trxHamIn" };
 const PROPS = {
   rower:`<line x1="30" y1="172" x2="160" y2="172"/><line x1="150" y1="146" x2="150" y2="172"/><circle cx="174" cy="150" r="14"/>`,
   climber:`<line x1="150" y1="178" x2="130" y2="8"/><line x1="136" y1="178" x2="164" y2="178"/>`,
@@ -1026,7 +1047,12 @@ const PROPS = {
   bike:`<circle cx="62" cy="158" r="19"/><circle cx="152" cy="158" r="19"/><path d="M62 158 L112 150 L152 158 M112 150 L140 102 M140 102 L152 158 M140 102 L96 120"/>`,
   rope:`<path d="M74 98 C 40 10, 160 10, 126 98"/>`,
   stairs:`<path d="M14 178 V174 H78 V158 H112 V142 H150 V126 H192"/>`,
-  bar:`<line x1="46" y1="14" x2="160" y2="14"/><line x1="52" y1="14" x2="52" y2="0"/><line x1="154" y1="14" x2="154" y2="0"/>`
+  bar:`<line x1="46" y1="14" x2="160" y2="14"/><line x1="52" y1="14" x2="52" y2="0"/><line x1="154" y1="14" x2="154" y2="0"/>`,
+  /* TRX straps: anchor to hands or feet */
+  trxRowA:`<line x1="178" y1="2" x2="106" y2="75"/>`, trxRowB:`<line x1="178" y1="2" x2="95" y2="90"/>`, trxY:`<line x1="178" y1="2" x2="90" y2="61"/>`,
+  trxPlank:`<line x1="40" y1="2" x2="28" y2="156"/>`, trxTuck:`<line x1="40" y1="2" x2="92" y2="156"/>`,
+  trxSquatUp:`<line x1="188" y1="2" x2="132" y2="71"/>`, trxSquatDown:`<line x1="188" y1="2" x2="156" y2="99"/>`,
+  trxHamOut:`<line x1="178" y1="2" x2="169" y2="143"/>`, trxHamIn:`<line x1="178" y1="2" x2="127" y2="160"/>`
 };
 
 const BLOCKS = {
@@ -1214,9 +1240,13 @@ function stairPark(o){
   const ph=o.phase, T=o.lapT||{}, out=[], b=Math.min(3,o.stairN||0)*2, X=o.G?2:0, mv=o.stations!==false;
   const L=(n,m,t,c,d,x={})=>lapStep(n,m,t,c,d,{...x,lapT:T});
   const climb=(n,t,chip,cue)=>L(n,"stairs",t,cue,"At the top",{climb:true, zone:"Z4", tempo:.5, label:"Climb", chips:[chip]});
-  /* which big stairs, in order. The small stairs go between each pair. */
-  const order = [["front","back","front"], ["front","back","hidden","front"],
-                 ["front","back","hidden","back","hidden","front"], ["front","back","hidden","front","back","hidden","front"]][ph-1];
+  /* which big stairs, in order; the small stairs go between each pair.
+     One loop = front, back, hidden, front. Phase 1 skips the hidden stairs,
+     then 1, 2 and 3 loops. A long day adds one more: 4 loops is the old 90-minute run. */
+  const loops = ph===1 ? 1 : ph-1 + (o.longDay ? 1 : 0);
+  const order = ph===1 && !o.longDay ? ["front","back","front"] : ["front", ...Array.from({length:loops}, ()=>["back","hidden","front"]).flat()];
+  /* on 3+ loops the moves happen on the first loop only, so the rest stays a run */
+  const lastMoveClimb = loops>=3 ? 3 : order.length-1;
   const moveAt = {
     front: c => ph<=2
       ? [reps("Incline push-ups","plank","chaturanga",8+2*(ph-1)+b+X,2.6,"strength","Hands on the stone wall at the top, body in one line, chest to the wall.",{chips:[c],setup:3})]
@@ -1234,15 +1264,15 @@ function stairPark(o){
   } else out.push(L("Jog to the park","run",900,"Easy enough to talk, under about 140. Last time your heart rate hit 150 on the way in, so save it for the stairs.","At the front stairs",{zone:"Z2"}));
   const nSmall = order.length-1, capoAt = Math.floor((nSmall-1)/2);
   order.forEach((k,i)=>{
-    const S=STAIRS[k], c=`Climb ${i+1} of ${order.length}`;
+    const S=STAIRS[k], lp=Math.max(1,Math.ceil(i/3)), c = loops>1 ? `Loop ${lp} of ${loops} · climb ${i+1} of ${order.length}` : `Climb ${i+1} of ${order.length}`;
     out.push(climb(S.name, S.t, c, S.cue));
-    if (mv && (k!=="front" || i===0 || i===order.length-1)) out.push(...moveAt[k](S.name.replace(" stairs","")));
+    if (mv && i<=lastMoveClimb && (k!=="front" || i===0 || i===lastMoveClimb || i===order.length-1)) out.push(...moveAt[k](S.name.replace(" stairs","")));
     if (i===order.length-1) return;
     /* down the path to the hub, up the small stairs, over to the next one */
     const nx=STAIRS[order[i+1]], j=i;
     out.push(L(`Down from the ${k} stairs to the small stairs`,"run",S.down,"Down the path, not the stairs. Let the legs float.","At the small stairs",{zone:"Z2"}));
     out.push(climb("Small stairs",30,`Small ${j+1} of ${nSmall}`,"Short and sharp. Run them."));
-    if (mv && j===capoAt) out.push(...moveAt.small("Small"));
+    if (mv && j===Math.min(capoAt,1)) out.push(...moveAt.small("Small"));
     out.push(L(`Over to the ${order[i+1]} stairs`,"run",nx.over,`Jog over to the bottom of the ${order[i+1]} stairs. Easy, keep it moving.`,"At the bottom",{zone:"Z2"}));
   });
   if (o.G){
@@ -1309,6 +1339,16 @@ function build(o){
   const birddog = sl => sided((f,s)=>reps("Bird dog","table","birddog",6,4,"strength","Opposite arm and leg long. Slow enough that nothing wobbles.",{flip:f,chips:[sl,s]}));
   const plank = sl => hold("Forearm plank","forearmplank",G?40:30,"strength","Elbows under shoulders. Squeeze the glutes and push the floor away.",{chips:[sl]});
 
+  /* TRX joins in Phase 3, when the moves get harder. Difficulty is foot position, not weight. */
+  const trx = phase>=3 && gym && !!eq.trx, T4 = phase>=4 ? 2 : 0;  /* TRX lives at the gym */
+  const TRX = {
+    row: sl => reps("TRX row","trxRowA","trxRowB",10+X+T4,3,"strength","Walk your feet in until it's hard. Body in one plank, pull your chest to the handles, elbows close.",{chips:[sl],setup:3}),
+    push: sl => reps("TRX push-up","trxPlank","trxPushDown",8+X+T4,3,"strength","Feet in the cradles, hands on the floor. Hips level, don't let them sag.",{chips:[sl],setup:3}),
+    ham: sl => reps("TRX hamstring curl","trxHamOut","trxHamIn",10+X+T4,3,"strength","Heels in the cradles, hips up and stay up. Pull your heels to your glutes.",{chips:[sl],setup:3}),
+    y: sl => reps("TRX Y-fly","trxRowA","trxY",10+X+T4,3,"strength","Lean back, arms straight, lift into a Y. Shoulders down, thumbs up.",{chips:[sl],setup:3}),
+    pistol: sl => sided((f,sd)=>reps("TRX pistol squat","trxSquatUp","trxSquatDown",6+X/2+T4/2,3.2,"strength","Hold the handles, one leg out front, sit back and down. Use the straps only as much as you need.",{flip:f,chips:[sl,sd],setup:3})),
+    tuck: sl => reps("TRX knee tuck","trxPlank","trxTuck",10+X+T4,2.4,"strength","Feet in the cradles, shoulders over wrists. Pull the knees to your chest without the hips piking.",{chips:[sl],setup:3})
+  };
   const BW = {
     squat: n => sl => reps("Slow air squat","mountain","squat",n+2,4,"strength","Three seconds down, one up. Heels stay heavy.",{chips:[sl]}),
     pushups: n => sl => reps("Push-ups","plank","chaturanga",n,3,"strength","Body in one line. Knees down once form breaks.",{chips:[sl]}),
@@ -1325,8 +1365,8 @@ function build(o){
     const over  = n => SL("overhead", EX.oh(n), BW.pike(Math.max(6,n-2)));
     if (phase===1) list = extended ? [squat(8+X), push(6+X), SL("bridge",bridge), SL("birddog",birddog), SL("plank",plank)] : [SL("bridge",bridge), SL("birddog",birddog), SL("plank",plank)];
     else if (phase===2) list = [squat(8+X), pull(8+X), push(8+X), hinge(8+X), SL("carry", EX.suitcase(20+X*5), BW.sideplank(20+X*5))];
-    else if (phase===3) list = [SL("squat",EX.split(8+X),EX.goblet(8+X),BW.squat(8+X)), over(8+X), SL("pull",EX.renegade(6+X),EX.row(8+X),BW.taps(10+X)), hinge(10+X)];
-    else list = [SL("squat",EX.split(10+X),EX.goblet(10+X),BW.squat(10+X)), over(10+X), SL("pull",EX.renegade(8+X),EX.row(10+X),BW.taps(12+X)), hinge(10+X), ...(extended?[SL("squat2",EX.goblet(10+X),BW.squat(10+X))]:[])];
+    else if (phase===3) list = [SL("squat",EX.split(8+X),trx&&TRX.pistol,EX.goblet(8+X),BW.squat(8+X)), SL("overhead",trx&&TRX.y,EX.oh(8+X),BW.pike(Math.max(6,6+X))), SL("pull",trx&&TRX.row,EX.renegade(6+X),EX.row(8+X),BW.taps(10+X)), SL("hinge",trx&&TRX.ham,EX.rdl(10+X),bridge), ...(trx?[SL("push",TRX.push,EX.press(8+X),BW.pushups(8+X)), SL("core",TRX.tuck)]:[])];
+    else list = [SL("squat",EX.split(10+X),trx&&TRX.pistol,EX.goblet(10+X),BW.squat(10+X)), SL("overhead",trx&&TRX.y,EX.oh(10+X),BW.pike(8+X)), SL("pull",trx&&TRX.row,EX.renegade(8+X),EX.row(10+X),BW.taps(12+X)), SL("hinge",trx&&TRX.ham,EX.rdl(10+X),bridge), ...(trx?[SL("push",TRX.push,EX.press(10+X),BW.pushups(10+X)), SL("core",TRX.tuck)]:[]), ...(extended?[SL("squat2",EX.goblet(10+X),BW.squat(10+X))]:[])];
     return circuit(sets, rest, list);
   }
   function gymStrength(sets, rest){
@@ -1358,13 +1398,13 @@ function build(o){
     const dbohp = sl => sided((f,sd)=>reps("Single-arm press","ohdown","ohpress",8+X,3,"strength","Glutes and ribs tight so the press comes from the shoulder, not the lower back.",{db:"B",weight:wt(L),track:"Single-arm press",setup:10,flip:f,chips:[sl,sd]}));
 
     /* each slot lists its variants; B sessions start one variant along */
-    const squat = SL("squat", mc&&G_.legpress, dbgoblet, dbsplit, sm&&G_.smithsquat, bb&&G_.backsquat);
-    const pull  = SL("pull", mc&&G_.pulldown, mc&&G_.cablerow, bn&&dbrow, sm&&G_.smithrow, bb&&G_.bbrow, EX.row(8+X));
-    const push  = SL("push", bn&&G_.dbbench, bn&&G_.dbincline, sm&&G_.smithbench, bb&&G_.bench, EX.press(8+X), BW.pushups(10+X));
-    const hinge = SL("hinge", bn&&dbrdl, sm&&G_.smithrdl, bb&&(phase>=4?G_.deadlift:G_.bbrdl), bridge);
-    const over  = SL("overhead", sm&&G_.smithohp, bb&&G_.ohp, dbohp, BW.pike(8+X));
+    const squat = SL("squat", mc&&G_.legpress, dbgoblet, dbsplit, trx&&TRX.pistol, sm&&G_.smithsquat, bb&&G_.backsquat);
+    const pull  = SL("pull", trx&&TRX.row, mc&&G_.pulldown, mc&&G_.cablerow, bn&&dbrow, sm&&G_.smithrow, bb&&G_.bbrow, EX.row(8+X));
+    const push  = SL("push", bn&&G_.dbbench, trx&&TRX.push, bn&&G_.dbincline, sm&&G_.smithbench, bb&&G_.bench, EX.press(8+X), BW.pushups(10+X));
+    const hinge = SL("hinge", bn&&dbrdl, trx&&TRX.ham, sm&&G_.smithrdl, bb&&(phase>=4?G_.deadlift:G_.bbrdl), bridge);
+    const over  = SL("overhead", trx&&TRX.y, sm&&G_.smithohp, bb&&G_.ohp, dbohp, BW.pike(8+X));
     const accessory = phase>=3 ? over : SL("pull2", mc&&G_.cablerow, bn&&dbrow, EX.renegade(6+X));
-    const list = B ? [hinge, pull, squat, push, accessory] : [squat, push, pull, hinge, accessory];
+    const list = (B ? [hinge, pull, squat, push, accessory] : [squat, push, pull, hinge, accessory]).concat(trx ? [SL("core", TRX.tuck)] : []);
     list.forEach(sl=>{ if (sl.v.length>1) sl.di = B % sl.v.length; });
     /* don't run the same movement twice in one session */
     const taken=new Set();
@@ -1442,7 +1482,7 @@ function build(o){
         add(machineEasy("run", 360, "Easy jog", "Out to the park. Conversational the whole way."));
         add(steady("run", 8*60, "Easy miles", "Red day. Flat ground only, skip the stairs, keep it easy."));
         add(machineEasy("run", 300, "Jog home", "Easy. Let the heart rate fall before you stop."));
-      } else add(stairPark({phase, G, bikeTo:o.bikeTo, bikeHome:o.bikeHome, lapT:o.lapT, stairN:o.stairN, stations:o.stations}));
+      } else add(stairPark({phase, G, bikeTo:o.bikeTo, bikeHome:o.bikeHome, lapT:o.lapT, stairN:o.stairN, stations:o.stations, longDay:o.longDay}));
       add(finisher(), shortClose());
       return out;
     }
@@ -1521,7 +1561,7 @@ const TYPES = [
   {id:"strength", name:"Strength", note:"Short warm-up, the lifting, and a quick cool-down. Good for the afternoon."},
   {id:"cardio", name:"Cardio", note:"Warm up on one machine, work on the next, flush on a third. Always ends with one pulling movement."}
 ];
-const EQ_GYM = [{id:"machines",name:"Cables and machines"},{id:"bench",name:"Bench + dumbbells"},{id:"smith",name:"Smith machine"},{id:"barbell",name:"Free barbell"},{id:"bar",name:"Pull-up bar"},
+const EQ_GYM = [{id:"trx",name:"TRX"},{id:"machines",name:"Cables and machines"},{id:"bench",name:"Bench + dumbbells"},{id:"smith",name:"Smith machine"},{id:"barbell",name:"Free barbell"},{id:"bar",name:"Pull-up bar"},
   {id:"rower",name:"Rower"},{id:"elliptical",name:"Elliptical"},{id:"gymbike",name:"Gym bike"},{id:"climber",name:"Ladder climber"},{id:"tread",name:"Treadmill"}];
 const EQ_HOME = [{id:"bar",name:"Pull-up bar"},{id:"run",name:"Running"},{id:"stairs",name:"Park stairs"},{id:"peloton",name:"Peloton"},{id:"outbike",name:"Bike ride"},{id:"rope",name:"Jump rope"}];
 
@@ -1546,7 +1586,10 @@ if (typeof document!=="undefined") (function(){
       if (!l.id) l.id=`s_${l.d.replace(/-/g,"")}_legacy${i+1}`;
       if (!l.done) l.done = l.partial ? "partial" : "full";
       /* a session the phone killed mid-way: keep it, as partial */
-      if (l.live){ l.live=false; l.done="partial"; if (!l.end && l.lastAt) l.end=l.lastAt; }
+      if (l.live){
+        let r=null; try{ r=JSON.parse(localStorage.getItem(KEY+"-live")||"null"); }catch(e){}
+        if (r && r.sid===l.id && Date.now()-r.at < 3*3600*1000) return;
+        l.live=false; l.done="partial"; if (!l.end && l.lastAt) l.end=l.lastAt; }
     });
   }
   migrate();
@@ -1598,7 +1641,7 @@ if (typeof document!=="undefined") (function(){
   const isSecond = () => (st.secOv && st.secOv.d===today()) ? st.secOv.v : loggedToday().length>0;
   const gymCount = () => st.type==="cardio" ? realLog().filter(l=>l.t==="cardio").length : realLog().filter(l=>l.l==="gym" && l.t!=="yoga").length;
   const abNext = () => (st.abOv!==null && st.abOv!==undefined) ? st.abOv : (gymCount() % 2);
-  const opts = rec => ({phase:st.phase, rec, type:st.type, loc:st.loc, eq:st.eq, dbOn:st.dbOn, ab:abNext(), finisher:!!st.finisher, bikeTo:!!st.bikeTo, bikeHome:!!st.bikeHome, lapT:st.lapLast||{}, stations:st.stations!==false,
+  const opts = rec => ({phase:st.phase, rec, type:st.type, loc:st.loc, eq:st.eq, dbOn:st.dbOn, ab:abNext(), finisher:!!st.finisher, bikeTo:!!st.bikeTo, bikeHome:!!st.bikeHome, lapT:st.lapLast||{}, stations:st.stations!==false, longDay:!!st.longDay,
     stairN: realLog().filter(l=>l.p===st.phase && (st.cardio||[]).some(c=>c.session_id===l.id && c.modality==="stairs")).length,
     W:{heavy:st.heavy||0, light:st.light||0, gymHeavy:st.gymHeavy||0, gymLight:st.gymLight||0}, second:isSecond()});
   const sessionFor = rec => build(opts(rec));
@@ -1612,6 +1655,7 @@ if (typeof document!=="undefined") (function(){
 
   /* ---------- Home ---------- */
   function renderHome(){
+    if (typeof renderResume==="function") try{ renderResume(); }catch(e){}
     const ph=$("phases"); ph.innerHTML="";
     PHASES.forEach(p=>{
       const b=document.createElement("button"); b.className="phase"; b.type="button";
@@ -1627,7 +1671,7 @@ if (typeof document!=="undefined") (function(){
     $("finBox").hidden = true;
     const stairsToday = sessionFor(st.rec).some(x=>x.climb);
     $("stairBox").hidden = !stairsToday;
-    if (stairsToday){ $("bikeTo").checked=!!st.bikeTo; $("bikeHome").checked=!!st.bikeHome; $("stOn").checked=st.stations!==false;
+    if (stairsToday){ $("bikeTo").checked=!!st.bikeTo; $("bikeHome").checked=!!st.bikeHome; $("stOn").checked=st.stations!==false; $("ldOn").checked=!!st.longDay;
       const best=st.stairs&&st.stairs["Back stairs"];
       $("stairNote").textContent = (st.bikeTo ? "Ride there, five minutes of easy jogging, then the stairs. " : "Jog there, about 15 minutes. ")
         + "Up the stairs, down the paths: each big stair, then down to the small stairs, then over to the next. Tap at every top and every arrival; your times become next session's targets. Moves at the top add 2 reps every stair day this phase, up to +6." + (best ? ` Back stairs best: ${fmtSecs(best.best)}.` : ""); }
@@ -1783,6 +1827,7 @@ if (typeof document!=="undefined") (function(){
   $("secOn").onchange=e=>{ st.secOv={d:today(), v:e.target.checked}; save(); renderHome(); };
   $("bikeTo").onchange=e=>{ st.bikeTo=e.target.checked; save(); renderHome(); };
   $("bikeHome").onchange=e=>{ st.bikeHome=e.target.checked; save(); renderHome(); };
+  $("ldOn").onchange=e=>{ st.longDay=e.target.checked; save(); renderHome(); };
   $("stOn").onchange=e=>{ st.stations=e.target.checked; save(); renderHome(); };
   $("finOn").onchange=e=>{ st.finisher=e.target.checked; save(); renderHome(); };
   $("dbOn").onchange=e=>{ st.dbOn=e.target.checked; save(); renderHome(); };
@@ -1829,16 +1874,6 @@ if (typeof document!=="undefined") (function(){
     try{
       if (!AC){
         AC = new (window.AudioContext||window.webkitAudioContext)();
-        /* iOS: ask for the playback category so the ring/silent switch doesn't mute us */
-        try{ if (navigator.audioSession) navigator.audioSession.type = "playback"; }catch(e){}
-        /* a permanently running silent source stops iOS suspending the context
-           the moment speechSynthesis grabs the audio session */
-        try{
-          const b=AC.createBuffer(1, AC.sampleRate*2, AC.sampleRate);
-          keepAlive=AC.createBufferSource(); keepAlive.buffer=b; keepAlive.loop=true;
-          const g=AC.createGain(); g.gain.value=0.0001;
-          keepAlive.connect(g); g.connect(AC.destination); keepAlive.start(0);
-        }catch(e){}
       }
       if (AC.state!=="running") AC.resume();
       audioReady = AC.state==="running";
@@ -1917,14 +1952,14 @@ if (typeof document!=="undefined") (function(){
   try{ for (const k in CUE_SPEC){ const url=renderWav(CUE_SPEC[k]); POOL[k]=[]; poolIx[k]=0;
     for(let i=0;i<POOL_N;i++){ const a=new Audio(url); a.preload="auto"; a.setAttribute("playsinline",""); POOL[k].push(a); } } }catch(e){}
   /* must run inside a tap: plays every element once, muted, so iOS lets it play later on its own */
+  /* "transient" = short sounds over other audio: your music dips for a beep and comes back.
+     Only called from Start, Resume and Test sound, never from an ordinary tap, so just
+     opening the app leaves your music alone. */
   function unlockAudio(){
-    try{ if (navigator.audioSession) navigator.audioSession.type="playback"; }catch(e){}
-    ctx();
+    try{ if (navigator.audioSession) navigator.audioSession.type="transient"; }catch(e){}
     if (unlocked) return; unlocked=true;
     for (const k in POOL) POOL[k].forEach(a=>{ a.muted=true; const p=a.play(); if (p&&p.then) p.then(()=>{ a.pause(); a.currentTime=0; a.muted=false; }).catch(()=>{ a.muted=false; unlocked=false; }); else { a.pause(); a.muted=false; } });
   }
-  document.addEventListener("pointerdown", unlockAudio, {passive:true, capture:true});
-  document.addEventListener("touchend", unlockAudio, {passive:true, capture:true});
   function playCue(k){
     if (st.sound===2) return;
     const list=POOL[k]; if (!list || !list.length){ WCUE[k] && WCUE[k](); return; }
@@ -2025,17 +2060,64 @@ if (typeof document!=="undefined") (function(){
   }
   function go(i){ logLeaving(i); if (i>=P.steps.length){ finish(); return; } P.i=Math.max(0,i); P.t=0; P.lastCue=null; lights(null); showStep();
     P.gap = needsGap(P.i) ? GAP : 0;
+    /* at the gym a set waits for you to walk over and set up; you tap Ready, then 3-2-1 */
+    const ws=P.steps[P.i], wp=P.steps[P.i-1];
+    P.waitReady = false; /* Ready-before-each-set at the gym: off by request */
+    if (P.waitReady){ $("pPlay").textContent="Ready"; $("pTime").textContent="Ready?"; $("pTime").classList.add("cd"); $("pSub").textContent="Walk over, set up. Tap Ready when you are."; }
+    if (P.catching) return;
+    $("pAway").hidden=true;
     if (!P.gap && !(P.steps[P.i].block==="strength"&&!P.steps[P.i].isRest)) CUE.step(); announce(); }
+  /* Time passed while the phone had the app frozen (another app, or the lock screen).
+     Move the session forward by exactly that much, as if it had kept running.
+     Tapped legs just keep counting. A finished set stops at its sheet, since that needs you. */
+  function catchUp(sec){
+    const from=P.steps[P.i].name, away=sec; let moved=0;
+    P.catching=true;
+    while (sec>0.01){
+      const cs=P.steps[P.i];
+      if (P.waitReady){ sec=0; break; }
+      if (P.gap>0){ const u=Math.min(P.gap,sec); P.gap-=u; sec-=u; continue; }
+      if (cs.lap){ P.t+=sec; sec=0; break; }
+      const left=cs.dur-P.t;
+      if (sec<left){ P.t+=sec; sec=0; break; }
+      sec-=left; P.t=cs.dur;
+      if (unitEnds(P.i)){ P.catching=false; openSheet(); break; }
+      if (P.i+1>=P.steps.length){ P.catching=false; finish(); return; }
+      go(P.i+1); moved++;
+    }
+    P.catching=false; P.sub=-1; P.lastSec=-1;
+    const m=Math.floor(away/60), sx=Math.round(away%60), to=P.steps[P.i].name;
+    $("pAway").textContent = `Away ${m}:${String(sx).padStart(2,"0")}. ` + (moved ? `Moved on from ${from} to ${to}.` : `Clock kept running.`);
+    $("pAway").hidden=false;
+    persist();
+  }
+  /* survive iOS killing the app: keep where we are, so it can pick back up */
+  const LIVE = KEY+"-live";
+  function persist(){
+    if (!P.sid || $("player").hidden) return;
+    P.savedAt=Date.now();
+    try{ localStorage.setItem(LIVE, JSON.stringify({sid:P.sid, i:P.i, t:P.t, gap:P.gap||0, name:P.steps[P.i].name, run:P.run && !P.sheet,
+      at:Date.now(), type:P.type, loc:P.loc, rec:P.rec||st.rec, startedAt:P.startedAt})); }catch(e){}
+  }
+  const clearLive = () => { try{ localStorage.removeItem(LIVE); }catch(e){} };
+  const readLive = () => { try{ const r=JSON.parse(localStorage.getItem(LIVE)||"null"); return r && Date.now()-r.at < 3*3600*1000 && st.log.some(l=>l.id===r.sid) ? r : null; }catch(e){ return null; } };
+  document.addEventListener("visibilitychange",()=>{ if (document.hidden) persist(); });
+  window.addEventListener("pagehide", persist);
   function frame(now){
-    const dt=P.last?Math.min(.25,(now-P.last)/1000):0; P.last=now;
+    const wall=Date.now(), dt=P.lastWall ? (wall-P.lastWall)/1000 : 0; P.last=now; P.lastWall=wall;
+    if (dt>1.5 && P.run && !P.sheet){ catchUp(dt); if ($("player").hidden) return; }
+    else if (wall-(P.savedAt||0)>3000) persist();
     if (P.run && !P.sheet){
-      if (P.gap>0){ P.gap-=dt; if (P.gap<=0){ P.gap=0; P.lastCue=null; CUE.go(); lights(-1); setTimeout(()=>lights(null), 650); } }
+      if (dt>1.5){ /* handled by catchUp */ }
+      else if (P.waitReady){ /* on hold until you tap Ready */ }
+      else if (P.gap>0){ P.gap-=dt; if (P.gap<=0){ P.gap=0; P.lastCue=null; CUE.go(); lights(-1); setTimeout(()=>lights(null), 650); } }
       else { P.t+=dt; if (!P.steps[P.i].lap && P.t>=P.steps[P.i].dur){ advance(); if ($("player").hidden) return; } }
     }
     const cs=P.steps[P.i], j=subAt(cs, cs.lap ? P.t % cs.dur : P.t); curStepSlow = cs.block==="flow" || cs.block==="standing" || cs.block==="close" || cs.block==="arrive";
     if (j!==P.sub){
       const prev=P.sub; P.sub=j; const q=cs.seq[j]; setPose(q.pose);
       $("pSub").textContent = cs.seq.length>1 || q.label!=="Hold" ? q.label : "";
+      if (P.waitReady) $("pSub").textContent="Walk over and set up. Tap Ready when you are.";
       if (q.b && prev!==-1 && P.run){ q.label.includes("hard") ? CUE.hard() : CUE.easy(); }
       /* every pose change in the flow gets a cue you can follow with your eyes shut */
       if (P.run && prev!==-1 && st.breath!==false && cs.seq.length>1 &&
@@ -2062,7 +2144,8 @@ if (typeof document!=="undefined") (function(){
       if (cdRem>3.05) lights(null);
     } else if (!racing && P.lastCue!==null && !P.sheet){ /* cleared by the GO handler */ }
 
-    if (rem!==P.lastSec || racing!==P.lastRacing){
+    if (P.waitReady){ /* the clock says Ready? until you tap */ }
+    else if (rem!==P.lastSec || racing!==P.lastRacing){
       P.lastSec=rem; P.lastRacing=racing;
       $("pTime").classList.toggle("cd", racing);
       $("pTime").textContent = rem>=60 ? Math.floor(rem/60)+":"+String(rem%60).padStart(2,"0") : String(rem);
@@ -2086,7 +2169,7 @@ if (typeof document!=="undefined") (function(){
     if (key && w){
       const inc=INC(key);
       if (feel==="easy"){ st.aim[key]=w+inc; save(); return `Go up to <b>${w+inc} lb</b> next set.`; }
-      if (feel==="solid"){ st.aim[key]=w; save(); return `Right where you want it. <b>Stay at ${w} lb.</b>`; }
+      if (feel==="solid"){ st.aim[key]=w; save(); return `Right where you want it. <b>Stay at ${w} lb</b> until every set hits the reps with 2 in reserve.`; }
       st.aim[key]=Math.max(0,w-inc); save(); return `Drop to <b>${Math.max(0,w-inc)} lb</b>, or stay at ${w} and stop 2 reps short.`;
     }
     if (key) return feel==="easy" ? "Log the weight above and I'll tell you where to go next." : feel==="solid" ? "Log the weight above so next time has a target." : "Log the weight above, then go lighter next set.";
@@ -2175,8 +2258,16 @@ if (typeof document!=="undefined") (function(){
       const b=document.createElement("button"); b.type="button"; b.textContent = n===4 ? "4+" : String(n); b.setAttribute("aria-pressed","false");
       b.setAttribute("aria-label", `${n===4?"4 or more":n} reps in reserve`);
       b.onclick=()=>{ fe.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+        /* a rating 3+ away from last set's at the same weight is probably a mis-tap: ask once */
+        const prev=st.sets.filter(r=>r.session_id===P.sid && r.exercise===cur.name && r.set_no===(cur.set||1)-1 && r.RIR!=="").pop();
+        const load=rows[0]&&rows[0].load;
+        if (prev && Math.abs(prev.RIR-n)>=3 && String(prev.load)===String(load) && P.confirmRir!==n){
+          P.confirmRir=n; $("shAdvice").innerHTML=`Last set was RIR ${prev.RIR===4?"4+":prev.RIR} at the same weight. <b>Tap ${n===4?"4+":n} again</b> if that's right.`;
+          b.setAttribute("aria-pressed","false"); return; }
+        P.confirmRir=null;
         rows.forEach(r=>r.RIR=n); save();
-        const feel = n<=1 ? "hard" : n<=3 ? "solid" : "easy"; P.feel=feel; $("shAdvice").innerHTML=adviceFor(cur,feel); };
+        const done=parseInt($("shRepsIn").value)||cur.reps||0, beat = cur.reps && done>=cur.reps+2;
+        const feel = n===0 ? "hard" : (n>=4 || (n>=2 && beat)) ? "easy" : "solid"; P.feel=feel; $("shAdvice").innerHTML=adviceFor(cur,feel); };
       fe.appendChild(b);
     });
     $("shRest").checked=false;
@@ -2245,14 +2336,14 @@ if (typeof document!=="undefined") (function(){
   document.addEventListener("visibilitychange",()=>{ if (!document.hidden && !$("player").hidden && P.run) wake(true); });
 
   function start(){
-    P.steps=sessionFor(st.rec); P.total=total(P.steps); P.last=0; P.type=st.type; P.loc=st.loc; P.startedAt=Date.now();
+    P.steps=sessionFor(st.rec); P.total=total(P.steps); P.last=0; P.lastWall=0; P.type=st.type; P.loc=st.loc; P.rec=st.rec; P.startedAt=Date.now(); $("pAway").hidden=true;
     P.sid = newEntry({d:today(), start:hhmm(new Date()), end:"", m:0, done:"partial", live:true}).id;
     $("home").hidden=true; $("done").hidden=true; $("player").hidden=false;
     renderSound(); snapPose(P.steps[0].seq[0].pose);
     setRun(true); go(0); wake(true);
     cancelAnimationFrame(P.raf); P.raf=requestAnimationFrame(frame);
   }
-  function stop(){ cancelAnimationFrame(P.raf); P.run=false; P.sheet=false; P.lastCue=null; lights(null); $("sheet").hidden=true; wake(false); if ("speechSynthesis" in window) speechSynthesis.cancel(); }
+  function stop(){ clearLive(); cancelAnimationFrame(P.raf); P.run=false; P.sheet=false; P.lastCue=null; lights(null); $("sheet").hidden=true; wake(false); if ("speechSynthesis" in window) speechSynthesis.cancel(); }
   function newEntry(o){
     const d=o.d||today(), base=`s_${d.replace(/-/g,"")}_${(o.start||"").replace(":","")||o.done}`;
     let id=base, n=2; while (st.log.some(l=>l.id===id)) id=`${base}_${n++}`;
@@ -2291,9 +2382,41 @@ if (typeof document!=="undefined") (function(){
     CUE.finish(); say("Practice done.");
   }
   $("startBtn").onclick=()=>{ unlockAudio(); start(); };
-  $("pPlay").onclick=()=>{ setRun(!P.run); if (P.run) wake(true); };
+  $("pPlay").onclick=()=>{
+    if (P.waitReady){ const lead=P.steps[P.i].seq[0].t; P.waitReady=false; P.t=Math.max(P.t, lead-3); P.lastCue=null; P.lastSec=-1; setRun(true); wake(true); return; }
+    setRun(!P.run); if (P.run) wake(true); };
   $("pSkip").onclick=()=>advance();
   $("pPrev").onclick=()=>{ if (P.t>3) go(P.i); else go(P.i-1); };
+  function resume(r){
+    /* rebuild the same session: it has to be built as it was at the start, before this entry existed */
+    const e=st.log.find(l=>l.id===r.sid); st.log=st.log.filter(l=>l!==e);
+    const keep={type:st.type, loc:st.loc}; st.type=r.type; st.loc=r.loc;
+    P.steps=sessionFor(r.rec);
+    st.type=keep.type; st.loc=keep.loc; st.log.push(e); st.log.sort((a,b)=>{ const x=a.d+(a.start||""), y=b.d+(b.start||""); return x<y?-1:x>y?1:0; });
+    let i = P.steps[r.i] && P.steps[r.i].name===r.name ? r.i : P.steps.findIndex((x,k)=>k>=Math.max(0,r.i-6) && x.name===r.name);
+    if (i<0) i=Math.min(r.i, P.steps.length-1);
+    /* steps already done were logged when you left them; don't log them twice */
+    P.steps.slice(0,i).forEach(x=>x.logged=true);
+    P.total=total(P.steps); P.type=r.type; P.loc=r.loc; P.rec=r.rec; P.startedAt=r.startedAt; P.sid=r.sid; P.last=0; P.lastWall=0;
+    $("home").hidden=true; $("done").hidden=true; $("player").hidden=false;
+    renderSound(); snapPose(P.steps[i].seq[0].pose);
+    P.catching=true; go(i); P.catching=false; P.t=r.t; P.gap=r.gap;
+    setRun(true); wake(true);
+    const away=(Date.now()-r.at)/1000;
+    if (r.run && away>1.5) catchUp(away); else { $("pAway").textContent="Picked up where you left off."; $("pAway").hidden=false; }
+    if (!r.run) setRun(false);
+    cancelAnimationFrame(P.raf); P.raf=requestAnimationFrame(frame);
+  }
+  function renderResume(){
+    const r=readLive(), box=$("resumeBox");
+    box.hidden=!r; if (!r) return;
+    const mins=Math.round((Date.now()-r.startedAt)/60000);
+    $("resumeText").textContent=`Your session is still going: ${r.name}, ${mins} min since you started.`;
+  }
+  $("resumeBtn").onclick=()=>{ const r=readLive(); if (r){ unlockAudio(); resume(r); } else renderResume(); };
+  $("resumeEnd").onclick=()=>{ const r=readLive(); clearLive();
+    if (r){ const e=st.log.find(l=>l.id===r.sid); if (e){ e.live=false; e.done="partial"; e.partial=true; e.end=e.lastAt||hhmm(new Date(r.at)); e.m=Math.max(1,Math.round((r.at-r.startedAt)/60000)); save(); } }
+    renderHome(); };
   function leaveWithoutLogging(){ stop();
     if (P.sid){ st.log=st.log.filter(l=>l.id!==P.sid); st.sets=st.sets.filter(r=>r.session_id!==P.sid); st.cardio=st.cardio.filter(r=>r.session_id!==P.sid); P.sid=null; save(); } $("player").hidden=true; $("home").hidden=false; renderHome(); }
   $("pExit").onclick=()=>{
@@ -2316,10 +2439,10 @@ if (typeof document!=="undefined") (function(){
     else if (e.key==="ArrowLeft") $("pPrev").click();
     else if (e.key==="Escape") $("pExit").click();
   });
-  const APP_VER="v21";
+  const APP_VER="v25";
   $("brOn").onchange=e=>{ st.breath=e.target.checked; save(); };
   $("testSnd").onclick=()=>{
-    unlockAudio(); const a=ctx();
+    unlockAudio(); const a=null;
     CUE.tick(); setTimeout(()=>CUE.tick(),420); setTimeout(()=>CUE.tick(),840); setTimeout(()=>CUE.go(),1260);
     setTimeout(()=>{
       $("sndState").textContent = "3 ticks, then GO";
@@ -2447,6 +2570,7 @@ gates.csv     one row per gate test. pass = y | n.
   };
   applySkin();
   renderHome();
+  renderResume();
   $("brOn").checked = st.breath!==false;
   $("verNote").textContent = `The Series ${APP_VER} · sound ${["voice + beeps","beeps only","silent"][st.sound||0]}`;
 })();
