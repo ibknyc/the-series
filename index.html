@@ -409,6 +409,9 @@ section{margin-bottom:34px}
 .lights i{width:16px;height:16px;border-radius:50%;background:var(--line);border:1px solid var(--line);transition:background .06s linear,box-shadow .06s linear}
 .lights i.on{background:var(--accent);box-shadow:0 0 12px var(--accent)}
 .clock.cd{color:var(--accent)}
+.clock.ot{color:var(--green)}
+#shCardio select{border:0;background:var(--bg);border-radius:8px;padding:6px 4px;font-size:15px;color:var(--ink)}
+#cEff button{padding:10px 0;font-size:15px}
 .resume{background:var(--card);border-left:4px solid var(--accent);border-radius:8px;padding:12px 14px;margin:0 0 22px}
 .resume p{margin:0;font-weight:700}
 .paway{margin:0 auto;max-width:44ch;text-align:center;font-size:14px;color:var(--accent);font-weight:700;padding:0 20px}
@@ -860,6 +863,7 @@ section{margin-bottom:34px}
     <div class="manual" style="margin-top:16px"><span id="verNote" style="font-size:12px;opacity:.7"></span><button id="fuBtn">Force update</button></div>
   </section>
 
+  <p class="lognote" id="whoopHint" style="font-size:14px;margin:-10px 0 0"></p>
   <div class="startbar"><button id="startBtn">Start</button></div>
 </main>
 
@@ -876,7 +880,7 @@ section{margin-bottom:34px}
       <h2 class="pname" id="pName"></h2>
       <p class="psub" id="pSub"></p>
       <div class="chips" id="pChips"></div>
-      <button class="swapbtn" id="pSwap" hidden>Swap</button><br>
+      <button class="swapbtn" id="pSwap" hidden>Swap</button> <button class="swapbtn" id="pPlus" hidden>+1 round</button><br>
       <label class="track" id="pTrack" hidden><span>Weight used</span><input id="pTrackIn" type="number" inputmode="decimal" step="2.5" min="0"><span id="pTrackU">lb</span></label>
       <div class="lights" id="lights" hidden aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
       <div class="clock" id="pTime" aria-live="off"></div>
@@ -897,6 +901,15 @@ section{margin-bottom:34px}
   <div class="sheetin">
     <p class="shkick" id="shKick"></p>
     <h3 id="shTitle"></h3>
+    <div id="shCardio" hidden>
+      <p class="shadvice" id="cLast" style="margin:0 0 10px"></p>
+      <div class="shfields">
+        <label class="track"><span>Screen says</span><input id="cMetric" type="number" inputmode="decimal" min="0" step="any" aria-label="Distance or output"><select id="cUnit" aria-label="Unit"></select></label>
+        <label class="track"><span id="cLevelLab">Level</span><input id="cLevel" type="number" inputmode="decimal" min="0" step="any"></label>
+      </div>
+      <h4>How hard was that block? <small style="font-weight:400;color:var(--ink-2)">optional</small></h4>
+      <div class="feel rir" id="cEff" style="grid-template-columns:repeat(10,1fr)"></div>
+    </div>
     <div id="shRate">
       <h4 style="margin-top:0">Reps left in the tank</h4>
       <div class="feel rir" id="shFeel"></div>
@@ -916,6 +929,7 @@ section{margin-bottom:34px}
 <section id="done" hidden>
   <h1>Practice done.</h1>
   <p id="doneNote"></p>
+  <p id="doneWhoop" style="font-size:15px!important"></p>
   <h2 class="rpeh">How hard was the whole session?</h2>
   <p class="rpekey">1 barely working · 5 moderate · 7 hard · 10 everything you had</p>
   <div class="rpegrid" id="rpeGrid"></div>
@@ -1193,6 +1207,7 @@ function circuit(sets, restSecs, slots){
 const CARDIO = {
   rower:     {name:"Rower",          a:"rowcatch",b:"rowfinish",tempo:2.4, gym:1},
   elliptical:{name:"Elliptical",     a:"ellipA",  b:"ellipB",   tempo:2.0, gym:1},
+  arc:       {name:"Arc Trainer",    a:"ellipA",  b:"ellipB",   tempo:1.7, gym:1},
   gymbike:   {name:"Gym bike",       a:"bikeA",   b:"bikeB",    tempo:1.8, gym:1},
   climber:   {name:"Ladder climber", a:"climbA",  b:"climbB",   tempo:2.4, gym:1},
   tread:     {name:"Treadmill",      a:"runA",    b:"runB",     tempo:1.6, gym:1},
@@ -1216,7 +1231,7 @@ function steady(m, secs, name, cue){ const s=step(name,"cardio",cue,cardioSeq(m,
 function intervals(m, rounds, work=30, easy=30){
   const seq=[];
   for(let i=1;i<=rounds;i++) seq.push(...cardioSeq(m,work,.5,`Round ${i} of ${rounds}: hard`,true), ...cardioSeq(m,easy,1,`Round ${i} of ${rounds}: easy`,true));
-  const s=step("Intervals","cardio",`${work} seconds hard, ${easy} easy. Hard means you can't talk, not that your form falls apart.`,seq,{chips:[MNAME(m), `${rounds} rounds`]}); s.mach=m; s.zone="Z4-5"; s.ivl=`${rounds}x${work}s/${easy}s`; return s;
+  const s=step("Intervals","cardio",`${work} seconds hard, ${easy} easy. Hard means you can't talk, not that your form falls apart.`,seq,{chips:[MNAME(m), `${rounds} rounds`]}); s.mach=m; s.zone="Z4-5"; s.ivl=`${rounds}x${work}s/${easy}s`; Object.assign(s,{work, easy, rounds}); return s;
 }
 /* a leg you finish by tapping. target = your last time on that leg, else a starting guess. */
 function lapStep(name, m, target, cue, done, o={}){
@@ -1302,7 +1317,7 @@ function build(o){
   const gym = loc==="gym", useDb = gym || o.dbOn;
   const wt = w => w>0 ? `${w} lb` : "";
   const dbo = (db, w, track) => ({db, weight: wt(w), track, setup: gym ? 10 : 3});
-  const CARDIO_ORDER = gym ? ["rower","elliptical","gymbike","climber","tread"] : ["run","stairs","peloton","outbike","rope"];
+  const CARDIO_ORDER = gym ? ["rower","arc","elliptical","gymbike","climber","tread"] : ["run","stairs","peloton","outbike","rope"];
   const avail = CARDIO_ORDER.filter(k=>eq[k]);
   const spin = avail.length ? avail.slice((o.ab||0)*2 % avail.length).concat(avail.slice(0,(o.ab||0)*2 % avail.length)) : [];
   const pick = i => spin.length ? spin[i % spin.length] : null;
@@ -1562,7 +1577,7 @@ const TYPES = [
   {id:"cardio", name:"Cardio", note:"Warm up on one machine, work on the next, flush on a third. Always ends with one pulling movement."}
 ];
 const EQ_GYM = [{id:"trx",name:"TRX"},{id:"machines",name:"Cables and machines"},{id:"bench",name:"Bench + dumbbells"},{id:"smith",name:"Smith machine"},{id:"barbell",name:"Free barbell"},{id:"bar",name:"Pull-up bar"},
-  {id:"rower",name:"Rower"},{id:"elliptical",name:"Elliptical"},{id:"gymbike",name:"Gym bike"},{id:"climber",name:"Ladder climber"},{id:"tread",name:"Treadmill"}];
+  {id:"rower",name:"Rower"},{id:"arc",name:"Arc Trainer"},{id:"elliptical",name:"Elliptical"},{id:"gymbike",name:"Gym bike"},{id:"climber",name:"Ladder climber"},{id:"tread",name:"Treadmill"}];
 const EQ_HOME = [{id:"bar",name:"Pull-up bar"},{id:"run",name:"Running"},{id:"stairs",name:"Park stairs"},{id:"peloton",name:"Peloton"},{id:"outbike",name:"Bike ride"},{id:"rope",name:"Jump rope"}];
 
 if (typeof module!=="undefined") module.exports = {POSE, build, RAW};
@@ -1579,6 +1594,7 @@ if (typeof document!=="undefined") (function(){
   /* ---------- export model: sessions, sets, cardio, gates, daily ---------- */
   const TZ = (()=>{ try{ return Intl.DateTimeFormat().resolvedOptions().timeZone||""; }catch(e){ return ""; } })();
   const hhmm = d => String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+  const hhmmss = d => hhmm(d)+":"+String(d.getSeconds()).padStart(2,"0");
   function migrate(){
     ["sets","cardio","gateLog"].forEach(k=>{ if (!Array.isArray(st[k])) st[k]=[]; });
     if (!st.daily || typeof st.daily!=="object") st.daily={};
@@ -1745,6 +1761,7 @@ if (typeof document!=="undefined") (function(){
       ol.appendChild(li);
     });
     $("startBtn").textContent=`Start ${Math.round(total(steps)/60)}-minute ${TYPE_NAME[st.type]}`;
+    $("whoopHint").innerHTML = `Start WHOOP as <b>${whoopFor(st.type, st.loc, steps)}</b> when you tap Start. One activity for the whole session.`;
 
     const g=GATES[st.phase], gs=st.gates[st.phase]||[];
     $("gateTitle").textContent = st.phase<4 ? `Gate to Phase ${st.phase+1}` : "Phase 4 roadmarks";
@@ -2008,7 +2025,8 @@ if (typeof document!=="undefined") (function(){
     $("pTrackU").textContent = s.db==="AB" ? "lb each" : "lb";
     if (w){ const e=document.createElement("span"); e.className="chip w"; e.textContent = (s.track && st.aim[s.track] ? "Aim " : "") + w + (s.db==="AB" ? " lb each" : " lb"); ch.appendChild(e); }
     $("pSwap").hidden = !(s.unit || s.mach);
-    $("pSkip").textContent = s.lap ? s.doneLabel : s.unit ? "Done" : "Skip";
+    $("pSkip").textContent = s.lap ? s.doneLabel : s.unit ? "Done" : s.mach ? "Next" : "Skip";
+    $("pPlus").hidden = !s.ivl || !s.work;
     if (s.climb){ const r=(st.stairs||{})[s.name]; if (r){ const e=document.createElement("span"); e.className="chip w"; e.textContent=`Last ${fmtSecs(r.last)} · Best ${fmtSecs(r.best)}`; ch.appendChild(e); } }
     const tr=$("pTrack"); tr.hidden=!s.track;
     if (s.track){ $("pTrackIn").value = st.aim[s.track] || st.lifts[s.track] || defW(s) || ""; $("pTrackIn").placeholder="—"; }
@@ -2027,7 +2045,7 @@ if (typeof document!=="undefined") (function(){
   const sideOf = s => { const c=s.chips.find(c=>/side/.test(c)); return c ? (c.startsWith("Right")?"R":"L") : ""; };
   function touch(){ const e=st.log.find(l=>l.id===P.sid); if (e) e.lastAt=hhmm(new Date()); }
   function setRow(s, o){
-    return { session_id:P.sid, block:BLOCK_OUT(s), exercise:s.name, set_no:s.set||1, side:sideOf(s),
+    return { session_id:P.sid, start_time: s.startedAt ? hhmmss(new Date(s.startedAt)) : "", block:BLOCK_OUT(s), exercise:s.name, set_no:s.set||1, side:sideOf(s),
       reps_or_seconds:o.amount, measure:o.measure, load:o.load??"", load_type:LOAD_TYPE(s), RIR:o.rir??"",
       planned_load: s.plannedW||"", planned_reps: s.reps||s.secs||"", swapped_from: s.swappedFrom||"" };
   }
@@ -2035,11 +2053,12 @@ if (typeof document!=="undefined") (function(){
   function logLeaving(target){
     const s=P.steps[P.i];
     if (!P.sid || !s || s.logged || s.isRest || s.unit || target<=P.i) return;
-    const actual = s.lap ? P.t : Math.min(P.t, s.dur); if (actual<3) return;
+    const actual = (s.lap || s.mach) ? P.t : Math.min(P.t, s.dur); if (actual<3) return;
     s.logged=true;
     if (s.mach || s.mod){
-      st.cardio.push({ session_id:P.sid, modality:s.mach||s.mod, segment:s.name, seconds:Math.round(actual), duration_min:+(actual/60).toFixed(1), intervals:s.ivl||"",
-        target_zone:s.zone||"", target_seconds:s.lap?s.target:"", swapped_from:s.machFrom||"" });
+      P.lastCardio = { session_id:P.sid, start_time:s.startedAt?hhmmss(new Date(s.startedAt)):"", modality:s.mach||s.mod, segment:s.name, seconds:Math.round(actual), duration_min:+(actual/60).toFixed(1), intervals:s.ivl||"",
+        target_zone:s.zone||"", target_seconds:s.lap?s.target:(s.mach?Math.round(s.dur):""), metric:"", metric_unit:"", level:"", effort:"", swapped_from:s.machFrom||"" };
+      st.cardio.push(P.lastCardio);
       if (s.lap){ st.lapLast=st.lapLast||{}; st.lapLast[s.name]=Math.round(actual); }
       if (s.climb){ st.stairs=st.stairs||{}; const r=st.stairs[s.name]||{}; const v=Math.round(actual);
         st.stairs[s.name]={last:v, best: r.best ? Math.min(r.best,v) : v}; }
@@ -2060,6 +2079,7 @@ if (typeof document!=="undefined") (function(){
   }
   function go(i){ logLeaving(i); if (i>=P.steps.length){ finish(); return; } P.i=Math.max(0,i); P.t=0; P.lastCue=null; lights(null); showStep();
     P.gap = needsGap(P.i) ? GAP : 0;
+    if (!P.steps[P.i].startedAt) P.steps[P.i].startedAt = Date.now();
     /* at the gym a set waits for you to walk over and set up; you tap Ready, then 3-2-1 */
     const ws=P.steps[P.i], wp=P.steps[P.i-1];
     P.waitReady = false; /* Ready-before-each-set at the gym: off by request */
@@ -2077,7 +2097,7 @@ if (typeof document!=="undefined") (function(){
       const cs=P.steps[P.i];
       if (P.waitReady){ sec=0; break; }
       if (P.gap>0){ const u=Math.min(P.gap,sec); P.gap-=u; sec-=u; continue; }
-      if (cs.lap){ P.t+=sec; sec=0; break; }
+      if (cs.lap || (cs.mach && P.t+sec>=cs.dur)){ P.t+=sec; sec=0; break; }
       const left=cs.dur-P.t;
       if (sec<left){ P.t+=sec; sec=0; break; }
       sec-=left; P.t=cs.dur;
@@ -2111,9 +2131,11 @@ if (typeof document!=="undefined") (function(){
       if (dt>1.5){ /* handled by catchUp */ }
       else if (P.waitReady){ /* on hold until you tap Ready */ }
       else if (P.gap>0){ P.gap-=dt; if (P.gap<=0){ P.gap=0; P.lastCue=null; CUE.go(); lights(-1); setTimeout(()=>lights(null), 650); } }
-      else { P.t+=dt; if (!P.steps[P.i].lap && P.t>=P.steps[P.i].dur){ advance(); if ($("player").hidden) return; } }
+      else { const c0=P.steps[P.i]; P.t+=dt;
+        if (c0.mach && !c0.lap){ if (P.t>=c0.dur && !c0.chimed){ c0.chimed=true; CUE.finish(); say("Time. Keep going, or tap Next."); $("pSkip").textContent="Next"; } }
+        else if (!c0.lap && P.t>=c0.dur){ advance(); if ($("player").hidden) return; } }
     }
-    const cs=P.steps[P.i], j=subAt(cs, cs.lap ? P.t % cs.dur : P.t); curStepSlow = cs.block==="flow" || cs.block==="standing" || cs.block==="close" || cs.block==="arrive";
+    const cs=P.steps[P.i], over=cs.mach && P.t>=cs.dur, j=subAt(cs, (cs.lap||over) ? P.t % cs.dur : P.t); curStepSlow = cs.block==="flow" || cs.block==="standing" || cs.block==="close" || cs.block==="arrive";
     if (j!==P.sub){
       const prev=P.sub; P.sub=j; const q=cs.seq[j]; setPose(q.pose);
       $("pSub").textContent = cs.seq.length>1 || q.label!=="Hold" ? q.label : "";
@@ -2137,7 +2159,7 @@ if (typeof document!=="undefined") (function(){
     /* --- race start: count down the last 3s of the lead-in, GO on the first rep --- */
     const racing = P.gap>0 || (cs.block==="strength" && !cs.isRest && P.sub===0 && cs.seq[0].label==="Get set");
     const cdRem = P.gap>0 ? P.gap : racing ? cs.seq[0].t - P.t : 0;
-    const rem = racing ? Math.max(1,Math.ceil(cdRem)) : cs.lap ? Math.floor(P.t) : Math.max(0,Math.ceil(cs.dur-P.t));
+    const rem = racing ? Math.max(1,Math.ceil(cdRem)) : cs.lap ? Math.floor(P.t) : over ? Math.floor(P.t-cs.dur) : Math.max(0,Math.ceil(cs.dur-P.t));
     if (racing && P.run){
       const n = Math.ceil(cdRem);
       if (n!==P.lastCue && n<=3 && n>=1){ P.lastCue=n; CUE.tick(); lights(n===3?2:n===2?4:5); }
@@ -2151,6 +2173,8 @@ if (typeof document!=="undefined") (function(){
       $("pTime").textContent = rem>=60 ? Math.floor(rem/60)+":"+String(rem%60).padStart(2,"0") : String(rem);
       if (P.run && rem<=3 && rem>0 && !racing && !cs.lap && !cs.isRest && cs.block!=="strength") CUE.hold();
       if (cs.lap && !racing) $("pTime").classList.toggle("over", P.t>cs.target);
+      $("pTime").classList.toggle("ot", !!over);
+      if (over) $("pTime").textContent = "+" + (rem>=60 ? Math.floor(rem/60)+":"+String(rem%60).padStart(2,"0") : String(rem));
       let el=0; for(let k=0;k<P.i;k++) el+=P.steps[k].dur; el+=P.t;
       $("pBar").style.width=(100*el/P.total).toFixed(2)+"%";
       $("pLeft").textContent=Math.max(0,Math.round((P.total-el)/60))+" min";
@@ -2159,7 +2183,41 @@ if (typeof document!=="undefined") (function(){
   }
   /* ---------- Choose your own adventure ---------- */
   const unitEnds = i => { const s=P.steps[i]; return !!(s && s.unit && (!P.steps[i+1] || P.steps[i+1].unit!==s.unit)); };
-  function advance(){ if (unitEnds(P.i)) openSheet(); else go(P.i+1); }
+  function advance(){ if (unitEnds(P.i)) openSheet(); else if (P.steps[P.i].mach && !P.catching) openCardioSheet(); else go(P.i+1); }
+  const UNITS = ["m","km","mi","kJ","avg W","kcal","floors"];
+  const DEF_UNIT = {rower:"m", gymbike:"mi", peloton:"kJ", outbike:"mi", elliptical:"mi", arc:"kcal", climber:"floors", tread:"mi", run:"mi", rope:"kcal"};
+  const LEVEL_LAB = {rower:"Damper", tread:"Incline %", run:"", rope:"", outbike:"", arc:"Level · incline", peloton:"Resistance"};
+  function openCardioSheet(){
+    const cur=P.steps[P.i], m=cur.mach;
+    logLeaving(P.i+1); const row=P.lastCardio && P.lastCardio.segment===cur.name ? P.lastCardio : null;
+    st.cardioUnit=st.cardioUnit||{};
+    const prev=[...st.cardio].reverse().find(r=>r!==row && r.modality===m && r.metric!=="" && r.metric!==undefined);
+    $("shRate").hidden=true; $("shRestWrap").hidden=true; $("shDrop").hidden=true; $("shCardio").hidden=false;
+    $("shKick").textContent = `${MNAME(m)} · ${fmtSecs(Math.round(P.t))}${P.t>cur.dur+5?` (planned ${fmtSecs(cur.dur)})`:""}`;
+    $("shTitle").textContent = cur.name + " done";
+    $("cLast").innerHTML = prev ? `Last time on the ${MNAME(m).toLowerCase()}: <b>${prev.metric} ${prev.metric_unit}</b> in ${fmtSecs(prev.seconds)}${prev.level!==""?`, ${(LEVEL_LAB[m]||"level").toLowerCase()} ${prev.level}`:""}.` : "Type what the machine's screen shows, so next time has a number to beat. Skip it if you'd rather not.";
+    const u=$("cUnit"); u.innerHTML=UNITS.map(x=>`<option>${x}</option>`).join(""); u.value = st.cardioUnit[m] || DEF_UNIT[m] || "m";
+    $("cMetric").value=""; $("cLevel").value=""; const ll=LEVEL_LAB[m]===undefined?"Level":LEVEL_LAB[m];
+    $("cLevelLab").textContent=ll; $("cLevel").parentElement.hidden=!ll;
+    const upd=()=>{ if (!row) return; const v=parseFloat($("cMetric").value); row.metric = v>0 ? v : ""; row.metric_unit = v>0 ? u.value : ""; const lv=parseFloat($("cLevel").value); row.level = lv>=0 && $("cLevel").value!=="" ? lv : ""; st.cardioUnit[m]=u.value; save(); };
+    $("cMetric").oninput=upd; u.onchange=upd; $("cLevel").oninput=upd;
+    const ce=$("cEff"); ce.innerHTML="";
+    for (let n=1;n<=10;n++){ const b=document.createElement("button"); b.type="button"; b.textContent=n; b.setAttribute("aria-pressed","false");
+      b.onclick=()=>{ ce.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); if (row){ row.effort=n; save(); } }; ce.appendChild(b); }
+    $("shNext").innerHTML=""; const nx=P.steps[P.i+1];
+    $("shNextH").textContent="What's next?";
+    nextBtn(nx ? `On to ${nx.name.toLowerCase()}` : "Finish", nx && nx.mach ? MNAME(nx.mach) : (nx?BLOCKS[nx.block].name:""), true, ()=>{ $("shCardio").hidden=true; continueTo(P.i+1); });
+    sheetShow(true); CUE.setEnd(); say(`${cur.name} done.`);
+  }
+  $("pPlus").onclick=()=>{
+    const s=P.steps[P.i]; if (!s.ivl || !s.work) return;
+    s.rounds++; const r=s.rounds;
+    if (P.t>=s.dur) P.t=s.dur; /* in overtime: the extra round starts now */
+    s.seq.push(...cardioSeq(s.mach,s.work,.5,`Round ${r}: hard`,true), ...cardioSeq(s.mach,s.easy,1,`Round ${r}: easy`,true));
+    s.dur += s.work+s.easy; s.chimed=false; s.ivl=`${r}x${s.work}s/${s.easy}s`;
+    s.chips = s.chips.map(c=>/rounds$/.test(c) ? `${r} rounds` : c);
+    retotal(); const t=P.t; showStep(); P.t=t; $("pPlus").textContent=`+1 round (${r})`;
+  };
   const retotal = () => { P.total = total(P.steps); P.lastSec=-1; };
   const INC = k => /Back squat|Deadlift|Bench|Barbell|Overhead press|Leg press|Lat pulldown|cable row/.test(k) ? 10 : 5;
   function sheetShow(on){ P.sheet=on; $("sheet").hidden=!on; if (on){ P.run=false; P.lastCue=null; lights(null); if ("speechSynthesis" in window) speechSynthesis.cancel(); } else { setRun(true); } }
@@ -2231,7 +2289,7 @@ if (typeof document!=="undefined") (function(){
       retotal(); renderNext(cur); };
   }
   function openSheet(){
-    const cur=P.steps[P.i];
+    const cur=P.steps[P.i]; $("shCardio").hidden=true;
     $("shRate").hidden=false;
     $("shKick").textContent = cur.sl ? `${cur.sl} done` : "Set done";
     $("shTitle").textContent = cur.name;
@@ -2274,7 +2332,7 @@ if (typeof document!=="undefined") (function(){
     renderNext(cur);
     sheetShow(true); CUE.setEnd(); say("Set done. How many reps were left?");
   }
-  const MACH_HOME=["run","peloton","outbike","rope"], MACH_GYM=["rower","elliptical","gymbike","climber","tread"];
+  const MACH_HOME=["run","peloton","outbike","rope"], MACH_GYM=["rower","arc","elliptical","gymbike","climber","tread"];
   function swapMachine(from, to){
     const A=CARDIO[from], B=CARDIO[to];
     for (let k=P.i;k<P.steps.length;k++){ const s=P.steps[k]; if (s.mach!==from) continue;
@@ -2291,7 +2349,7 @@ if (typeof document!=="undefined") (function(){
     retotal(); if (start>=P.steps.length){ sheetShow(false); finish(); return; } continueTo(start);
   }
   function openSwap(){
-    const cur=P.steps[P.i];
+    const cur=P.steps[P.i]; $("shCardio").hidden=true;
     $("shRate").hidden=true; $("shRestWrap").hidden=true; $("shDrop").hidden=true;
     $("shNext").innerHTML="";
     if (cur.mach){
@@ -2336,7 +2394,7 @@ if (typeof document!=="undefined") (function(){
   document.addEventListener("visibilitychange",()=>{ if (!document.hidden && !$("player").hidden && P.run) wake(true); });
 
   function start(){
-    P.steps=sessionFor(st.rec); P.total=total(P.steps); P.last=0; P.lastWall=0; P.type=st.type; P.loc=st.loc; P.rec=st.rec; P.startedAt=Date.now(); $("pAway").hidden=true;
+    P.steps=sessionFor(st.rec); P.whoop=whoopFor(st.type, st.loc, P.steps); P.total=total(P.steps); P.last=0; P.lastWall=0; P.type=st.type; P.loc=st.loc; P.rec=st.rec; P.startedAt=Date.now(); $("pAway").hidden=true;
     P.sid = newEntry({d:today(), start:hhmm(new Date()), end:"", m:0, done:"partial", live:true}).id;
     $("home").hidden=true; $("done").hidden=true; $("player").hidden=false;
     renderSound(); snapPose(P.steps[0].seq[0].pose);
@@ -2362,6 +2420,7 @@ if (typeof document!=="undefined") (function(){
   }
   function finish(partial){
     logLeaving(Infinity); stop();
+    const _e=st.log.find(l=>l.id===P.sid); if (_e && P.whoop) _e.whoop=P.whoop;
     const entry=closeEntry(partial), mins=entry ? entry.m : Math.max(1, Math.round((Date.now()-P.startedAt)/60000));
     P.doneId = entry && entry.id; P.sid=null;
     const rg=$("rpeGrid"); rg.innerHTML="";
@@ -2369,6 +2428,7 @@ if (typeof document!=="undefined") (function(){
       b.onclick=()=>{ rg.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); const e=st.log.find(l=>l.id===P.doneId); if (e){ e.rpe=n; save(); } };
       rg.appendChild(b); }
     $("doneNotes").value="";
+    if (entry) $("doneWhoop").innerHTML = `In WHOOP: one <b>${P.whoop}</b> activity, <b>${entry.start}–${entry.end}</b>. If WHOOP split it or picked it up on its own, merge or edit it to match.`;
     $("doneNotes").oninput=e=>{ const en=st.log.find(l=>l.id===P.doneId); if (en){ en.notes=e.target.value; save(); } };
     $("player").hidden=true; $("done").hidden=false;
     document.querySelector("#done h1").textContent = partial ? "Logged." : "Practice done.";
@@ -2439,7 +2499,7 @@ if (typeof document!=="undefined") (function(){
     else if (e.key==="ArrowLeft") $("pPrev").click();
     else if (e.key==="Escape") $("pExit").click();
   });
-  const APP_VER="v25";
+  const APP_VER="v26";
   $("brOn").onchange=e=>{ st.breath=e.target.checked; save(); };
   $("testSnd").onclick=()=>{
     unlockAudio(); const a=null;
@@ -2474,23 +2534,37 @@ if (typeof document!=="undefined") (function(){
     return new Blob([...parts, ...cen, new Uint8Array(e.buffer)], {type:"application/zip"});
   }
   const TEMPLATE = {full:"Full", yoga:"Yoga", strength:"Strength", cardio:"Cardio"};
+  /* the WHOOP activity to log a session as: one activity, the whole session */
+  const WHOOP_NAME = {rower:"Rowing", elliptical:"Elliptical", arc:"Elliptical", gymbike:"Spin", peloton:"Spin", outbike:"Cycling", tread:"Running", run:"Running", rope:"Jumping Rope", climber:"Stairmaster"};
+  function whoopFor(type, loc, steps){
+    if (type==="yoga") return "Yoga";
+    if (type==="cardio"){
+      if (steps && steps.some(x=>x.climb || x.mod==="stairs")) return "Stadium Steps";
+      const t={}; (steps||[]).forEach(x=>{ if (x.mach) t[x.mach]=(t[x.mach]||0)+x.dur; });
+      const top=Object.keys(t).sort((a,b)=>t[b]-t[a])[0];
+      return top ? WHOOP_NAME[top]||"Activity" : "HIIT";
+    }
+    return loc==="gym" ? "Weightlifting" : "Functional Fitness";
+  }
   const COLS = {
-    sessions:["session_id","date","start_time","end_time","tz","location","phase","template","session_rpe","completed","notes","duration_min","recovery_color","entry"],
-    sets:["session_id","block","exercise","set_no","side","reps_or_seconds","measure","load","load_type","RIR","planned_load","planned_reps","swapped_from"],
-    cardio:["session_id","modality","segment","seconds","duration_min","intervals","target_zone","target_seconds","swapped_from"],
+    sessions:["session_id","date","start_time","end_time","tz","location","phase","template","whoop_activity","session_rpe","completed","notes","duration_min","recovery_color","entry"],
+    sets:["session_id","start_time","block","exercise","set_no","side","reps_or_seconds","measure","load","load_type","RIR","planned_load","planned_reps","swapped_from"],
+    cardio:["session_id","start_time","modality","segment","seconds","duration_min","metric","metric_unit","level","effort","intervals","target_zone","target_seconds","swapped_from"],
     gates:["date","gate","result","pass"]
   };
   function tables(){
     const sessions = [...st.log].sort((a,b)=>{ const x=a.d+(a.start||""), y=b.d+(b.start||""); return x<y?-1:x>y?1:0; }).map(l=>({
       session_id:l.id, date:l.d, start_time:l.start||"", end_time:l.end||"", tz:l.tz||(l.start?TZ:""), location:l.l, phase:l.p, template:TEMPLATE[l.t]||l.t,
       session_rpe:l.rpe||"", completed:l.done, notes:l.notes||"", duration_min:l.m, recovery_color:l.r,
+      whoop_activity: l.whoop||"",
       entry: l.manual ? "manual" : l.id.includes("legacy") ? "legacy" : l.done==="skipped" ? "skipped" : "timer" }));
     const sets = st.sets.map(({_u,...r})=>r);
     return {sessions, sets, cardio:st.cardio, gates:st.gateLog};
   }
   const README = `The Series export. One CSV per table, full history every time. Column names are stable.
 
-sessions.csv  one row per session. start_time/end_time are local 24h HH:MM in tz. completed = full | partial | skipped.
+sessions.csv  one row per session. whoop_activity = the one WHOOP activity to log it as (Weightlifting, Elliptical, Stadium Steps...).
+               start_time/end_time are local 24h HH:MM in tz. completed = full | partial | skipped.
               entry = timer | manual | legacy | skipped. Legacy rows predate timestamps, so their times are blank.
               session_rpe 1-10. recovery_color is the green/yellow/red picked in the app. duration_min is time on the timer.
 sets.csv      one row per set, per side for single-arm or single-leg moves (side = R | L | blank).
@@ -2498,7 +2572,10 @@ sets.csv      one row per set, per side for single-arm or single-leg moves (side
               load_type: per_hand = the weight of ONE dumbbell, two in use | single_db = one dumbbell | machine_stack | barbell | bodyweight.
               RIR = reps in reserve, 4 means 4 or more, blank = not rated. planned_* is what the app prescribed.
               swapped_from is the exercise it replaced. Warm-up, flow and cooldown moves are logged with seconds done.
-cardio.csv    one row per cardio block or leg. segment names it ("Back stairs", "Jog to the park").
+cardio.csv    one row per cardio block or leg, with start_time (HH:MM:SS) so it can be cut out of the WHOOP heart rate.
+              metric + metric_unit = what the machine's screen said (meters, miles, kJ...); level = resistance/incline/damper; effort 1-10.
+              Machine blocks run past their planned time until you tap Next, so seconds is real; target_seconds is the plan.
+              segment names it ("Back stairs", "Jog to the park").
               seconds is the actual time. On tapped legs (the stair route) it's exactly when you tapped;
               target_seconds is the usual time. target_zone Z1 easy, Z2 steady, Z4 climbs, Z4-5 intervals.
 gates.csv     one row per gate test. pass = y | n.
