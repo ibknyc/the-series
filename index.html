@@ -699,6 +699,13 @@ section{margin-bottom:34px}
 .wgrid.tri .wfield input{font-size:20px}
 .feel.rir{grid-template-columns:repeat(5,1fr)}
 .feel.rir button{font-family:var(--display);font-size:20px;padding:10px 4px}
+#doneSetList .dsrow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line,rgba(127,127,127,.25))}
+#doneSetList .dsrow b{display:block;font-size:15px}
+#doneSetList .dsrow small{color:var(--ink-2);font-size:13px}
+#doneSetList .dsrow.blank small{color:var(--red,#c33)}
+#doneSetList .feel.rir{grid-template-columns:repeat(5,34px);gap:4px;margin:0}
+#doneSetList .feel.rir button{font-size:15px;padding:6px 0;margin:0!important;background:var(--card);color:var(--ink);border:2px solid transparent;border-radius:8px}
+#doneSetList .feel.rir button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
 .shfields{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .shfields .track{margin-top:0}
 .rpeh{font-family:var(--display);font-size:20px;margin:30px 0 4px}
@@ -807,6 +814,7 @@ section{margin-bottom:34px}
       <div class="wfield"><span id="lbHeavy">Heavy pair</span><div class="inwrap"><input id="wHeavy" type="number" inputmode="numeric" min="0" max="200" step="5" aria-label="Heavy pair in pounds"><span>lb</span></div></div>
       <div class="wfield"><span id="lbLight">Light pair, for pressing</span><div class="inwrap"><input id="wLight" type="number" inputmode="numeric" min="0" max="200" step="5" aria-label="Light pair in pounds"><span>lb</span></div></div>
     </div>
+    <div class="wfield" id="invWrap" style="margin-top:12px"><span>Dumbbells you own at home (lb, comma-separated)</span><div class="inwrap"><input id="wInv" type="text" inputmode="numeric" placeholder="15, 25, 30" aria-label="Home dumbbell weights" style="font-size:18px"></div></div>
     <p class="wnote" id="wNote"></p>
   </section>
 
@@ -930,6 +938,11 @@ section{margin-bottom:34px}
   <h1>Practice done.</h1>
   <p id="doneNote"></p>
   <p id="doneWhoop" style="font-size:15px!important"></p>
+  <div id="doneSets" hidden>
+    <h2 class="rpeh">Check your sets</h2>
+    <p class="rpekey">Reps in reserve for each set. Fix a mis-tap or fill a blank: blanks can't steer next time's weights.</p>
+    <div id="doneSetList"></div>
+  </div>
   <h2 class="rpeh">How hard was the whole session?</h2>
   <p class="rpekey">1 barely working · 5 moderate · 7 hard · 10 everything you had</p>
   <div class="rpegrid" id="rpeGrid"></div>
@@ -1028,6 +1041,10 @@ const RAW = {
   ropeB:        "100,46 100,61 100,114 84,92 74,104 116,92 126,104 98,148 98,177 102,148 102,177",
   stairA:       "96,50 98,64 94,114 110,86 122,72 82,88 70,100 124,118 142,142 94,146 88,174",
   stairB:       "92,38 94,52 92,102 78,76 66,88 108,74 120,60 128,108 150,130 100,130 112,154",
+  slrdlTop:     "100,40 100,55 100,105 98,80 98,104 102,80 102,104 98,141 98,177 104,141 102,168",
+  slrdlBottom:  "150,98 138,101 96,108 136,120 135,140 138,121 137,141 98,142 98,177 64,106 32,103",
+  latB:         "112,72 108,86 92,132 112,108 120,96 114,109 122,97 118,146 104,177 130,160 166,174",
+  kneeUp:       "100,40 100,55 100,105 96,80 92,104 106,78 112,98 98,141 98,177 122,108 116,140",
   hang:         "100,62 100,76 100,126 99,44 98,16 101,44 102,16 98,158 98,178 102,158 102,178",
   pullup:       "100,36 100,50 100,100 96,30 96,16 104,30 104,16 96,132 92,160 104,132 108,160",
   trxRowA:      "71,88 80,100 100,128 92,88 104,76 94,87 106,75 114,152 128,177 116,153 130,177",
@@ -1193,13 +1210,13 @@ function tagUnit(r, o, vi, set, sets, sl){
   arr.forEach(x=>Object.assign(x,{slot:o.slot, variants:o.v, vnames:o.names, vi, set, sets, sl, unit}));
   return arr;
 }
-function circuit(sets, restSecs, slots){
+function circuit(sets, restSecs, slots, restFn){
   const out=[];
   slots = slots.map((x,i)=> typeof x==="function" ? {slot:"x"+i, v:[x], names:[[].concat(x(""))[0].name]} : x).filter(o=>o && o.v && o.v.length);
   for(let s=1;s<=sets;s++){
     const sl = sets>1 ? `Set ${s} of ${sets}` : "";
     slots.forEach(o=>{ const vi=Math.min(o.di||0, o.v.length-1); out.push(...tagUnit(o.v[vi](sl), o, vi, s, sets, sl)); });
-    if (s<sets) out.push(restStep(restSecs));
+    if (s<sets) out.push(restFn ? restFn(s, restSecs) : restStep(restSecs));
   }
   return out;
 }
@@ -1231,13 +1248,36 @@ function steady(m, secs, name, cue){ const s=step(name,"cardio",cue,cardioSeq(m,
 function intervals(m, rounds, work=30, easy=30){
   const seq=[];
   for(let i=1;i<=rounds;i++) seq.push(...cardioSeq(m,work,.5,`Round ${i} of ${rounds}: hard`,true), ...cardioSeq(m,easy,1,`Round ${i} of ${rounds}: easy`,true));
-  const s=step("Intervals","cardio",`${work} seconds hard, ${easy} easy. Hard means you can't talk, not that your form falls apart.`,seq,{chips:[MNAME(m), `${rounds} rounds`]}); s.mach=m; s.zone="Z4-5"; s.ivl=`${rounds}x${work}s/${easy}s`; Object.assign(s,{work, easy, rounds}); return s;
+  const long = work>=60;
+  const cue = long
+    ? `${fmtSecs(work)} hard, ${fmtSecs(easy)} easy. Hard means a few words at a time. The first 30 seconds feel fine; the heart rate catches up in the second half, so hold the pace.`
+    : `${work} seconds hard, ${easy} easy. Hard means you can't talk, not that your form falls apart.`;
+  const s=step("Intervals","cardio",cue,seq,{chips:[MNAME(m), `${rounds} rounds`]}); s.mach=m; s.zone=long?"Z4":"Z4-5"; s.ivl=`${rounds}x${work}s/${easy}s`; Object.assign(s,{work, easy, rounds}); return s;
+}
+/* Interval shape per machine. 30-second bursts never got the heart rate past zone 3 (Oct 14, Oct 20),
+   so the work bouts are long enough for it to catch up. Rounds grow by phase; green adds one. */
+const IVL = {
+  arc:       {work:120, easy:60, r:[3,4,5,6], cue:"Crank the incline or resistance, not just the speed."},
+  elliptical:{work:120, easy:60, r:[3,4,5,6], cue:"Resistance up a few levels for the hard part."},
+  climber:   {work:90,  easy:90, r:[3,4,5,6], cue:"Steady rungs, full reach. Ninety seconds is plenty on this one."},
+  gymbike:   {work:60,  easy:60, r:[5,6,7,8], cue:"Resistance up, cadence high. Sit tall."},
+  tread:     {work:120, easy:60, r:[3,4,5,6], cue:"Hard = fast run or a steep incline walk. Easy = walk."},
+  rower:     {work:60,  easy:60, r:[4,5,6,7], cue:"Legs first, then lean, then pull."},
+  peloton:   {work:60,  easy:60, r:[5,6,7,8], cue:"Resistance up, cadence high."},
+  outbike:   {work:60,  easy:60, r:[5,6,7,8], cue:"Pick a hill or a long straight."},
+  run:       {work:120, easy:60, r:[3,4,5,6], cue:"Hard is a tempo push, easy is a jog, not a stop."},
+  rope:      {work:30,  easy:30, r:[6,7,8,9], cue:""}
+};
+function ivFor(m, phase, G, extra=0){
+  const f=IVL[m]||IVL.gymbike, s=intervals(m, f.r[Math.min(3,Math.max(0,phase-1))]+(G?1:0)+extra, f.work, f.easy);
+  if (f.cue) s.cue += " "+f.cue; return s;
 }
 /* a leg you finish by tapping. target = your last time on that leg, else a starting guess. */
 function lapStep(name, m, target, cue, done, o={}){
-  const t = (o.lapT && o.lapT[name]) || target;
+  /* a remembered time under 40% of the starting guess was a tap-through, not a lap */
+  const lt = o.lapT && o.lapT[name], t = lt && lt >= target*0.4 ? lt : target;
   const s=step(name,"cardio",cue,cardioSeq(m,t,o.tempo||1,o.label||name),{chips:[...(o.chips||[]), `About ${fmtSecs(t)}`]});
-  Object.assign(s,{lap:true, target:t, doneLabel:done, mod:m, zone:o.zone||"", noGap:!o.climb, climb:!!o.climb});
+  Object.assign(s,{lap:true, target:t, base:target, doneLabel:done, mod:m, zone:o.zone||"", noGap:!o.climb, climb:!!o.climb});
   return s;
 }
 /* Prospect Park, around Lookout Hill. Four sets of stairs: front (by Center Dr),
@@ -1246,20 +1286,24 @@ function lapStep(name, m, target, cue, done, o={}){
    every top has a path down to them, and from their top you can jog to any other stair.
    So the loop is big stair, path down, small stairs, path over, next big stair.
    o.stairN = stair sessions already done in this phase: each adds 2 reps, up to +6. */
+/* starting guesses = your Oct 17 times. down = top of that stair to the small stairs, over = small stairs to that stair. */
 const STAIRS = {
-  front: {name:"Front stairs",  t:45,  cue:"Find a rhythm, don't sprint it.", down:75,  over:120},
-  back:  {name:"Back stairs",   t:105, cue:"The long one. Steady rhythm, short steps, eyes a few steps ahead. Drive through the whole foot.", down:60, over:90},
-  hidden:{name:"Hidden stairs", t:45,  cue:"Quick feet all the way up.", down:45, over:60}
+  front: {name:"Front stairs",  t:55,  cue:"Find a rhythm, don't sprint it.", down:150, over:145},
+  back:  {name:"Back stairs",   t:85,  cue:"The long one. Steady rhythm, short steps, eyes a few steps ahead. Drive through the whole foot.", down:160, over:190},
+  hidden:{name:"Hidden stairs", t:45,  cue:"Quick feet all the way up.", down:45, over:340}
 };
 function stairPark(o){
   const ph=o.phase, T=o.lapT||{}, out=[], b=Math.min(3,o.stairN||0)*2, X=o.G?2:0, mv=o.stations!==false;
   const L=(n,m,t,c,d,x={})=>lapStep(n,m,t,c,d,{...x,lapT:T});
-  const climb=(n,t,chip,cue)=>L(n,"stairs",t,cue,"At the top",{climb:true, zone:"Z4", tempo:.5, label:"Climb", chips:[chip]});
+  /* climbs are 25-85 seconds: the heart rate peaks at the top, so Z3-4 is the honest target */
+  const climb=(n,t,chip,cue)=>L(n,"stairs",t,cue,"At the top",{climb:true, zone:"Z3-4", tempo:.5, label:"Climb", chips:[chip]});
   /* which big stairs, in order; the small stairs go between each pair.
-     One loop = front, back, hidden, front. Phase 1 skips the hidden stairs,
-     then 1, 2 and 3 loops. A long day adds one more: 4 loops is the old 90-minute run. */
+     One loop = back, back again, hidden. The back stairs are the only climb long enough to
+     reach zone 4, so they go twice. Front opens the run and sits between loops.
+     Phase 1: front, back, front. Then 1, 2 and 3 loops; a long day adds one. */
   const loops = ph===1 ? 1 : ph-1 + (o.longDay ? 1 : 0);
-  const order = ph===1 && !o.longDay ? ["front","back","front"] : ["front", ...Array.from({length:loops}, ()=>["back","hidden","front"]).flat()];
+  const order = ph===1 && !o.longDay ? ["front","back","front"]
+    : ["front", ...Array.from({length:loops}, (_,i)=>[...(i?["front"]:[]),"back","back","hidden"]).flat()];
   /* on 3+ loops the moves happen on the first loop only, so the rest stays a run */
   const lastMoveClimb = loops>=3 ? 3 : order.length-1;
   const moveAt = {
@@ -1276,12 +1320,13 @@ function stairPark(o){
   if (o.bikeTo){
     out.push(L("Citi Bike to the park","citibike",420,"Easy spin. Dock as close to the front stairs as you can.","Docked",{zone:"Z1"}));
     out.push(L("Easy jog to the front stairs","run",300,"Five easy minutes so the legs are warm before the first climb.","At the front stairs",{zone:"Z2"}));
-  } else out.push(L("Jog to the park","run",900,"Easy enough to talk, under about 140. Last time your heart rate hit 150 on the way in, so save it for the stairs.","At the front stairs",{zone:"Z2"}));
+  } else out.push(L("Jog to the park","run",690,"Easy enough to talk, under about 140. Last time your heart rate hit 150 on the way in, so save it for the stairs.","At the front stairs",{zone:"Z2"}));
   const nSmall = order.length-1, capoAt = Math.floor((nSmall-1)/2);
   order.forEach((k,i)=>{
-    const S=STAIRS[k], lp=Math.max(1,Math.ceil(i/3)), c = loops>1 ? `Loop ${lp} of ${loops} · climb ${i+1} of ${order.length}` : `Climb ${i+1} of ${order.length}`;
-    out.push(climb(S.name, S.t, c, S.cue));
-    if (mv && i<=lastMoveClimb && (k!=="front" || i===0 || i===lastMoveClimb || i===order.length-1)) out.push(...moveAt[k](S.name.replace(" stairs","")));
+    const S=STAIRS[k], lp=Math.max(1,Math.ceil(i/4)), c = loops>1 ? `Loop ${lp} of ${loops} · climb ${i+1} of ${order.length}` : `Climb ${i+1} of ${order.length}`;
+    const again = i>0 && order[i-1]===k;
+    out.push(climb(S.name, S.t, c, again ? "Second time up. Match your first split." : S.cue));
+    if (mv && !again && i<=lastMoveClimb && (k!=="front" || i===0 || i===lastMoveClimb || i===order.length-1)) out.push(...moveAt[k](S.name.replace(" stairs","")));
     if (i===order.length-1) return;
     /* down the path to the hub, up the small stairs, over to the next one */
     const nx=STAIRS[order[i+1]], j=i;
@@ -1291,11 +1336,12 @@ function stairPark(o){
     out.push(L(`Over to the ${order[i+1]} stairs`,"run",nx.over,`Jog over to the bottom of the ${order[i+1]} stairs. Easy, keep it moving.`,"At the bottom",{zone:"Z2"}));
   });
   if (o.G){
-    out.push(L("Down from the front stairs to the small stairs","run",75,"Green day bonus. Down the path to the hub.","At the small stairs",{zone:"Z2"}));
+    const lk=order[order.length-1];
+    out.push(L(`Down from the ${lk} stairs to the small stairs`,"run",STAIRS[lk].down,"Green day bonus. Down the path to the hub.","At the small stairs",{zone:"Z2"}));
     out.push(climb("Small stairs",30,"Bonus","One more, all out."));
   }
   out.push(o.bikeHome
-    ? L("Citi Bike home","citibike",480,"Easy spin. Legs are cooked, so this is the cool-down.","Home",{zone:"Z1"})
+    ? L("Citi Bike home","citibike",840,"Easy spin. Legs are cooked, so this is the cool-down.","Home",{zone:"Z1"})
     : L("Jog home","run",900,"Easy. Walking the last stretch is fine.","Home",{zone:"Z1"}));
   return out;
 }
@@ -1316,17 +1362,23 @@ function build(o){
   const add = (...a)=>a.forEach(x=>Array.isArray(x)?out.push(...x.filter(Boolean)):x&&out.push(x));
   const gym = loc==="gym", useDb = gym || o.dbOn;
   const wt = w => w>0 ? `${w} lb` : "";
-  const dbo = (db, w, track) => ({db, weight: wt(w), track, setup: gym ? 10 : 3});
+  const dbo = (db, w, track) => ({db, weight: wt(w), track: gym ? track : track+" (home)", setup: gym ? 10 : 3});
   const CARDIO_ORDER = gym ? ["rower","arc","elliptical","gymbike","climber","tread"] : ["run","stairs","peloton","outbike","rope"];
   const avail = CARDIO_ORDER.filter(k=>eq[k]);
   const spin = avail.length ? avail.slice((o.ab||0)*2 % avail.length).concat(avail.slice(0,(o.ab||0)*2 % avail.length)) : [];
   const pick = i => spin.length ? spin[i % spin.length] : null;
   const mach = pick(0), mach2 = spin.length>1 ? pick(1) : mach;
+  /* at the gym the rower warms up and flushes; the intervals rotate through everything else, one machine per gym day */
+  const ivPool = gym ? avail.filter(k=>k!=="rower") : avail;
+  const ivM = ivPool.length ? ivPool[(o.gymN||0) % ivPool.length] : mach2;
+  const warmM = gym && eq.rower ? "rower" : mach;
+  /* phase sets the lifting volume and density: rounds 3/3/3/4, rest 75/75/60/45 */
+  const GR = phase>=4 ? 4 : 3, GREST = phase>=4 ? 45 : phase===3 ? 60 : 75;
   const H = gym ? (W.gymHeavy||0) : W.heavy, L = gym ? (W.gymLight||0) : W.light;
 
   const EX = {
     goblet: n => sl => useDb
-      ? reps("Goblet squat","gobletup","goblet",n,3,"strength","One dumbbell at your chest. Sit between your heels, chest tall, knees out. Leave 2 to 3 reps in the tank.",{...dbo("B",H,"Goblet squat"),chips:[sl]})
+      ? reps("Front-rack squat","gobletup","goblet",n,3,"strength","A dumbbell on each shoulder, elbows up. Sit between your heels, chest tall, knees out. Leave 2 to 3 reps in the tank.",{...dbo("AB",H,"Front-rack squat"),chips:[sl]})
       : reps("Slow air squat","mountain","squat",n+2,4,"strength","Three seconds down, one up. Heels stay heavy.",{chips:[sl]}),
     row: n => sl => sided((f,s)=> useDb
       ? reps("Single-arm row","rowdown","row",n,3,"strength","Hinge with a flat back, hand on your knee or a bench. Pull the elbow toward your hip.",{...dbo("B",H,"Single-arm row"),flip:f,chips:[sl,s]})
@@ -1347,6 +1399,46 @@ function build(o){
     renegade: n => sl => sided((f,s)=> useDb
       ? reps("Renegade row","plank","renegade",n,3,"strength","Feet wide, hips square to the floor. Row without rocking.",{...dbo("AB",H,"Renegade row"),flip:f,chips:[sl,s]})
       : reps("Shoulder taps","plank","renegade",n+4,2,"strength","Feet wide, tap the opposite shoulder, hips don't sway.",{flip:f,chips:[sl,s]}))
+  };
+  /* Home lower body: your dumbbells top out at 30 a hand, so one leg at a time does the loading.
+     Dynamic first: the moves travel, step or change direction, which also lifts the heart rate. */
+  const HB = (o.homeAb||0) % 2; /* home alternates A and B, like the gym */
+  /* rest between rounds at home is active: it keeps the heart rate up instead of letting it fall back to 90 */
+  function activeRest(i, secs){
+    const t=Math.max(40, secs), opts=[
+      ()=>step("Active rest: ginga","strength","Keep moving between rounds. Low, loose, guard up. Breathe through the nose.",repeat(Math.round(t/4),()=>[T("ginga",2,"Ginga"),T("ginga",2,"Ginga",true)]),{chips:[fmtSecs(t)]}),
+      eq.rope && (()=>step("Active rest: jump rope","strength","Easy bounce, not a sprint. You should still be able to talk.",cardioSeq("rope",t,1.1,"Easy skip"),{chips:[fmtSecs(t)]})),
+      ()=>step("Active rest: high knees","strength","Easy high knees in place, arms swinging. Light on the feet.",cardioSeq("run",t,1.3,"Easy"),{chips:[fmtSecs(t)]})
+    ].filter(Boolean);
+    const r=opts[(i+HB)%opts.length](); r.isRest=true; return r;
+  }
+  /* 30-second bursts to finish: this is where the heart rate climbs */
+  function homeFinisher(){
+    if (R) return [];
+    const rounds=(phase<=2?2:3)+(G?1:0), out=[];
+    const moves=[
+      ()=>step("Finisher: skater hops","cardio","Side to side, land on one foot, stick it for a beat. Small hops count.",repeat(10,i=>[T("esquiva",1.5,"Hop",i%2===1)]),{chips:["30s"]}),
+      ()=>step("Finisher: mountain climbers","cardio","Plank, drive the knees in fast. Hips level.",repeat(21,()=>[T("plank",.7,"Drive"),T("chaturanga",.7,"Drive")]),{chips:["30s"]}),
+      ()=>phase>=3 ? reps("Finisher: squat jumps","mountain","squat",12,2.5,"cardio","Sit back, jump, land soft and quiet straight into the next one.",{chips:["30s"]})
+                    : reps("Finisher: fast air squats","mountain","squat",15,2,"cardio","Quick but full depth. Heels down.",{chips:["30s"]}),
+      ()=>step("Finisher: burpees","cardio","Chest to the floor, jump at the top. Step back instead of jumping if you need to.",repeat(6,()=>[T("plank",1.6,"Down"),T("chaturanga",1.6,"Down"),T("squat",1.6,"Up"),T("upsalute",.2,"Jump")]),{chips:["30s"]})
+    ];
+    for (let r=0;r<rounds;r++){
+      const a=moves[(r*2+HB)%moves.length](), b=moves[(r*2+1+HB)%moves.length]();
+      out.push(a, step("Breathe","cardio","Walk it off. Fifteen seconds.",[T("mountain",15,"Breathe")],{chips:["15s"]}), b,
+        step("Breathe","cardio","Walk it off.",[T("mountain",r<rounds-1?30:15,"Breathe")],{chips:[fmtSecs(r<rounds-1?30:15)]}));
+    }
+    return out;
+  }
+  const HOME = {
+    bstance: n => sl => sided((f,s)=> reps("B-stance RDL","mountain","rdl",n,3.4,"strength","Back foot is just a kickstand, toes down by the front heel. Most of the weight on the front leg. Hips back, bells close.",{...(useDb?dbo("AB",H,"B-stance RDL"):{}),flip:f,chips:[sl,s]})),
+    revlunge: n => sl => sided((f,s)=> reps("Reverse lunge, knee drive","kneeUp","splitsquat",n,3,"strength","Step back into the lunge, back knee kisses the floor, then drive that knee up to hip height as you stand. Bells at your sides.",{...(useDb?dbo("AB",H,"Reverse lunge"):{}),flip:f,chips:[sl,s]})),
+    walklunge: n => sl => reps("Walking lunges","splittop","splitsquat",n,2.6,"strength","Long steps down the hall, back knee kisses the floor, keep walking. Bells at your sides. Count every step.",{...(useDb?dbo("AB",H,"Walking lunge"):{}),chips:[sl],unitWord:"steps"}),
+    bss: n => sl => sided((f,s)=> reps("Bulgarian split squat","splittop","splitsquat",n,3,"strength","Back foot on the couch or a chair. Drop straight down, front heel planted, slight forward lean for more glute.",{...(useDb?dbo("AB",H,"Bulgarian split squat"):{}),flip:f,chips:[sl,s]})),
+    slrdl: n => sl => sided((f,s)=> reps("Single-leg RDL","slrdlTop","slrdlBottom",n,3.4,"strength","Stand on one leg, push the free leg back as you hinge. Hips square to the floor, bells close to the standing leg.",{...(useDb?dbo("AB",H,"Single-leg RDL"):{}),flip:f,chips:[sl,s]})),
+    latlunge: n => sl => sided((f,s)=> reps("Lateral lunge","mountain","latB",n,3,"strength","Big step to the side, sit back over that foot, other leg straight. Push back to standing. One bell at your chest.",{...(useDb?dbo("B",H,"Lateral lunge"):{}),flip:f,chips:[sl,s]})),
+    cossack: n => sl => sided((f,s)=> reps("Cossack squat","latB","latB",n,3.4,"strength","Wide stance, sink all the way down over one foot, the other leg long with toes up. Shift across low, like a negativa. Bell at your chest as a counterweight.",{...(useDb?dbo("B",L,"Cossack squat"):{}),flip:f,chips:[sl,s]})),
+    skater: n => sl => sided((f,s)=> reps("Skater squat","splittop","splitsquat",n,3.4,"strength","Stand on one leg, back knee bends and lowers toward the floor behind you. Light bell held out front to balance.",{...(useDb?dbo("B",L,"Skater squat"):{}),flip:f,chips:[sl,s]}))
   };
   const bridge = sl => useDb
     ? reps("Glute bridge","bridgedbdown","bridgedbup",10+X,3,"strength","Dumbbell across the hips. Drive through the heels, squeeze at the top, ribs down.",{...dbo("B",H,"Glute bridge"),chips:[sl]})
@@ -1374,53 +1466,64 @@ function build(o){
   function homeStrength(sets, rest, extended){
     let list;
     const squat = n => SL("squat", EX.goblet(n), EX.split(Math.max(6,n-2)), BW.squat(n));
+    /* single-leg ladder: reverse lunge (P2), Bulgarian split squat (P3), skater squat (P4) */
+    const leg = n => SL("squat", phase>=4 ? HOME.skater(n-2) : phase===3 ? HOME.bss(n) : HOME.revlunge(n), phase>=3 ? HOME.walklunge(2*n) : HOME.bss(n), EX.goblet(n+2), BW.squat(n));
+    const hingeSL = n => HB ? SL("hinge", HOME.bstance(n+2), HOME.slrdl(n), EX.rdl(n+2), bridge) : SL("hinge", HOME.slrdl(n), HOME.bstance(n+2), EX.rdl(n+2), bridge);
+    const lateral = n => SL("lateral", phase>=3 ? HOME.cossack(n) : HOME.latlunge(n), phase>=3 ? HOME.latlunge(n) : HOME.cossack(Math.max(5,n-2)));
     const push  = n => SL("push", EX.press(n), BW.pushups(n));
     const hinge = n => SL("hinge", EX.rdl(n), bridge);
     const pull  = n => SL("pull", EX.row(n), EX.renegade(Math.max(6,n-2)));
     const over  = n => SL("overhead", EX.oh(n), BW.pike(Math.max(6,n-2)));
     if (phase===1) list = extended ? [squat(8+X), push(6+X), SL("bridge",bridge), SL("birddog",birddog), SL("plank",plank)] : [SL("bridge",bridge), SL("birddog",birddog), SL("plank",plank)];
-    else if (phase===2) list = [squat(8+X), pull(8+X), push(8+X), hinge(8+X), SL("carry", EX.suitcase(20+X*5), BW.sideplank(20+X*5))];
-    else if (phase===3) list = [SL("squat",EX.split(8+X),trx&&TRX.pistol,EX.goblet(8+X),BW.squat(8+X)), SL("overhead",trx&&TRX.y,EX.oh(8+X),BW.pike(Math.max(6,6+X))), SL("pull",trx&&TRX.row,EX.renegade(6+X),EX.row(8+X),BW.taps(10+X)), SL("hinge",trx&&TRX.ham,EX.rdl(10+X),bridge), ...(trx?[SL("push",TRX.push,EX.press(8+X),BW.pushups(8+X)), SL("core",TRX.tuck)]:[])];
-    else list = [SL("squat",EX.split(10+X),trx&&TRX.pistol,EX.goblet(10+X),BW.squat(10+X)), SL("overhead",trx&&TRX.y,EX.oh(10+X),BW.pike(8+X)), SL("pull",trx&&TRX.row,EX.renegade(8+X),EX.row(10+X),BW.taps(12+X)), SL("hinge",trx&&TRX.ham,EX.rdl(10+X),bridge), ...(trx?[SL("push",TRX.push,EX.press(10+X),BW.pushups(10+X)), SL("core",TRX.tuck)]:[]), ...(extended?[SL("squat2",EX.goblet(10+X),BW.squat(10+X))]:[])];
-    return circuit(sets, rest, list);
+    else if (phase===2) list = [leg(8+X), pull(10+X), push(10+X), hingeSL(8+X), lateral(8+X)];
+    else if (phase===3) list = [leg(8+X), SL("overhead",EX.oh(8+X),BW.pike(Math.max(6,6+X))), SL("pull",EX.renegade(6+X),EX.row(10+X),BW.taps(10+X)), hingeSL(10+X), lateral(6+X)];
+    else list = [leg(10+X), SL("overhead",EX.oh(10+X),BW.pike(8+X)), SL("pull",EX.renegade(8+X),EX.row(12+X),BW.taps(12+X)), hingeSL(12+X), lateral(8+X), ...(extended?[SL("squat2",EX.goblet(12+X),BW.squat(10+X))]:[])];
+    /* B sessions start each slot one variant along (hinge handles its own order) */
+    if (phase>=2) list.forEach(sl=>{ if (sl && sl.v && sl.v.length>1 && sl.slot!=="hinge" && sl.slot!=="squat2") sl.di = HB % sl.v.length; });
+    return circuit(sets, rest, list, phase>=2 ? activeRest : null);
   }
   function gymStrength(sets, rest){
-    const bb=eq.barbell, sm=eq.smith, mc=eq.machines, bn=eq.bench, main=phase>=4?5:phase===3?6:8;
+    const bb=eq.barbell, sm=eq.smith, mc=eq.machines, bn=eq.bench, main=phase>=4?5:phase===3?6:8, r10=phase>=4?7:phase===3?8:10, r8=phase>=4?6:8;
     const pick = "Pick a weight that leaves 2 to 3 reps in the tank.";
     const B = o.ab ? 1 : 0; /* which session of the pair */
     const G_ = {
       backsquat: sl=>reps("Back squat","bbtop","bbsquat",main+X,3.5,"strength","Bar on your upper back, brace before every rep, hips and chest rise together. Use the safeties.",{plate:"neck",track:"Back squat",setup:15,chips:[sl]}),
       smithsquat:sl=>reps("Smith squat","bbtop","bbsquat",main+X+2,3.5,"strength","Feet slightly forward of the bar. The rail holds the path, so drive straight up and don't lean into it. Set the safety pins.",{plate:"neck",track:"Smith squat",setup:15,chips:[sl]}),
-      legpress:  sl=>reps("Leg press","lpdown","lpup",10+X,3,"strength","Feet shoulder-width. Lower until your hips want to curl, don't lock the knees. "+pick,{track:"Leg press",setup:12,chips:[sl]}),
-      pulldown:  sl=>reps("Lat pulldown","latup","latdown",10+X,3,"strength","Chest up, pull the bar to your collarbone, elbows drive down. "+pick,{track:"Lat pulldown",setup:10,chips:[sl]}),
-      cablerow:  sl=>reps("Seated cable row","crowout","crowin",10+X,3,"strength","Sit tall, pull to your belly button, pause, let the shoulders reach forward on the return.",{track:"Seated cable row",setup:10,chips:[sl]}),
-      smithrow:  sl=>reps("Smith row","bbrowdown","bbrowup",8+X,3,"strength","Set the bar low. Hinge to about 45°, flat back, pull to your lower ribs.",{plate:"hands",track:"Smith row",setup:15,chips:[sl]}),
-      bbrow:     sl=>reps("Barbell row","bbrowdown","bbrowup",8+X,3,"strength","Hinge to about 45°, flat back, pull to your lower ribs.",{plate:"hands",track:"Barbell row",setup:15,chips:[sl]}),
+      legpress:  sl=>reps("Leg press","lpdown","lpup",r10+X,3,"strength","Feet shoulder-width. Lower until your hips want to curl, don't lock the knees. "+pick,{track:"Leg press",setup:12,chips:[sl]}),
+      pulldown:  sl=>reps("Lat pulldown","latup","latdown",r10+X,3,"strength","Chest up, pull the bar to your collarbone, elbows drive down. "+pick,{track:"Lat pulldown",setup:10,chips:[sl]}),
+      cablerow:  sl=>reps("Seated cable row","crowout","crowin",r10+X,3,"strength","Sit tall, pull to your belly button, pause, let the shoulders reach forward on the return.",{track:"Seated cable row",setup:10,chips:[sl]}),
+      smithrow:  sl=>reps("Smith row","bbrowdown","bbrowup",r8+X,3,"strength","Set the bar low. Hinge to about 45°, flat back, pull to your lower ribs.",{plate:"hands",track:"Smith row",setup:15,chips:[sl]}),
+      bbrow:     sl=>reps("Barbell row","bbrowdown","bbrowup",r8+X,3,"strength","Hinge to about 45°, flat back, pull to your lower ribs.",{plate:"hands",track:"Barbell row",setup:15,chips:[sl]}),
       bench:     sl=>reps("Bench press","benchdown","benchup",main+X,3,"strength","Shoulder blades pinned, bar touches mid-chest, press up and slightly back. Safeties set.",{plate:"hands",track:"Bench press",setup:15,chips:[sl]}),
       smithbench:sl=>reps("Smith bench press","benchdown","benchup",main+X+2,3,"strength","Bench set so the bar lands mid-chest. Shoulder blades pinned. Safety catches on.",{plate:"hands",track:"Smith bench press",setup:15,chips:[sl]}),
-      dbbench:   sl=>reps("Dumbbell bench press","benchdown","benchup",8+X,3,"strength","Full range — this is the one you liked. Elbows about 45°, press up and slightly together. Don't clash the bells.",{db:"AB",weight:wt(H),track:"Dumbbell bench press",setup:12,chips:[sl]}),
-      dbincline: sl=>reps("Incline dumbbell press","benchdown","benchup",8+X,3,"strength","Bench at about 30°. Same press, more upper chest and shoulder.",{db:"AB",weight:wt(L),track:"Incline dumbbell press",setup:12,chips:[sl]}),
+      dbbench:   sl=>reps("Dumbbell bench press","benchdown","benchup",r8+X,3,"strength","Full range — this is the one you liked. Elbows about 45°, press up and slightly together. Don't clash the bells.",{db:"AB",weight:wt(H),track:"Dumbbell bench press",setup:12,chips:[sl]}),
+      dbincline: sl=>reps("Incline dumbbell press","benchdown","benchup",r8+X,3,"strength","Bench at about 30°. Same press, more upper chest and shoulder.",{db:"AB",weight:wt(L),track:"Incline dumbbell press",setup:12,chips:[sl]}),
       deadlift:  sl=>reps("Deadlift","dltop","dlbottom",main+X,4,"strength","Bar over midfoot, lats tight, push the floor away. Reset every rep.",{plate:"hands",track:"Deadlift",setup:15,chips:[sl]}),
-      bbrdl:     sl=>reps("Barbell RDL","dltop","rdl",8+X,3.5,"strength","Soft knees, hips back, bar stays against your legs.",{plate:"hands",track:"Barbell RDL",setup:15,chips:[sl]}),
-      smithrdl:  sl=>reps("Smith RDL","dltop","rdl",8+X,3.5,"strength","Soft knees, hips back, bar tracks down your thighs on the rail.",{plate:"hands",track:"Smith RDL",setup:15,chips:[sl]}),
+      bbrdl:     sl=>reps("Barbell RDL","dltop","rdl",r8+X,3.5,"strength","Soft knees, hips back, bar stays against your legs.",{plate:"hands",track:"Barbell RDL",setup:15,chips:[sl]}),
+      smithrdl:  sl=>reps("Smith RDL","dltop","rdl",r8+X,3.5,"strength","Soft knees, hips back, bar tracks down your thighs on the rail.",{plate:"hands",track:"Smith RDL",setup:15,chips:[sl]}),
       ohp:       sl=>reps("Overhead press","bbohdown","bbohup",main+X,3,"strength","Glutes tight, ribs down, head through once the bar passes your face.",{plate:"hands",track:"Overhead press",setup:15,chips:[sl]}),
       smithohp:  sl=>reps("Smith overhead press","bbohdown","bbohup",main+X+2,3,"strength","Seated or standing under the rail. Glutes tight, ribs down, press straight up.",{plate:"hands",track:"Smith overhead press",setup:15,chips:[sl]})
     };
-    const dbrow = sl => sided((f,sd)=>reps("Dumbbell row","rowdown","row",8+X,3,"strength","One knee and hand on the bench, flat back. Pull the elbow past your hip.",{db:"B",weight:wt(H),track:"Dumbbell row",setup:10,flip:f,chips:[sl,sd]}));
-    const dbrdl = sl => reps("Dumbbell RDL","mountain","rdl",10+X,3.5,"strength","Soft knees, push the hips back, bells slide down the thighs. Flat back.",{db:"AB",weight:wt(H),track:"Dumbbell RDL",setup:10,chips:[sl]});
-    const dbsplit = sl => sided((f,sd)=>reps("Split squat","splittop","splitsquat",8+X,3,"strength","Long stance, bells at your sides. Back knee straight down, front heel planted.",{db:"AB",weight:wt(L),track:"Split squat",setup:10,flip:f,chips:[sl,sd]}));
-    const dbgoblet = sl => reps("Goblet squat","gobletup","goblet",10+X,3,"strength","One bell at your chest. Sit between your heels, chest tall, knees out.",{db:"B",weight:wt(H),track:"Goblet squat",setup:10,chips:[sl]});
-    const dbohp = sl => sided((f,sd)=>reps("Single-arm press","ohdown","ohpress",8+X,3,"strength","Glutes and ribs tight so the press comes from the shoulder, not the lower back.",{db:"B",weight:wt(L),track:"Single-arm press",setup:10,flip:f,chips:[sl,sd]}));
+    const dbrow = sl => sided((f,sd)=>reps("Dumbbell row","rowdown","row",r8+X,3,"strength","One knee and hand on the bench, flat back. Pull the elbow past your hip.",{db:"B",weight:wt(H),track:"Dumbbell row",setup:10,flip:f,chips:[sl,sd]}));
+    const dbrdl = sl => reps("Dumbbell RDL","mountain","rdl",r10+X,3.5,"strength","Soft knees, push the hips back, bells slide down the thighs. Flat back.",{db:"AB",weight:wt(H),track:"Dumbbell RDL",setup:10,chips:[sl]});
+    const dbsplit = sl => sided((f,sd)=>reps("Split squat","splittop","splitsquat",r8+X,3,"strength","Long stance, bells at your sides. Back knee straight down, front heel planted.",{db:"AB",weight:wt(L),track:"Split squat",setup:10,flip:f,chips:[sl,sd]}));
+    const dbgoblet = sl => reps("Goblet squat","gobletup","goblet",r10+X,3,"strength","One bell at your chest. Sit between your heels, chest tall, knees out.",{db:"B",weight:wt(H),track:"Goblet squat",setup:10,chips:[sl]});
+    const dbslrdl = sl => sided((f,sd)=>reps("Single-leg RDL","slrdlTop","slrdlBottom",r8+X,3.4,"strength","Stand on one leg, push the free leg back as you hinge. Hips square, bells close to the standing leg.",{db:"AB",weight:wt(L),track:"Single-leg RDL",setup:8,flip:f,chips:[sl,sd]}));
+    const hipthrust = sl => reps("Dumbbell hip thrust","bridgedbdown","bridgedbup",r10+X,3,"strength","Shoulders on the bench edge, one heavy bell across the hips. Drive through the heels, chin tucked, squeeze at the top.",{db:"B",weight:wt(H),track:"Dumbbell hip thrust",setup:12,chips:[sl]});
+    const dbwalk = sl => reps("Walking lunges","splittop","splitsquat",2*(r8+X),2.6,"strength","Bells at your sides, long steps, back knee kisses the floor. Count every step.",{db:"AB",weight:wt(L),track:"Walking lunge",setup:8,chips:[sl],unitWord:"steps"});
+    const dbohp = sl => sided((f,sd)=>reps("Single-arm press","ohdown","ohpress",r8+X,3,"strength","Glutes and ribs tight so the press comes from the shoulder, not the lower back.",{db:"B",weight:wt(L),track:"Single-arm press",setup:10,flip:f,chips:[sl,sd]}));
 
     /* each slot lists its variants; B sessions start one variant along */
     const squat = SL("squat", mc&&G_.legpress, dbgoblet, dbsplit, trx&&TRX.pistol, sm&&G_.smithsquat, bb&&G_.backsquat);
-    const pull  = SL("pull", trx&&TRX.row, mc&&G_.pulldown, mc&&G_.cablerow, bn&&dbrow, sm&&G_.smithrow, bb&&G_.bbrow, EX.row(8+X));
-    const push  = SL("push", bn&&G_.dbbench, trx&&TRX.push, bn&&G_.dbincline, sm&&G_.smithbench, bb&&G_.bench, EX.press(8+X), BW.pushups(10+X));
-    const hinge = SL("hinge", bn&&dbrdl, trx&&TRX.ham, sm&&G_.smithrdl, bb&&(phase>=4?G_.deadlift:G_.bbrdl), bridge);
-    const over  = SL("overhead", trx&&TRX.y, sm&&G_.smithohp, bb&&G_.ohp, dbohp, BW.pike(8+X));
-    const accessory = phase>=3 ? over : SL("pull2", mc&&G_.cablerow, bn&&dbrow, EX.renegade(6+X));
+    const pull  = SL("pull", trx&&TRX.row, mc&&G_.pulldown, mc&&G_.cablerow, bn&&dbrow, sm&&G_.smithrow, bb&&G_.bbrow, EX.row(r8+X));
+    const push  = SL("push", bn&&G_.dbbench, trx&&TRX.push, bn&&G_.dbincline, sm&&G_.smithbench, bb&&G_.bench, EX.press(r8+X), BW.pushups(10+X));
+    const hinge = SL("hinge", bn&&dbrdl, bn&&dbslrdl, trx&&TRX.ham, sm&&G_.smithrdl, bb&&(phase>=4?G_.deadlift:G_.bbrdl), bn&&hipthrust, bridge);
+    const over  = SL("overhead", trx&&TRX.y, sm&&G_.smithohp, bb&&G_.ohp, dbohp, BW.pike(r8+X));
+    const accessory = phase>=3 ? over : B ? SL("lunge", bn&&dbwalk, bn&&dbsplit, HOME.revlunge(r8+X)) : SL("pull2", mc&&G_.cablerow, bn&&dbrow, EX.renegade(6+X));
     const list = (B ? [hinge, pull, squat, push, accessory] : [squat, push, pull, hinge, accessory]).concat(trx ? [SL("core", TRX.tuck)] : []);
-    list.forEach(sl=>{ if (sl.v.length>1) sl.di = B % sl.v.length; });
+    list.forEach(sl=>{ if (sl.v.length>1 && sl.slot!=="lunge") sl.di = B % sl.v.length; });
+    /* a bodyweight bridge is never the main hinge at the gym */
+    list.forEach(sl=>{ if (sl.names[sl.di||0]==="Glute bridge" && sl.v.length>1) sl.di=0; });
     /* don't run the same movement twice in one session */
     const taken=new Set();
     list.forEach(sl=>{
@@ -1430,7 +1533,8 @@ function build(o){
     });
     return circuit(sets, rest, list);
   }
-  const warmMachine = secs => mach ? machineEasy(mach, secs, "Warm-up", "Easy pace, nose breathing. You should be able to hold a conversation.") : null;
+  const warmMachine = secs => warmM ? machineEasy(warmM, secs, "Warm-up", "Easy pace, nose breathing. You should be able to hold a conversation.") : null;
+  const flush = () => gym && eq.rower ? machineEasy("rower", 180, "Flush", "Easy rowing. Let the heart rate come down before you stretch.") : null;
 
   /* ---------- Yoga only ---------- */
   if (type==="yoga"){
@@ -1456,12 +1560,13 @@ function build(o){
       return out;
     }
     if (gym){
-      add(mach ? warmMachine(second?180:300) : [catcow(), downdog(), ...sunA(2,null)]);
-      add(gymStrength(3, 75));
-      if (mach2) add(intervals(mach2, G?6:4));
+      add(warmM ? warmMachine(second?180:300) : [catcow(), downdog(), ...sunA(2,null)]);
+      add(gymStrength(GR, GREST));
+      if (ivM) add(ivFor(ivM, phase, G), flush());
     } else {
       add(second ? [downdog(), ...sunA(1,null), ginga(24)] : [catcow(), downdog(), ...sunA(2,null), phase>=2?ginga(32):null]);
       add(homeStrength(3, phase===1?30:40, true));
+      if (phase>=2) add(homeFinisher());
       if (phase>=2) add(core(G?30:20, 15));
     }
     add(shortClose());
@@ -1470,7 +1575,9 @@ function build(o){
 
   /* ---------- Cardio ---------- */
   if (type==="cardio"){
-    const m1=pick(0), m2=pick(1), m3=pick(2);
+    let m1=pick(0), m2=pick(1), m3=pick(2);
+    /* gym: rower bookends, the work happens on the machine whose turn it is */
+    if (gym && eq.rower && ivPool.length){ m1="rower"; m2=ivM; m3="rower"; }
     const hasBar = !!eq.bar;
     const FIN = SL("finish",
       hasBar && (sl=>reps("Pull-ups","hang","pullup",R?3:G?7:5,3.5,"strength","Dead hang, shoulders down, chin over the bar. Band or jump-and-lower if you run out.",{track:"Pull-ups",setup:8,chips:[sl]})),
@@ -1507,7 +1614,7 @@ function build(o){
     if (R) add(steady(m2, 12*60, "Zone 2", `Move to the ${MNAME(m2).toLowerCase()}. Twelve minutes steady. If you can't speak a full sentence, back off.`));
     else {
       add(steady(m2, G?300:360, "Zone 2", `Switch to the ${MNAME(m2).toLowerCase()}. Steady, building.`));
-      add(intervals(m2, G?8:6, m2==="rope"?20:30, 30));
+      add(ivFor(m2, phase, G));
     }
     if (m3 && m3!==m1 && m3!==m2) add(machineEasy(m3, R?240:360, "Flush", `Last switch, onto the ${MNAME(m3).toLowerCase()}. Easy — let the heart rate come down.`));
     else add(machineEasy(m1, R?180:240, "Flush", "Back where you started. Easy, let the heart rate come down."));
@@ -1518,7 +1625,7 @@ function build(o){
   /* ---------- Full series ---------- */
   if (gym){
     add(warmMachine(second?180:300), catcow(), downdog(), sunA(G?3:2,null), standing(false));
-    if (!R) add(gymStrength(2, 60));
+    if (!R){ add(gymStrength(phase>=4?3:2, phase>=3?45:60)); if (ivM && phase>=2) add(ivFor(ivM, phase, G, -1)); }
     else add(mach ? machineEasy(mach, 480, "Easy cardio", "Zone 2: easy enough to talk in full sentences.") : child());
     add(core(G?30:20, 15));
     add(closing(false, R, true));
@@ -1531,8 +1638,8 @@ function build(o){
     add(closing(false, R, second));
   }
   if (phase===2){
-    add(arrive(second?30:45), cap?ginga(60):null, wrists(), catcow(), downdog(), sunA(G?3:2, R?null:{pushups:8,squats:10}), sunB(G?2:1), standing(true));
-    if (!R) add(homeStrength(2, 30, false));
+    add(arrive(second?30:45), cap?ginga(60):null, wrists(), catcow(), downdog(), sunA(2, R?null:{pushups:8,squats:10}), sunB(1), standing(true));
+    if (!R) add(homeStrength(3, 30, false), homeFinisher());
     add(core(G?30:20, 15));
     add(R ? child() : inversions(2));
     add(closing(false, R, true));
@@ -1541,7 +1648,7 @@ function build(o){
     add(arrive(30));
     if (cap) add(ginga(48), cocorinha(), ...(R?[]:[esquiva(), ...negativa(), auPrep()]));
     add(wrists(), downdog(), sunA(G?3:2,null), sunB(2), standing(true));
-    if (!R) add(homeStrength(2, 40, false));
+    if (!R) add(homeStrength(3, 40, false), homeFinisher());
     add(core(G?40:30, 20));
     add(R ? child() : inversions(3));
     add(closing(true, R, true));
@@ -1550,7 +1657,7 @@ function build(o){
     add(arrive(30));
     if (cap) add(ginga(48), ...(R?[cocorinha()]:[esquiva(), ...negativa(), au(), ...queda()]));
     add(wrists(), downdog(), sunA(G?3:2,null), sunB(2), standing(true));
-    if (!R) add(homeStrength(2, 40, false));
+    if (!R) add(homeStrength(3, 40, false), homeFinisher());
     add(core(G?45:40, 30));
     add(R ? child() : inversions(4));
     add(closing(true, R, true));
@@ -1657,9 +1764,9 @@ if (typeof document!=="undefined") (function(){
   const isSecond = () => (st.secOv && st.secOv.d===today()) ? st.secOv.v : loggedToday().length>0;
   const gymCount = () => st.type==="cardio" ? realLog().filter(l=>l.t==="cardio").length : realLog().filter(l=>l.l==="gym" && l.t!=="yoga").length;
   const abNext = () => (st.abOv!==null && st.abOv!==undefined) ? st.abOv : (gymCount() % 2);
-  const opts = rec => ({phase:st.phase, rec, type:st.type, loc:st.loc, eq:st.eq, dbOn:st.dbOn, ab:abNext(), finisher:!!st.finisher, bikeTo:!!st.bikeTo, bikeHome:!!st.bikeHome, lapT:st.lapLast||{}, stations:st.stations!==false, longDay:!!st.longDay,
+  const opts = rec => ({phase:st.phase, rec, type:st.type, loc:st.loc, eq:st.eq, dbOn:st.dbOn, ab:abNext(), gymN: realLog().filter(l=>l.l==="gym").length, homeAb: realLog().filter(l=>l.l==="home" && (l.t==="strength"||l.t==="full")).length, finisher:!!st.finisher, bikeTo:!!st.bikeTo, bikeHome:!!st.bikeHome, lapT:st.lapLast||{}, stations:st.stations!==false, longDay:!!st.longDay,
     stairN: realLog().filter(l=>l.p===st.phase && (st.cardio||[]).some(c=>c.session_id===l.id && c.modality==="stairs")).length,
-    W:{heavy:st.heavy||0, light:st.light||0, gymHeavy:st.gymHeavy||0, gymLight:st.gymLight||0}, second:isSecond()});
+    W:{heavy:homeInv().at(-1), light:homeInv().length>1?homeInv().at(-2):homeInv()[0], gymHeavy:st.gymHeavy||0, gymLight:st.gymLight||0}, second:isSecond()});
   const sessionFor = rec => build(opts(rec));
   const total = steps => steps.reduce((a,s)=>a+s.dur,0);
   const TYPE_NAME = {full:"full series", yoga:"yoga", strength:"strength", cardio:"cardio"};
@@ -1669,6 +1776,18 @@ if (typeof document!=="undefined") (function(){
     items.forEach(it=>{ const b=document.createElement("button"); b.type="button"; b.textContent=it.name; b.setAttribute("aria-pressed",String(it.id===current)); b.onclick=()=>onPick(it.id); el.appendChild(b); });
   }
 
+  /* did a session yesterday (or earlier today) load the same muscles? */
+  function liftedRecently(){
+    const y=dkey(new Date(Date.now()-864e5)), PAT={squat:"legs",hinge:"hamstrings and glutes",push:"chest and shoulders",pull:"back"};
+    const ses=realLog().filter(l=>(l.d===y || l.d===today()) && l.t!=="yoga" && l.t!=="cardio");
+    for (let i=ses.length-1;i>=0;i--){
+      const l=ses[i], ex=[...new Set(st.sets.filter(r=>r.session_id===l.id && r.block==="main" && r.load_type!=="bodyweight").map(r=>r.exercise))];
+      if (!ex.length) continue;
+      const pats=[...new Set(ex.map(e=>{ const k=Object.keys(RATIO).find(g=>RATIO[g][e]); return k?PAT[k]:null; }).filter(Boolean))];
+      return {when: l.d===y ? "yesterday" : "earlier today", what: pats.length ? pats.join(", ") : ex.slice(0,3).join(", ")};
+    }
+    return null;
+  }
   /* ---------- Home ---------- */
   function renderHome(){
     if (typeof renderResume==="function") try{ renderResume(); }catch(e){}
@@ -1689,7 +1808,7 @@ if (typeof document!=="undefined") (function(){
     $("stairBox").hidden = !stairsToday;
     if (stairsToday){ $("bikeTo").checked=!!st.bikeTo; $("bikeHome").checked=!!st.bikeHome; $("stOn").checked=st.stations!==false; $("ldOn").checked=!!st.longDay;
       const best=st.stairs&&st.stairs["Back stairs"];
-      $("stairNote").textContent = (st.bikeTo ? "Ride there, five minutes of easy jogging, then the stairs. " : "Jog there, about 15 minutes. ")
+      $("stairNote").textContent = (st.bikeTo ? "Ride there, five minutes of easy jogging, then the stairs. " : "Jog there, about 11 minutes. ")
         + "Up the stairs, down the paths: each big stair, then down to the small stairs, then over to the next. Tap at every top and every arrival; your times become next session's targets. Moves at the top add 2 reps every stair day this phase, up to +6." + (best ? ` Back stairs best: ${fmtSecs(best.best)}.` : ""); }
     const sec = isSecond(), lt = loggedToday();
     $("secOn").checked = sec;
@@ -1733,6 +1852,8 @@ if (typeof document!=="undefined") (function(){
     $("wHeavy").value = atGym ? st.gymHeavy : st.heavy;
     $("wLight").value = atGym ? st.gymLight : st.light;
     $("weights").classList.toggle("off", !atGym && !st.dbOn);
+    $("invWrap").hidden = atGym; $("wInv").value = homeInv().join(", ");
+    document.querySelector("#weights .wgrid").hidden = !atGym;
     $("wNote").textContent = atGym
       ? "What you can actually grab at work. These show as a suggestion — log what you really used during the set."
       : st.phase===1 && st.type!=="strength"
@@ -1748,15 +1869,23 @@ if (typeof document!=="undefined") (function(){
 
     const pn=$("planNote");
     if (st.rec==="red" && st.type==="strength"){ pn.hidden=false; pn.textContent = st.loc==="gym" && (st.eq.rower||st.eq.climber) ? "Red day. Lifting is off. Easy cardio and mobility instead." : "Red day. Lifting is off. This is a mobility session."; }
+    else if (liftedRecently() && (st.type==="strength" || (st.type==="full" && st.phase>=2)) && st.rec!=="red"){
+      const L=liftedRecently();
+      pn.hidden=false; pn.style.borderLeftColor="var(--yellow)";
+      pn.innerHTML = `You lifted ${L.when} (${L.what}). The same muscles want about 48 hours. <b>Cardio or yoga is the better call today.</b> If you lift anyway, the gym gives you the other session (${abNext()?"B":"A"}), and expect to stay at last time's weights. <button type="button" class="ghost" id="toCardio" style="margin-top:8px">Make today cardio</button>`;
+      $("toCardio").onclick=()=>{ st.type="cardio"; save(); renderHome(); };
+    }
     else pn.hidden=true;
+    if (pn.hidden || st.rec==="red") pn.style.borderLeftColor="";
 
     const steps=sessionFor(st.rec), ol=$("planList"); ol.innerHTML="";
     let lastB=null;
     steps.forEach(s=>{
       if (s.block!==lastB){ lastB=s.block; const h=document.createElement("li"); h.className="bh"; h.innerHTML=`<i style="background:${BLOCKS[s.block].color}"></i>${BLOCKS[s.block].name}`; ol.appendChild(h); }
       const li=document.createElement("li"); li.className="it";
-      const extra=[...s.chips.filter(c=>!/^\d+(s| min|:\d+)$/.test(c)), s.weight].filter(Boolean).join(", ");
-      const last = s.track && st.lifts[s.track] ? `<small class="last">Last time: ${st.lifts[s.track]} lb</small>` : "";
+      const extra=[...s.chips.filter(c=>!/^\d+(s| min|:\d+)$/.test(c)), s.track && (st.lifts[s.track] || estW(s.track)) ? "" : s.weight].filter(Boolean).join(", ");
+      const ew = !st.lifts[s.track] && estW(s.track);
+      const last = s.track && st.lifts[s.track] ? `<small class="last">Last time: ${st.lifts[s.track]} lb</small>` : ew ? `<small class="last">First time: start around ${ew} lb, from your other lifts</small>` : "";
       li.innerHTML=`<span>${s.name}${extra?`<small>${extra}</small>`:""}${last}</span><span class="d">${fmtSecs(s.dur)}</span>`;
       ol.appendChild(li);
     });
@@ -1848,6 +1977,8 @@ if (typeof document!=="undefined") (function(){
   $("stOn").onchange=e=>{ st.stations=e.target.checked; save(); renderHome(); };
   $("finOn").onchange=e=>{ st.finisher=e.target.checked; save(); renderHome(); };
   $("dbOn").onchange=e=>{ st.dbOn=e.target.checked; save(); renderHome(); };
+  $("wInv").onchange=e=>{ const v=[...new Set((e.target.value.match(/\d+(\.\d+)?/g)||[]).map(Number).filter(x=>x>0))].sort((a,b)=>a-b);
+    if (v.length){ st.homeInv=v; st.heavy=v[v.length-1]; st.light=v.length>1?v[v.length-2]:v[0]; } save(); renderHome(); };
   $("wHeavy").onchange=e=>{ const v=Math.max(0,parseInt(e.target.value)||0); if (st.loc==="gym") st.gymHeavy=v; else st.heavy=v; save(); renderHome(); };
   $("wLight").onchange=e=>{ const v=Math.max(0,parseInt(e.target.value)||0); if (st.loc==="gym") st.gymLight=v; else st.light=v; save(); renderHome(); };
   $("abBtn").onclick=()=>{ st.abOv = abNext() ? 0 : 1; save(); renderHome(); };
@@ -2008,7 +2139,31 @@ if (typeof document!=="undefined") (function(){
   const P={ sheet:false, feel:null, lastCue:null, steps:[], i:0, t:0, run:false, last:0, sub:-1, lastSec:-1, total:0, raf:0, lock:null, type:"full", loc:"home" };
   function subAt(step,t){ let c=0; for(let j=0;j<step.seq.length;j++){ c+=step.seq[j].t; if (t<c) return j; } return step.seq.length-1; }
   const defW = s => parseFloat(s.weight)||0;
-  const curW = s => (s.track && (st.aim[s.track] || st.lifts[s.track])) || defW(s);
+  /* First time on a lift: estimate it from lifts you've already logged in the same pattern,
+     so the starting number isn't arbitrary. Factors are relative to one anchor lift per pattern,
+     set from your Oct 20 numbers (leg press 240, pulldown 110, DB bench 40s, DB RDL 40s).
+     RIR then fine-tunes it from the first set. */
+  const RATIO = {
+    squat:{"Leg press":1,"Back squat":.5,"Smith squat":.45,"Goblet squat":.21,"Front-rack squat":.125,"Split squat":.1,"Bulgarian split squat":.085,"Reverse lunge":.1,"Walking lunge":.1,"Skater squat":.06,"Lateral lunge":.1,"Cossack squat":.06},
+    push:{"Dumbbell bench press":1,"Dumbbell press":.9,"Incline dumbbell press":.8,"Single-arm press":.6,"Bench press":2,"Smith bench press":1.8,"Overhead press":1.3,"Smith overhead press":1.2},
+    pull:{"Lat pulldown":1,"Seated cable row":1,"Dumbbell row":.35,"Single-arm row":.3,"Renegade row":.15,"Barbell row":.75,"Smith row":.7},
+    hinge:{"Dumbbell RDL":1,"Barbell RDL":2,"Smith RDL":1.8,"Deadlift":2.5,"Single-leg RDL":.6,"B-stance RDL":.75,"Glute bridge":1.5,"Dumbbell hip thrust":1.5,"Suitcase hold":1}
+  };
+  const STACK = /Leg press|Lat pulldown|cable row/;
+  function estW(track){
+    if (!track) return 0;
+    const home = / \(home\)$/.test(track), base = track.replace(/ \(home\)$/,"");
+    const grp = Object.values(RATIO).find(g=>g[base]); if (!grp) return 0;
+    const ests=[];
+    Object.keys(grp).forEach(k=>{ if (k===base) return; const v = st.lifts[k] || st.lifts[k+" (home)"]; if (v>0) ests.push(v/grp[k]*grp[base]); });
+    if (!ests.length) return 0;
+    const raw = ests.reduce((a,b)=>a+b,0)/ests.length, step = STACK.test(base) ? 10 : 5;
+    let w = Math.max(step, Math.round(raw/step)*step);
+    if (home){ const inv=homeInv(); w = [...inv].reverse().find(x=>x<=w) || inv[0]; }
+    return w;
+  }
+  const curW = s => (s.track && (st.aim[s.track] || st.lifts[s.track] || estW(s.track))) || defW(s);
+  const isEst = s => !!(s.track && !st.aim[s.track] && !st.lifts[s.track] && estW(s.track));
   function announce(){
     const s=P.steps[P.i], extra=s.chips.filter(c=>/side|reps|Round|rounds/.test(c)).join(", ");
     const w=curW(s);
@@ -2023,13 +2178,13 @@ if (typeof document!=="undefined") (function(){
     const w=curW(s);
     if (s.plannedW===undefined){ const sib=P.steps.filter(x=>x.unit && x.unit===s.unit); (sib.length?sib:[s]).forEach(x=>{ if (x.plannedW===undefined) x.plannedW = w||""; }); }
     $("pTrackU").textContent = s.db==="AB" ? "lb each" : "lb";
-    if (w){ const e=document.createElement("span"); e.className="chip w"; e.textContent = (s.track && st.aim[s.track] ? "Aim " : "") + w + (s.db==="AB" ? " lb each" : " lb"); ch.appendChild(e); }
+    if (w){ const e=document.createElement("span"); e.className="chip w"; e.textContent = (s.track && st.aim[s.track] ? "Aim " : isEst(s) ? "Start ~" : "") + w + (s.db==="AB" ? " lb each" : " lb"); ch.appendChild(e); }
     $("pSwap").hidden = !(s.unit || s.mach);
     $("pSkip").textContent = s.lap ? s.doneLabel : s.unit ? "Done" : s.mach ? "Next" : "Skip";
     $("pPlus").hidden = !s.ivl || !s.work;
     if (s.climb){ const r=(st.stairs||{})[s.name]; if (r){ const e=document.createElement("span"); e.className="chip w"; e.textContent=`Last ${fmtSecs(r.last)} · Best ${fmtSecs(r.best)}`; ch.appendChild(e); } }
     const tr=$("pTrack"); tr.hidden=!s.track;
-    if (s.track){ $("pTrackIn").value = st.aim[s.track] || st.lifts[s.track] || defW(s) || ""; $("pTrackIn").placeholder="—"; }
+    if (s.track){ $("pTrackIn").value = curW(s) || ""; $("pTrackIn").placeholder="—"; }
     const n=P.steps[P.i+1];
     $("pNextWrap").style.visibility = n?"visible":"hidden";
     if (n){ const sd=n.chips.find(c=>/side/.test(c)); $("pNext").textContent = n.name + (sd?`, ${sd.toLowerCase()}`:""); }
@@ -2059,8 +2214,9 @@ if (typeof document!=="undefined") (function(){
       P.lastCardio = { session_id:P.sid, start_time:s.startedAt?hhmmss(new Date(s.startedAt)):"", modality:s.mach||s.mod, segment:s.name, seconds:Math.round(actual), duration_min:+(actual/60).toFixed(1), intervals:s.ivl||"",
         target_zone:s.zone||"", target_seconds:s.lap?s.target:(s.mach?Math.round(s.dur):""), metric:"", metric_unit:"", level:"", effort:"", swapped_from:s.machFrom||"" };
       st.cardio.push(P.lastCardio);
-      if (s.lap){ st.lapLast=st.lapLast||{}; st.lapLast[s.name]=Math.round(actual); }
-      if (s.climb){ st.stairs=st.stairs||{}; const r=st.stairs[s.name]||{}; const v=Math.round(actual);
+      /* only learn from real laps: a tap-through would set next time's target to 3 seconds */
+      if (s.lap && actual >= (s.base||s.target)*0.4){ st.lapLast=st.lapLast||{}; st.lapLast[s.name]=Math.round(actual); }
+      if (s.climb && actual >= (s.base||s.target)*0.4){ st.stairs=st.stairs||{}; const r=st.stairs[s.name]||{}; const v=Math.round(actual);
         st.stairs[s.name]={last:v, best: r.best ? Math.min(r.best,v) : v}; }
     } else {
       const full = actual >= s.dur*0.8;
@@ -2221,9 +2377,21 @@ if (typeof document!=="undefined") (function(){
   const retotal = () => { P.total = total(P.steps); P.lastSec=-1; };
   const INC = k => /Back squat|Deadlift|Bench|Barbell|Overhead press|Leg press|Lat pulldown|cable row/.test(k) ? 10 : 5;
   function sheetShow(on){ P.sheet=on; $("sheet").hidden=!on; if (on){ P.run=false; P.lastCue=null; lights(null); if ("speechSynthesis" in window) speechSynthesis.cancel(); } else { setRun(true); } }
+  const homeInv = () => (st.homeInv && st.homeInv.length ? st.homeInv : [15,25,30]).slice().sort((a,b)=>a-b);
   function adviceFor(cur, feel){
     const key=cur.track, w = key ? st.lifts[key] : null;
     if (!feel) return "";
+    if (key && w && / \(home\)$/.test(key)){
+      const inv=homeInv(), up=inv.find(x=>x>w), down=[...inv].reverse().find(x=>x<w);
+      const each = cur.db==="AB" ? " each" : "";
+      if (feel==="easy"){
+        if (up){ st.aim[key]=up; save(); return `Go up to <b>${up} lb${each}</b> next set.`; }
+        st.aim[key]=w; save(); return `${w} lb is your heaviest. Make it harder instead: <b>add 2 reps</b> or take <b>3 seconds on the way down</b>.`;
+      }
+      if (feel==="solid"){ st.aim[key]=w; save(); return `Right where you want it. <b>Stay at ${w} lb${each}.</b>`; }
+      if (down){ st.aim[key]=down; save(); return `Drop to <b>${down} lb${each}</b>, or stay at ${w} and stop 2 reps short.`; }
+      st.aim[key]=w; save(); return "Stop 2 reps short next set. Form over numbers.";
+    }
     if (key && w){
       const inc=INC(key);
       if (feel==="easy"){ st.aim[key]=w+inc; save(); return `Go up to <b>${w+inc} lb</b> next set.`; }
@@ -2273,7 +2441,7 @@ if (typeof document!=="undefined") (function(){
       const nx=P.steps[P.i+1];
       $("shNextH").textContent = nx && nx.isRest ? `Round done. ${cur.sets-cur.set} to go.` : "Lifting done.";
       if (nx && nx.isRest){
-        nextBtn(`Rest ${fmtSecs(nx.dur)}, then next round`,"", true, ()=>continueTo(P.i+1));
+        nextBtn(/^Active rest: /.test(nx.name) ? `${nx.name.replace("Active rest: ","").replace(/^./,c=>c.toUpperCase())} ${fmtSecs(nx.dur)}, then next round` : `Rest ${fmtSecs(nx.dur)}, then next round`,"", true, ()=>continueTo(P.i+1));
         nextBtn("Skip the rest, go now","", false, ()=>{ P.steps.splice(P.i+1,1); continueTo(P.i+1); });
         nextBtn("That's enough lifting today", "Skip remaining rounds", false, ()=>{ finishLifting(); continueTo(P.i+1); });
       } else {
@@ -2297,7 +2465,7 @@ if (typeof document!=="undefined") (function(){
     $("shTrack").hidden=!cur.track; $("shTrackU").textContent = cur.db==="AB" ? "lb each" : "lb";
     if (cur.track){
       /* whatever was in the field during the set counts as what you used */
-      const used = parseFloat($("pTrackIn").value) || st.lifts[cur.track] || defW(cur);
+      const used = parseFloat($("pTrackIn").value) || st.lifts[cur.track] || curW(cur);
       if (used>0){ st.lifts[cur.track]=used; save(); }
       $("shTrackIn").value = st.lifts[cur.track] || ""; }
     /* one row per step in this set (both sides of a single-arm move) */
@@ -2325,7 +2493,7 @@ if (typeof document!=="undefined") (function(){
         P.confirmRir=null;
         rows.forEach(r=>r.RIR=n); save();
         const done=parseInt($("shRepsIn").value)||cur.reps||0, beat = cur.reps && done>=cur.reps+2;
-        const feel = n===0 ? "hard" : (n>=4 || (n>=2 && beat)) ? "easy" : "solid"; P.feel=feel; $("shAdvice").innerHTML=adviceFor(cur,feel); };
+        const feel = n===0 ? "hard" : (n>=3 || (n>=2 && beat)) ? "easy" : "solid"; P.feel=feel; $("shAdvice").innerHTML=adviceFor(cur,feel); };
       fe.appendChild(b);
     });
     $("shRest").checked=false;
@@ -2418,6 +2586,25 @@ if (typeof document!=="undefined") (function(){
     if (e.d===today()) st.secOv=null; st.abOv=null;
     save(); return e;
   }
+  /* every lifted set from this session, with its RIR editable after the fact */
+  function renderDoneSets(id){
+    const box=$("doneSets"), list=$("doneSetList"); list.innerHTML="";
+    const rows=st.sets.filter(r=>r.session_id===id && r.block==="main" && r.measure==="reps" && r.load_type!=="bodyweight");
+    const groups=[]; rows.forEach(r=>{ const k=r.exercise+"|"+r.set_no; let g=groups.find(x=>x.k===k); if (!g){ g={k, rows:[]}; groups.push(g); } g.rows.push(r); });
+    box.hidden=!groups.length;
+    groups.forEach(g=>{
+      const r=g.rows[0], d=document.createElement("div");
+      const paint=()=>{ const blank = g.rows[0].RIR===""||g.rows[0].RIR===undefined; d.classList.toggle("blank", blank);
+        d.querySelector("small").textContent = `Set ${r.set_no} · ${r.reps_or_seconds} reps${r.load?` @ ${r.load} lb`:""}${blank?" · no RIR":""}`; };
+      d.className="dsrow"; d.innerHTML=`<span><b>${r.exercise}</b><small></small></span><div class="feel rir"></div>`;
+      const fe=d.querySelector(".feel");
+      [0,1,2,3,4].forEach(n=>{ const b=document.createElement("button"); b.type="button"; b.textContent=n===4?"4+":String(n);
+        b.setAttribute("aria-pressed", String(r.RIR!=="" && r.RIR!==undefined && +r.RIR===n));
+        b.onclick=()=>{ fe.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); g.rows.forEach(x=>x.RIR=n); save(); paint(); };
+        fe.appendChild(b); });
+      paint(); list.appendChild(d);
+    });
+  }
   function finish(partial){
     logLeaving(Infinity); stop();
     const _e=st.log.find(l=>l.id===P.sid); if (_e && P.whoop) _e.whoop=P.whoop;
@@ -2428,6 +2615,7 @@ if (typeof document!=="undefined") (function(){
       b.onclick=()=>{ rg.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); const e=st.log.find(l=>l.id===P.doneId); if (e){ e.rpe=n; save(); } };
       rg.appendChild(b); }
     $("doneNotes").value="";
+    renderDoneSets(P.doneId);
     if (entry) $("doneWhoop").innerHTML = `In WHOOP: one <b>${P.whoop}</b> activity, <b>${entry.start}–${entry.end}</b>. If WHOOP split it or picked it up on its own, merge or edit it to match.`;
     $("doneNotes").oninput=e=>{ const en=st.log.find(l=>l.id===P.doneId); if (en){ en.notes=e.target.value; save(); } };
     $("player").hidden=true; $("done").hidden=false;
@@ -2499,7 +2687,7 @@ if (typeof document!=="undefined") (function(){
     else if (e.key==="ArrowLeft") $("pPrev").click();
     else if (e.key==="Escape") $("pExit").click();
   });
-  const APP_VER="v26";
+  const APP_VER="v29";
   $("brOn").onchange=e=>{ st.breath=e.target.checked; save(); };
   $("testSnd").onclick=()=>{
     unlockAudio(); const a=null;
