@@ -698,6 +698,10 @@ section{margin-bottom:34px}
 .wgrid.tri{grid-template-columns:repeat(3,minmax(0,1fr))}
 .wgrid.tri .wfield input{font-size:20px}
 .feel.rir{grid-template-columns:repeat(5,1fr)}
+.invchips{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
+.invchips button{background:var(--card);color:var(--ink-2);border:2px solid var(--line);border-radius:10px;padding:10px 0;font-family:var(--display);font-weight:700;font-size:17px}
+.invchips button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+:root[data-skin="signal"] .invchips button{border-radius:0}
 .feel.rir button{font-family:var(--display);font-size:20px;padding:10px 4px}
 #doneSetList .dsrow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line,rgba(127,127,127,.25))}
 #doneSetList .dsrow b{display:block;font-size:15px}
@@ -814,7 +818,7 @@ section{margin-bottom:34px}
       <div class="wfield"><span id="lbHeavy">Heavy pair</span><div class="inwrap"><input id="wHeavy" type="number" inputmode="numeric" min="0" max="200" step="5" aria-label="Heavy pair in pounds"><span>lb</span></div></div>
       <div class="wfield"><span id="lbLight">Light pair, for pressing</span><div class="inwrap"><input id="wLight" type="number" inputmode="numeric" min="0" max="200" step="5" aria-label="Light pair in pounds"><span>lb</span></div></div>
     </div>
-    <div class="wfield" id="invWrap" style="margin-top:12px"><span>Dumbbells you own at home (lb, comma-separated)</span><div class="inwrap"><input id="wInv" type="text" inputmode="numeric" placeholder="15, 25, 30" aria-label="Home dumbbell weights" style="font-size:18px"></div></div>
+    <div class="wfield" id="invWrap" style="margin-top:12px"><span>Dumbbells you own at home (lb). Tap to turn on or off.</span><div class="invchips" id="wInv" role="group" aria-label="Home dumbbell weights"></div></div>
     <p class="wnote" id="wNote"></p>
   </section>
 
@@ -1852,7 +1856,7 @@ if (typeof document!=="undefined") (function(){
     $("wHeavy").value = atGym ? st.gymHeavy : st.heavy;
     $("wLight").value = atGym ? st.gymLight : st.light;
     $("weights").classList.toggle("off", !atGym && !st.dbOn);
-    $("invWrap").hidden = atGym; $("wInv").value = homeInv().join(", ");
+    $("invWrap").hidden = atGym; renderInv();
     document.querySelector("#weights .wgrid").hidden = !atGym;
     $("wNote").textContent = atGym
       ? "What you can actually grab at work. These show as a suggestion — log what you really used during the set."
@@ -1977,8 +1981,16 @@ if (typeof document!=="undefined") (function(){
   $("stOn").onchange=e=>{ st.stations=e.target.checked; save(); renderHome(); };
   $("finOn").onchange=e=>{ st.finisher=e.target.checked; save(); renderHome(); };
   $("dbOn").onchange=e=>{ st.dbOn=e.target.checked; save(); renderHome(); };
-  $("wInv").onchange=e=>{ const v=[...new Set((e.target.value.match(/\d+(\.\d+)?/g)||[]).map(Number).filter(x=>x>0))].sort((a,b)=>a-b);
-    if (v.length){ st.homeInv=v; st.heavy=v[v.length-1]; st.light=v.length>1?v[v.length-2]:v[0]; } save(); renderHome(); };
+  /* tap chips instead of typing: the iPhone number pad has no comma, so a typed list was stuck on one pair */
+  function renderInv(){
+    const box=$("wInv"), own=homeInv(); box.innerHTML="";
+    [...new Set([5,8,10,12,15,20,25,30,35,40,45,50,...own])].sort((a,b)=>a-b).forEach(w=>{
+      const b=document.createElement("button"); b.type="button"; b.textContent=w; b.setAttribute("aria-pressed", String(own.includes(w)));
+      b.onclick=()=>{ let v=homeInv(); v = v.includes(w) ? v.filter(x=>x!==w) : [...v,w];
+        if (!v.length) return; v.sort((a,b)=>a-b);
+        st.homeInv=v; st.heavy=v[v.length-1]; st.light=v.length>1?v[v.length-2]:v[0]; save(); renderHome(); };
+      box.appendChild(b); });
+  }
   $("wHeavy").onchange=e=>{ const v=Math.max(0,parseInt(e.target.value)||0); if (st.loc==="gym") st.gymHeavy=v; else st.heavy=v; save(); renderHome(); };
   $("wLight").onchange=e=>{ const v=Math.max(0,parseInt(e.target.value)||0); if (st.loc==="gym") st.gymLight=v; else st.light=v; save(); renderHome(); };
   $("abBtn").onclick=()=>{ st.abOv = abNext() ? 0 : 1; save(); renderHome(); };
@@ -2687,7 +2699,7 @@ if (typeof document!=="undefined") (function(){
     else if (e.key==="ArrowLeft") $("pPrev").click();
     else if (e.key==="Escape") $("pExit").click();
   });
-  const APP_VER="v29";
+  const APP_VER="v31";
   $("brOn").onchange=e=>{ st.breath=e.target.checked; save(); };
   $("testSnd").onclick=()=>{
     unlockAudio(); const a=null;
@@ -2732,6 +2744,8 @@ if (typeof document!=="undefined") (function(){
       const top=Object.keys(t).sort((a,b)=>t[b]-t[a])[0];
       return top ? WHOOP_NAME[top]||"Activity" : "HIIT";
     }
+    /* a red-day Full has no lifting in it: it's yoga, whatever the template says */
+    if (steps && !steps.some(x=>x.unit && x.block==="strength")) return "Yoga";
     return loc==="gym" ? "Weightlifting" : "Functional Fitness";
   }
   const COLS = {
