@@ -698,6 +698,14 @@ section{margin-bottom:34px}
 .wgrid.tri{grid-template-columns:repeat(3,minmax(0,1fr))}
 .wgrid.tri .wfield input{font-size:20px}
 .feel.rir{grid-template-columns:repeat(5,1fr)}
+.pguide{margin:10px auto 0;max-width:44ch;font-size:14px;color:var(--ink-2);text-align:left}
+.pguide .stg{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.pguide .stg b{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-right:4px}
+.pguide .stg button{min-width:34px;padding:4px 0;border-radius:8px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:700;font-size:15px}
+.pguide .stg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pguide .stx{color:var(--ink)}
+.pguide .fact{font-style:italic}
+:root[data-skin="signal"] .pguide .stg button{border-radius:0}
 .invchips{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
 .invchips button{background:var(--card);color:var(--ink-2);border:2px solid var(--line);border-radius:10px;padding:10px 0;font-family:var(--display);font-weight:700;font-size:17px}
 .invchips button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -1160,7 +1168,7 @@ function standing(tri){
   ];
 }
 function core(sp, boat){
-  return [...sided((f,s)=>hold("Side plank","sideplank",sp,"core","Stack the hips, lift them an inch higher than feels natural.",{flip:f,chips:[s]})),
+  return [...sided((f,s)=>hold("Side plank","sideplank",sp,"core","Stack the hips, lift them an inch higher than feels natural. Can't hold the full time with feet stacked? Stagger them, top foot in front. Still shaking? Drop the bottom knee for the last seconds rather than letting the hips sag.",{flip:f,chips:[s]})),
     hold("Boat","boat",boat,"core","Chest proud, legs up. Bend the knees before you round the back.")];
 }
 function closing(legsUp, red, short){
@@ -1691,7 +1699,132 @@ const EQ_GYM = [{id:"trx",name:"TRX"},{id:"machines",name:"Cables and machines"}
   {id:"rower",name:"Rower"},{id:"arc",name:"Arc Trainer"},{id:"elliptical",name:"Elliptical"},{id:"gymbike",name:"Gym bike"},{id:"climber",name:"Ladder climber"},{id:"tread",name:"Treadmill"}];
 const EQ_HOME = [{id:"bar",name:"Pull-up bar"},{id:"run",name:"Running"},{id:"stairs",name:"Park stairs"},{id:"peloton",name:"Peloton"},{id:"outbike",name:"Bike ride"},{id:"rope",name:"Jump rope"}];
 
-if (typeof module!=="undefined") module.exports = {POSE, build, RAW};
+/* ---------- Exercise guide ----------
+   s = three stages: 1 easier, 2 as planned, 3 harder. You pick your stage on the player;
+       it's remembered per exercise and logged with every set.
+   f = facts, for moves that don't really scale. One shows per session, rotating. */
+const GUIDE = {
+  /* legs */
+  "Air squats":            {s:["Box squat: sit to a chair, stand straight up","Full depth, heels down, chest up","Pause squat: 2 seconds at the bottom"]},
+  "Slow air squat":        {s:["Squat to a chair, 3 seconds down","3 seconds down, 1 up, full depth","Add a 3-second hold at the bottom"]},
+  "Squat jumps":           {s:["Squat to a calf raise, no jump","Squat jump, land soft and quiet","Tuck jump: knees to chest"]},
+  "Finisher: fast air squats":{s:["Half depth, quick tempo","Full depth, quick tempo","Squat jumps"]},
+  "Finisher: squat jumps": {s:["Fast air squats","Squat jumps, soft landings","Tuck jumps"]},
+  "Front-rack squat":      {s:["Goblet squat, one bell at your chest","Two bells racked on the shoulders","3-second lowering, or a 2-second pause at the bottom"]},
+  "Goblet squat":          {s:["Goblet squat to a bench","Full depth, elbows inside the knees","1.5 reps: down, halfway up, down, all the way up"]},
+  "Leg press":             {s:["Lighter, 3 seconds down","Full range, 2–3 reps in reserve","Single-leg press, each side"]},
+  "Back squat":            {s:["Goblet squat to the same depth","Back squat, safeties set","Pause squat: 2 seconds in the hole"]},
+  "Smith squat":           {s:["Smith box squat to a bench","Smith squat, feet slightly forward","2-second pause at the bottom"]},
+  "Split squat":           {s:["Hold a wall or rail, shorter range","Back knee straight down to the floor","Front foot raised on a plate or step"]},
+  "Split squats":          {s:["Hold the rail, shorter range","Back knee straight down to the ground","Front foot up on the first step"]},
+  "Bulgarian split squat": {s:["Split squat, back foot on the floor","Back foot on the couch or bench","3-second lowering, or hold a bell"]},
+  "Reverse lunge, knee drive":{s:["Reverse lunge, hand on a wall, no knee drive","Lunge back, drive the knee to hip height","Knee drive into a small hop"]},
+  "Walking lunges":        {s:["Static lunges, stay in place","Long steps, back knee kisses the floor","1-second pause at the bottom of every step"]},
+  "Skater squat":          {s:["Hold a doorframe, shallow range","Back knee down to a cushion","Back knee to the floor, no hands"]},
+  "Lateral lunge":         {s:["Shorter step, hand on a chair","Full step, sit back over the foot","Lunge, then balance on the standing leg"]},
+  "Cossack squat":         {s:["Hold a doorframe, half depth","Full depth, toes up on the long leg","No hands, bell held out in front"]},
+  "TRX pistol squat":      {s:["Both feet: TRX squat","Pistol, straps for balance","Pistol, straps only on the way up"]},
+  /* hinge */
+  "Single-leg RDL":        {s:["Kickstand: back toes stay on the floor","Free leg floats back, bells close","2-second pause at the bottom, or go heavier"]},
+  "B-stance RDL":          {s:["Regular RDL, both feet flat","Kickstand stance, most weight on the front leg","Single-leg RDL"]},
+  "Dumbbell RDL":          {s:["Shorter range: bells to the knees","Bells to mid-shin, flat back","3-second lowering"]},
+  "Romanian deadlift":     {s:["Shorter range: bells to the knees","Bells to mid-shin, flat back","3-second lowering"]},
+  "Barbell RDL":           {s:["Dumbbell RDL","Bar to mid-shin, against your legs","Pause just below the knee"]},
+  "Smith RDL":             {s:["Lighter, to the knees","Bar to mid-shin on the rail","3-second lowering"]},
+  "Deadlift":              {s:["Block pulls: bar raised a few inches","Deadlift from the floor, reset each rep","Pause 1 inch off the floor"]},
+  "Hip hinge":             {s:["Hands on hips, small range","Hips back to a full hamstring stretch","Single-leg hinge"]},
+  "Glute bridge":          {s:["Lift and lower, no hold","Squeeze 1 second at the top","Single-leg bridge"]},
+  "Dumbbell hip thrust":   {s:["Glute bridge on the floor","Shoulders on the bench, bell across the hips","3-second hold at the top"]},
+  "TRX hamstring curl":    {s:["Heels in the straps, hold the bridge","Hips up, curl the heels in","Single-leg curl"]},
+  /* push */
+  "Push-ups":              {s:["Hands on a bench or the couch","Full push-ups, body in one line","Feet raised, or 3 seconds down"]},
+  "Incline push-ups":      {s:["Higher wall, more upright","Hands on the wall at the top","Full push-ups on the landing"]},
+  "Pike push-up":          {s:["Hands close to the feet, small range","Hips high, head toward the floor","Feet up on a bench"]},
+  "TRX push-up":           {s:["Push-ups on the floor","Feet in the cradles","Add a knee tuck after each rep"]},
+  "Floor press":           {s:["Lighter bells, pause on the floor","Elbows touch, press straight up","Single-arm floor press"]},
+  "Dumbbell press":        {s:["Floor press","Full range on the bench","3-second lowering"]},
+  "Dumbbell bench press":  {s:["Floor press","Full range on the bench","3-second lowering, or one arm at a time"]},
+  "Incline dumbbell press":{s:["Lower incline, about 15°","Bench at 30°","1-second pause at the bottom"]},
+  "Bench press":           {s:["Dumbbell bench press","Bar to mid-chest, safeties set","1-second pause on the chest"]},
+  "Smith bench press":     {s:["Lighter and slower","Bar to mid-chest","1-second pause on the chest"]},
+  "Overhead press":        {s:["Seated dumbbell press","Standing press, glutes tight","3-second lowering"]},
+  "Smith overhead press":  {s:["Seated, lighter","Seated or standing under the rail","3-second lowering"]},
+  "Single-arm press":      {s:["Seated, back supported","Standing, ribs down","Half-kneeling, same side knee down"]},
+  /* pull */
+  "Single-arm row":        {s:["Hand and knee on a bench","Hand on your knee, flat back","1-second squeeze at the top"]},
+  "Dumbbell row":          {s:["Chest on an incline bench","Knee and hand on the bench","1-second squeeze at the top"]},
+  "Backpack row":          {s:["Light pack, two hands","Loaded pack, one side at a time","Heavier pack, pause at the top"]},
+  "Renegade row":          {s:["Knees down","Full plank, feet wide","Feet closer together"]},
+  "Shoulder taps":         {s:["Knees down","Full plank, feet wide","Feet together, slow taps"]},
+  "Lat pulldown":          {s:["Lighter, pause at the collarbone","Pull to the collarbone, elbows down","3-second return"]},
+  "Seated cable row":      {s:["Lighter, 1-second pause","Pull to the belly button","Single-arm cable row"]},
+  "Smith row":             {s:["Chest-supported dumbbell row","Hinged to 45°, pull to the ribs","Pause at the ribs"]},
+  "Barbell row":           {s:["Chest-supported dumbbell row","Hinged to 45°, pull to the ribs","Pause at the ribs"]},
+  "Pull-ups":              {s:["Jump up, lower for 3 seconds","Band-assisted or full pull-ups","Pause with your chin over the bar"]},
+  "Free hang":             {s:["Toes touching a box","Full dead hang","Active hang: pull the shoulders down"]},
+  "TRX row":               {s:["Stand more upright","Feet walked in until it's hard","Single-arm TRX row"]},
+  "TRX Y-fly":             {s:["More upright","Lean back, lift into a Y","Feet further forward, pause at the top"]},
+  /* core */
+  "TRX knee tuck":         {s:["Plank with feet in the cradles, just hold","Knee tucks","Pike: hips up, legs straight"]},
+  "Bird dog":              {s:["Arm only, then leg only","Opposite arm and leg together","Hold each rep for 3 seconds"]},
+  "Forearm plank":         {s:["Knees down","Forearm plank","Lift one foot, alternate"]},
+  "Side plank":            {s:["Bottom knee down","Feet staggered, top foot in front","Feet stacked"]},
+  "Boat":                  {s:["Hands behind the knees, knees bent","Knees bent, arms reaching forward","Legs straight"]},
+  "Suitcase hold":         {s:["Lighter bell","Heaviest bell, stand tall","Suitcase march: walk with it"]},
+  /* inversions and arm balance */
+  "Crow attempts":         {s:["Toes stay down, rock the weight forward","Lift one foot, then the other","Both feet up, hold"]},
+  "Crow":                  {s:["Lift one foot at a time","Both feet up, hold","Straighten the arms: crane"]},
+  "Dolphin":               {s:["Knees bent, hips high","Legs straight, heels lifting","Walk the feet in closer"]},
+  "Tucked headstand at the wall":{s:["Tripod: knees rest on the elbows","Tuck at the wall","Tuck away from the wall"]},
+  "Headstand":             {s:["At the wall","Freestanding, tucked","Freestanding, legs straight"]},
+  "Wall handstand":        {s:["Feet on the wall in an L","Chest to the wall, walk in","Toe taps off the wall"]},
+  "L-handstand":           {s:["Feet on a box, hips over hands","Feet on the wall at hip height","Lift one leg to vertical"]},
+  /* capoeira */
+  "Ginga":                 {s:["Slow, footwork only","Full ginga, guard up","Lower and faster, add a feint"]},
+  "Active rest: ginga":    {s:["Slow, footwork only","Full ginga, guard up","Lower and faster"]},
+  "Cocorinha":             {s:["Hold a doorframe, partial depth","Full squat, heels down, guard up","Drop straight from ginga, no pause"]},
+  "Esquiva lateral":       {s:["Hand on a chair","Hand to the floor","No hand, sink deeper"]},
+  "Negativa":              {s:["Hand down, hips up","Hips low, leg long","Roll into rolê from it"]},
+  "Aú prep":               {s:["Small hops, hips low","Hips over the hands","Bigger hops, land softly"]},
+  "Aú":                    {s:["Hips low, legs bent","Cartwheel, eyes on the floor","Slow, legs straight"]},
+  "Queda de rins":         {s:["Toes stay down","One foot lifted","Both feet up"]},
+  /* conditioning */
+  "Mountain climbers":     {s:["Hands on a bench or the couch","Hands on the floor, fast knees","Cross-body: knee to the opposite elbow"]},
+  "Finisher: mountain climbers":{s:["Hands on a bench or the couch","Hands on the floor, fast knees","Cross-body: knee to the opposite elbow"]},
+  "Finisher: burpees":     {s:["Step back, step in, no jump","Chest to the floor, jump at the top","Burpee with a tuck jump"]},
+  "Finisher: skater hops": {s:["Side step, tap the foot behind","Hop, stick each landing","Bigger hop, touch the floor"]},
+  "Active rest: jump rope":{s:["Easy bounce, both feet","Alternate feet like jogging","Double-unders, or high knees"]},
+  "Active rest: high knees":{s:["Marching in place","Easy high knees","Fast high knees"]},
+  /* stairs */
+  "Front stairs":          {s:["Walk every step","Run, short steps","Two steps at a time"]},
+  "Back stairs":           {s:["Walk every step","Run, short steps","Two steps at a time"]},
+  "Hidden stairs":         {s:["Walk every step","Run, short steps","Two steps at a time"]},
+  "Small stairs":          {s:["Walk them","Run them","Two at a time, or sprint"]},
+  /* yoga and recovery: facts */
+  "Box breathing":         {f:["Slow breathing, around six breaths a minute, tends to raise heart rate variability: the same HRV WHOOP tracks.","Long exhales stimulate the vagus nerve, which slows the heart. That's why the out-breath matters most.","The holds stretch each breath to 16 seconds. That's what makes it calming rather than just breathing."]},
+  "Wrist prep":            {f:["Hand balances load your full bodyweight onto joints built for typing. Warm them before they carry you.","Press through the base of the index finger. It takes load off the wrist crease.","Limited wrist extension is what stops most people's crow and handstand, more than strength."]},
+  "Cat and cow":           {f:["It moves the spine through flexion and extension, the two directions it spends all day not going.","Let the breath set the pace: the movement follows it, not the other way round.","A quick check-in: notice which part of your back doesn't want to move today."]},
+  "Down dog":              {f:["Bend the knees as much as you need. A long spine matters more than straight legs.","It's a mild inversion: your heart sits above your head.","Pedaling the heels warms each calf and hamstring in turn before you settle."]},
+  "Sun salutation A":      {f:["Ashtanga practice traditionally opens with five of these.","One breath per movement is what turns a set of stretches into a flow.","Chaturanga is the bottom of a push-up: elbows back along the ribs, not out."]},
+  "Sun salutation B":      {f:["Chair pose and warrior 1 make Sun B much harder on the legs than Sun A.","Sun B is where yoga starts to raise the heart rate. Watch WHOOP during these rounds.","Keep the back heel down in warrior 1: that's where the hip flexor stretch comes from."]},
+  "Warrior sequence":      {f:["Warrior 2 is a strength pose. Held for a minute, it loads the front quad hard.","The front knee tracks over the middle toes, not inside the big toe.","Fix your gaze over the front fingers. Steady eyes make for a steady body."]},
+  "Low lunge and twist":   {f:["Opens the hip flexors that sitting shortens.","Twist from the ribs, not by cranking the neck.","Squeeze the back glute to deepen the hip stretch without forcing it."]},
+  "Child's pose":          {f:["Knees wide opens the hips. Knees together rounds and stretches the back.","Breathe into the back of your ribs and feel them widen.","A real rest position, used between hard sequences in most yoga styles."]},
+  "Legs up the wall":      {f:["A favorite after long runs: gravity helps drain the legs.","Fully passive. Let the floor and the wall do all the work.","A classic end-of-day pose to wind the nervous system down."]},
+  "Pigeon":                {f:["Targets the deep hip rotators, including the piriformis.","Square hips matter more than getting low.","Fold forward over the front shin to go deeper without forcing the knee."]},
+  "Savasana":              {f:["The last pose and the hardest to do well: complete stillness.","Your heart rate usually drops several beats in the first minute.","This is where the body switches out of training mode. Don't skip it."]},
+  "Seated forward fold":   {f:["Hinge from the hips. Rounding the back just stretches the spine.","Bend the knees and keep the chest on the thighs.","Hamstring flexibility comes from short holds over weeks, not one long hold."]},
+  "Supine twist":          {f:["Rotates the upper back, which stiffens from desk work.","Keep both shoulders down and let the knees float.","Each exhale lets you sink a little further."]},
+  "Breathe":               {f:["Hands on your head lifts the ribs so more air gets in.","How fast your heart rate drops between bursts is a fitness marker in its own right.","Breathe out longer than you breathe in. It brings the heart rate down faster."]},
+  "Warm-up":               {f:["Five easy minutes warms the muscles, so they contract faster and with less strain.","You should still be able to talk in full sentences.","The rower warms legs, back and arms at once. That's why it opens the gym days."]},
+  "Zone 2":                {f:["Zone 2 builds mitochondria, the part of your muscle cells that burns fat for fuel.","If you can't speak a full sentence, you're above zone 2.","Endurance athletes spend about 80% of their training time at this intensity."]},
+  "Intervals":             {f:["Heart rate lags effort by 30–60 seconds. That's why 30-second bursts never got you past zone 3.","Intervals are what raise VO2 max, one of the strongest predictors of long-term health.","The last round should feel hardest but still controlled. If the form breaks, back off."]},
+  "Flush":                 {f:["Easy movement clears out the byproducts of hard work faster than sitting still.","Let your heart rate fall to around 110 before you stop.","Going straight from intervals to stretching is a shock. This is the bridge."]},
+  "Easy cardio":           {f:["On a red day, light movement helps recovery more than rest does.","Keep it conversational the whole way.","Zone 1 and 2 work still counts toward your weekly cardio."]}
+};
+const guideFor = name => GUIDE[name] || null;
+
+if (typeof module!=="undefined") module.exports = {POSE, build, RAW, GUIDE};
 
 if (typeof document!=="undefined") (function(){
   const $ = id => document.getElementById(id);
@@ -1879,6 +2012,11 @@ if (typeof document!=="undefined") (function(){
       pn.innerHTML = `You lifted ${L.when} (${L.what}). The same muscles want about 48 hours. <b>Cardio or yoga is the better call today.</b> If you lift anyway, the gym gives you the other session (${abNext()?"B":"A"}), and expect to stay at last time's weights. <button type="button" class="ghost" id="toCardio" style="margin-top:8px">Make today cardio</button>`;
       $("toCardio").onclick=()=>{ st.type="cardio"; save(); renderHome(); };
     }
+    else if (st.loc==="home" && !st.dbOn && (st.type==="strength" || (st.type==="full" && st.phase>=2)) && st.rec!=="red"){
+      pn.hidden=false; pn.style.borderLeftColor="var(--yellow)";
+      pn.innerHTML = `<b>Dumbbells are off</b>, so every move is the bodyweight version. <button type="button" class="ghost" id="dbFix" style="margin-top:8px">Use my dumbbells (${homeInv().join(", ")} lb)</button>`;
+      $("dbFix").onclick=()=>{ st.dbOn=true; save(); renderHome(); };
+    }
     else pn.hidden=true;
     if (pn.hidden || st.rec==="red") pn.style.borderLeftColor="";
 
@@ -1988,7 +2126,7 @@ if (typeof document!=="undefined") (function(){
       const b=document.createElement("button"); b.type="button"; b.textContent=w; b.setAttribute("aria-pressed", String(own.includes(w)));
       b.onclick=()=>{ let v=homeInv(); v = v.includes(w) ? v.filter(x=>x!==w) : [...v,w];
         if (!v.length) return; v.sort((a,b)=>a-b);
-        st.homeInv=v; st.heavy=v[v.length-1]; st.light=v.length>1?v[v.length-2]:v[0]; save(); renderHome(); };
+        st.homeInv=v; st.heavy=v[v.length-1]; st.light=v.length>1?v[v.length-2]:v[0]; st.dbOn=true; save(); renderHome(); };
       box.appendChild(b); });
   }
   $("wHeavy").onchange=e=>{ const v=Math.max(0,parseInt(e.target.value)||0); if (st.loc==="gym") st.gymHeavy=v; else st.heavy=v; save(); renderHome(); };
@@ -2184,7 +2322,7 @@ if (typeof document!=="undefined") (function(){
   function showStep(){
     const s=P.steps[P.i], b=BLOCKS[s.block];
     $("pBlock").innerHTML=`<i style="background:${b.color}"></i>${b.name}`;
-    $("pName").textContent=s.name; $("pCue").textContent=s.cue;
+    $("pName").textContent=s.name; $("pCue").textContent=s.cue; renderGuide(s);
     const ch=$("pChips"); ch.innerHTML="";
     s.chips.forEach(c=>{ const e=document.createElement("span"); e.className="chip"; e.textContent=c; ch.appendChild(e); });
     const w=curW(s);
@@ -2202,6 +2340,28 @@ if (typeof document!=="undefined") (function(){
     if (n){ const sd=n.chips.find(c=>/side/.test(c)); $("pNext").textContent = n.name + (sd?`, ${sd.toLowerCase()}`:""); }
     P.sub=-1; P.lastSec=-1;
   }
+  /* stages: pick 1-3 on the player, remembered per exercise, logged with every set.
+     facts: one per session for moves that don't scale, rotating so they don't repeat. */
+  const stageOf = name => { const g=GUIDE[name]; return g && g.s ? ((st.stage||{})[name] || 2) : ""; };
+  function renderGuide(s){
+    const g=GUIDE[s.name]; if (!g) return;
+    const box=document.createElement("div"); box.className="pguide";
+    if (g.s){
+      const cur=stageOf(s.name), row=document.createElement("div"); row.className="stg";
+      row.innerHTML="<b>Stage</b>";
+      [1,2,3].forEach(n=>{ const b=document.createElement("button"); b.type="button"; b.textContent=n;
+        b.setAttribute("aria-pressed",String(n===cur)); b.setAttribute("aria-label",`Stage ${n}: ${g.s[n-1]}`);
+        b.onclick=()=>{ st.stage=st.stage||{}; st.stage[s.name]=n; save(); $("pCue").textContent=s.cue; renderGuide(s); };
+        row.appendChild(b); });
+      const tx=document.createElement("div"); tx.className="stx";
+      tx.textContent = g.s[cur-1] + (cur===1 ? " (easier)" : cur===3 ? " (harder)" : "");
+      box.append(row, tx);
+    } else if (g.f){
+      let h=0; for (const c of s.name) h=(h*31+c.charCodeAt(0))%997;
+      const tx=document.createElement("div"); tx.className="fact"; tx.textContent=g.f[(realLog().length+h)%g.f.length]; box.append(tx);
+    }
+    $("pCue").appendChild(box);
+  }
   function logW(track, raw){ const v=parseFloat(raw); if (v>0){ st.lifts[track]=v; if (st.aim[track] && st.aim[track]!==v) delete st.aim[track]; } save(); }
   $("pTrackIn").oninput=$("pTrackIn").onchange=e=>{ const s=P.steps[P.i]; if (s && s.track) logW(s.track, e.target.value); };
   const BLOCK_OUT = s => s.block==="cardio" ? "cardio" : s.block==="close" ? "cooldown"
@@ -2214,7 +2374,7 @@ if (typeof document!=="undefined") (function(){
   function setRow(s, o){
     return { session_id:P.sid, start_time: s.startedAt ? hhmmss(new Date(s.startedAt)) : "", block:BLOCK_OUT(s), exercise:s.name, set_no:s.set||1, side:sideOf(s),
       reps_or_seconds:o.amount, measure:o.measure, load:o.load??"", load_type:LOAD_TYPE(s), RIR:o.rir??"",
-      planned_load: s.plannedW||"", planned_reps: s.reps||s.secs||"", swapped_from: s.swappedFrom||"" };
+      planned_load: s.plannedW||"", planned_reps: s.reps||s.secs||"", swapped_from: s.swappedFrom||"", stage: stageOf(s.name) };
   }
   /* steps that aren't lifted sets get logged when you move past them */
   function logLeaving(target){
@@ -2398,7 +2558,7 @@ if (typeof document!=="undefined") (function(){
       const each = cur.db==="AB" ? " each" : "";
       if (feel==="easy"){
         if (up){ st.aim[key]=up; save(); return `Go up to <b>${up} lb${each}</b> next set.`; }
-        st.aim[key]=w; save(); return `${w} lb is your heaviest. Make it harder instead: <b>add 2 reps</b> or take <b>3 seconds on the way down</b>.`;
+        st.aim[key]=w; save(); const g3=GUIDE[cur.name]; return `${w} lb is your heaviest. Make it harder instead: ${g3&&g3.s&&stageOf(cur.name)<3 ? `<b>stage 3</b>, ${g3.s[2].toLowerCase()}` : "<b>add 2 reps</b> or take <b>3 seconds on the way down</b>"}.`;
       }
       if (feel==="solid"){ st.aim[key]=w; save(); return `Right where you want it. <b>Stay at ${w} lb${each}.</b>`; }
       if (down){ st.aim[key]=down; save(); return `Drop to <b>${down} lb${each}</b>, or stay at ${w} and stop 2 reps short.`; }
@@ -2411,6 +2571,12 @@ if (typeof document!=="undefined") (function(){
       st.aim[key]=Math.max(0,w-inc); save(); return `Drop to <b>${Math.max(0,w-inc)} lb</b>, or stay at ${w} and stop 2 reps short.`;
     }
     if (key) return feel==="easy" ? "Log the weight above and I'll tell you where to go next." : feel==="solid" ? "Log the weight above so next time has a target." : "Log the weight above, then go lighter next set.";
+    const G_=GUIDE[cur.name], sg=stageOf(cur.name);
+    if (G_ && G_.s && !key){
+      if (feel==="easy" && sg<3){ st.stage=st.stage||{}; st.stage[cur.name]=sg+1; save(); return `Move up to <b>stage ${sg+1}</b> next set: ${G_.s[sg]}.`; }
+      if (feel==="hard" && sg>1){ st.stage=st.stage||{}; st.stage[cur.name]=sg-1; save(); return `Drop to <b>stage ${sg-1}</b> next set: ${G_.s[sg-2]}.`; }
+      if (feel==="easy") return "Top stage already. <b>Add 2 reps</b> or slow the lowering down.";
+    }
     if (cur.weight && !key) return feel==="easy" ? "Your dumbbells are fixed, so make it harder: <b>add 2 reps</b> or take 3 seconds on the way down." : feel==="solid" ? "Same again next set." : "Stop 2 reps short next set. Form over numbers.";
     return feel==="easy" ? "<b>Add 2 reps</b> next set, or slow the lowering down." : feel==="solid" ? "Same again next set." : "Take 2 reps off next set.";
   }
@@ -2429,6 +2595,12 @@ if (typeof document!=="undefined") (function(){
     P.steps.splice(P.i+1,0,...moving);
   }
   function finishLifting(){ let k=P.i+1; while (k<P.steps.length && P.steps[k].block==="strength") P.steps.splice(k,1); retotal(); }
+  /* buttons that throw away the rest of the lifting need a second tap: a fat finger shouldn't end the session */
+  function confirmBtn(label, sub, fn){
+    nextBtn(label, sub, false, function(){ const b=this; if (b.dataset.armed){ fn(); return; }
+      b.dataset.armed="1"; b.innerHTML=`<span>Tap again to end the lifting</span><small>Or pick something else</small>`;
+      setTimeout(()=>{ if (b.isConnected){ delete b.dataset.armed; b.innerHTML=`<span>${label}</span>${sub?`<small>${sub}</small>`:""}`; } }, 4000); });
+  }
   function nextBtn(label, sub, primary, fn){
     const b=document.createElement("button"); if (primary) b.className="primary";
     b.innerHTML=`<span>${label}</span>${sub?`<small>${sub}</small>`:""}`; b.onclick=fn; $("shNext").appendChild(b);
@@ -2448,14 +2620,14 @@ if (typeof document!=="undefined") (function(){
           continueTo(P.i+1);
         });
       });
-      nextBtn("I'm done lifting for today","Skip to what's after", false, ()=>{ finishLifting(); continueTo(P.i+1); });
+      confirmBtn("I'm done lifting for today","Skip to what's after", ()=>{ finishLifting(); continueTo(P.i+1); });
     } else {
       const nx=P.steps[P.i+1];
       $("shNextH").textContent = nx && nx.isRest ? `Round done. ${cur.sets-cur.set} to go.` : "Lifting done.";
       if (nx && nx.isRest){
         nextBtn(/^Active rest: /.test(nx.name) ? `${nx.name.replace("Active rest: ","").replace(/^./,c=>c.toUpperCase())} ${fmtSecs(nx.dur)}, then next round` : `Rest ${fmtSecs(nx.dur)}, then next round`,"", true, ()=>continueTo(P.i+1));
         nextBtn("Skip the rest, go now","", false, ()=>{ P.steps.splice(P.i+1,1); continueTo(P.i+1); });
-        nextBtn("That's enough lifting today", "Skip remaining rounds", false, ()=>{ finishLifting(); continueTo(P.i+1); });
+        confirmBtn("That's enough lifting today", "Skip remaining rounds", ()=>{ finishLifting(); continueTo(P.i+1); });
       } else {
         nextBtn(nx ? `On to ${BLOCKS[nx.block].name.toLowerCase()}` : "Finish", nx?nx.name:"", true, ()=>continueTo(P.i+1));
       }
@@ -2593,7 +2765,8 @@ if (typeof document!=="undefined") (function(){
   }
   function closeEntry(partial){
     const e=st.log.find(l=>l.id===P.sid); if (!e) return null;
-    e.end=hhmm(new Date()); e.m=Math.max(1, Math.round((Date.now()-P.startedAt)/60000));
+    const ls=[...P.steps].reverse().find(x=>x.startedAt), endAt = ls ? Math.min(Date.now(), ls.startedAt + ls.dur*1000 + 60000) : Date.now();
+    e.end=hhmm(new Date(endAt)); e.m=Math.max(1, Math.round((endAt-P.startedAt)/60000));
     e.done=partial?"partial":"full"; e.partial=!!partial; e.live=false;
     if (e.d===today()) st.secOv=null; st.abOv=null;
     save(); return e;
@@ -2699,7 +2872,7 @@ if (typeof document!=="undefined") (function(){
     else if (e.key==="ArrowLeft") $("pPrev").click();
     else if (e.key==="Escape") $("pExit").click();
   });
-  const APP_VER="v31";
+  const APP_VER="v33";
   $("brOn").onchange=e=>{ st.breath=e.target.checked; save(); };
   $("testSnd").onclick=()=>{
     unlockAudio(); const a=null;
@@ -2750,7 +2923,7 @@ if (typeof document!=="undefined") (function(){
   }
   const COLS = {
     sessions:["session_id","date","start_time","end_time","tz","location","phase","template","whoop_activity","session_rpe","completed","notes","duration_min","recovery_color","entry"],
-    sets:["session_id","start_time","block","exercise","set_no","side","reps_or_seconds","measure","load","load_type","RIR","planned_load","planned_reps","swapped_from"],
+    sets:["session_id","start_time","block","exercise","set_no","side","reps_or_seconds","measure","load","load_type","RIR","planned_load","planned_reps","swapped_from","stage"],
     cardio:["session_id","start_time","modality","segment","seconds","duration_min","metric","metric_unit","level","effort","intervals","target_zone","target_seconds","swapped_from"],
     gates:["date","gate","result","pass"]
   };
@@ -2773,6 +2946,7 @@ sets.csv      one row per set, per side for single-arm or single-leg moves (side
               reps_or_seconds is read with measure = reps | seconds. load is in lb.
               load_type: per_hand = the weight of ONE dumbbell, two in use | single_db = one dumbbell | machine_stack | barbell | bodyweight.
               RIR = reps in reserve, 4 means 4 or more, blank = not rated. planned_* is what the app prescribed.
+              stage is the version you did, 1 easier, 2 as planned, 3 harder (blank for moves without stages).
               swapped_from is the exercise it replaced. Warm-up, flow and cooldown moves are logged with seconds done.
 cardio.csv    one row per cardio block or leg, with start_time (HH:MM:SS) so it can be cut out of the WHOOP heart rate.
               metric + metric_unit = what the machine's screen said (meters, miles, kJ...); level = resistance/incline/damper; effort 1-10.
