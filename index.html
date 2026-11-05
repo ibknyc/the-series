@@ -698,6 +698,12 @@ section{margin-bottom:34px}
 .wgrid.tri{grid-template-columns:repeat(3,minmax(0,1fr))}
 .wgrid.tri .wfield input{font-size:20px}
 .feel.rir{grid-template-columns:repeat(5,1fr)}
+.parkprog{margin-top:14px}
+.parkprog summary{font-weight:700;cursor:pointer}
+.parkprog table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px;font-variant-numeric:tabular-nums}
+.parkprog th,.parkprog td{text-align:left;padding:5px 4px;border-bottom:1px solid var(--line)}
+.parkprog th{font-size:12px;color:var(--ink-2);font-weight:700}
+.parkprog .up{color:var(--green)} .parkprog .down{color:var(--red)}
 .pguide{margin:10px auto 0;max-width:44ch;font-size:14px;color:var(--ink-2);text-align:left}
 .pguide .stg{display:flex;align-items:center;gap:6px;margin-bottom:6px}
 .pguide .stg b{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-right:4px}
@@ -785,8 +791,11 @@ section{margin-bottom:34px}
       <div class="switchrow"><label for="bikeTo">Citi Bike to the park</label><input type="checkbox" class="switch" id="bikeTo" role="switch"></div>
       <div class="switchrow" style="margin-top:12px"><label for="bikeHome">Citi Bike home</label><input type="checkbox" class="switch" id="bikeHome" role="switch"></div>
       <div class="switchrow" style="margin-top:12px"><label for="ldOn">Long day: one more loop</label><input type="checkbox" class="switch" id="ldOn" role="switch"></div>
+      <div class="switchrow" id="rpRow" style="margin-top:12px"><label for="rpOn">Back-stairs repeats: walk down, climb again</label><input type="checkbox" class="switch" id="rpOn" role="switch"></div>
+      <p class="wnote" id="rpNote" hidden style="margin:4px 0 0"></p>
       <div class="switchrow" style="margin-top:12px"><label for="stOn">Moves at the top of each stair</label><input type="checkbox" class="switch" id="stOn" role="switch"></div>
       <p class="wnote" id="stairNote"></p>
+      <details class="parkprog" id="parkProg"><summary>Park progress</summary><div id="parkBody"></div></details>
     </div>
     <div class="secondbox" id="finBox" hidden>
       <div class="switchrow">
@@ -1057,6 +1066,9 @@ const RAW = {
   slrdlBottom:  "150,98 138,101 96,108 136,120 135,140 138,121 137,141 98,142 98,177 64,106 32,103",
   latB:         "112,72 108,86 92,132 112,108 120,96 114,109 122,97 118,146 104,177 130,160 166,174",
   kneeUp:       "100,40 100,55 100,105 96,80 92,104 106,78 112,98 98,141 98,177 122,108 116,140",
+  wallsit:      "82,84 82,98 82,142 94,118 108,132 96,119 110,133 124,142 124,177 126,143 126,177",
+  kickHigh:     "90,52 92,66 98,112 84,86 80,66 108,84 116,66 100,145 100,177 128,96 158,72",
+  kickLow:      "96,50 97,64 100,112 86,84 82,64 110,82 116,64 100,145 100,177 124,118 150,112",
   hang:         "100,62 100,76 100,126 99,44 98,16 101,44 102,16 98,158 98,178 102,158 102,178",
   pullup:       "100,36 100,50 100,100 96,30 96,16 104,30 104,16 96,132 92,160 104,132 108,160",
   trxRowA:      "71,88 80,100 100,128 92,88 104,76 94,87 106,75 114,152 128,177 116,153 130,177",
@@ -1072,7 +1084,7 @@ const RAW = {
 };
 const POSE = {};
 for (const k in RAW) POSE[k] = RAW[k].trim().split(/\s+/).map(s => s.split(',').map(Number));
-const WALL = { legsupwall:153, headtuck:78, lhandstand:151 };
+const WALL = { legsupwall:153, headtuck:78, lhandstand:151, wallsit:76 };
 const PROP_OF = { rowcatch:"rower", rowfinish:"rower", climbA:"climber", climbB:"climber", latup:"lat", latdown:"lat",
   crowout:"cable", crowin:"cable", lpdown:"legpress", lpup:"legpress", benchdown:"bench", benchup:"bench",
   ellipA:"elliptical", ellipB:"elliptical", bikeA:"bike", bikeB:"bike",
@@ -1193,6 +1205,16 @@ const child = () => hold("Child's pose","childs",60,"close","Knees wide, forehea
 const ginga = s => step("Ginga","capoeira","Rock side to side, back foot sweeping behind, guard arm across your face. Low and loose.",repeat(Math.round(s/4),()=>[T("ginga",2,"Ginga"),T("ginga",2,"Ginga",true)]),{chips:[fmtSecs(s)]});
 const cocorinha = () => step("Cocorinha","capoeira","From ginga, drop into a deep squat, heels down, arm guarding your head. Pop back up.",repeat(5,()=>[T("ginga",3,"Ginga"),T("cocorinha",3,"Cocorinha")]),{chips:["5 reps"]});
 const esquiva = () => step("Esquiva lateral","capoeira","Sink over the bent knee, hand to the floor, other arm guarding. Alternate sides.",repeat(5,i=>[T("esquiva",3,"Esquiva",i%2===1),T("ginga",3,"Back to ginga",i%2===1)]),{chips:["5 reps"]});
+/* kicks: out of ginga, back into ginga. Half speed, full shape. */
+const legSwings = () => sided((f,s)=>step("Leg swings","capoeira","Hand on a wall. Swing the leg front to back, then across the body and out. Loose, growing each swing.",repeat(5,()=>[T("kneeUp",1.4,"Swing up",f),T("mountain",1.4,"Down",f)]),{flip:f,chips:[s,"10 swings"]}));
+const kick = (name, cue, n=5) => sided((f,s)=>step(name,"capoeira",cue,repeat(n,()=>[T("ginga",2,"Ginga",f),T("kickLow",.9,"Kick",f),T("kickHigh",1.1,"Kick",f)]),{flip:f,chips:[s,`${n} kicks`]}));
+const meiaLua = () => kick("Meia lua de frente","From ginga, the back leg sweeps a crescent across your front, outside to inside. Straight leg, hips stay square, guard up.");
+const queixada = () => kick("Queixada","Step across, open the hips, and swing the leg inside to outside. The kick comes from the hip turning, not the knee.");
+const armada = () => kick("Armada","Step through, turn your back, look over the shoulder, then spin the straight leg around. Slow and controlled; the spin is the skill.",4);
+const esquivaBaixa = () => step("Esquiva baixa","capoeira","From ginga, drop low over the front foot, chest to thigh, arm guarding your head. Back to ginga.",repeat(6,i=>[T("ginga",2.5,"Ginga",i%2===1),T("cocorinha",2.5,"Esquiva",i%2===1)]),{chips:["6 reps"]});
+const role = () => sided((f,s)=>step("Negativa to rolê","capoeira","Sink into negativa, then roll over the planted hand onto both hands and feet, low, and rise back into ginga. Keep it on the floor.",repeat(4,()=>[T("negativa",3,"Negativa",f),T("esquiva",2,"Rolê",!f),T("ginga",2,"Ginga",f)]),{flip:f,chips:[s,"4 reps"]}));
+/* isometrics: a hold you end by tapping. Seconds held are logged, so the number is the measure. */
+const wallSquat = (i, n, secs) => { const s=hold("Wall squat","wallsit",secs,"strength","Back flat on the wall, feet out in front, slide down to your stage's knee angle. Hands off the thighs. Breathe; don't hold your breath. Tap I'm done if you have to stand up early.",{chips:[`Hold ${i} of ${n}`,fmtSecs(secs)]}); s.tapEnd=true; s.iso="wall"; return s; };
 const negativa = () => sided((f,s)=>hold("Negativa","negativa",15,"capoeira","Sink low, one leg long, hand planted behind you, guard arm up.",{flip:f,chips:[s]}));
 const auPrep = () => hold("Aú prep","au",30,"capoeira","Hands down, hips low, small hops from foot to foot over your hands. Height comes later.");
 const au = () => step("Aú","capoeira","Cartwheel with control. Eyes on the floor between your hands. Both directions.",repeat(5,i=>[T("au",3,"Aú",i%2===1),T("ginga",3,"Ginga",i%2===1)]),{chips:["5 reps"]});
@@ -1338,6 +1360,12 @@ function stairPark(o){
     const S=STAIRS[k], lp=Math.max(1,Math.ceil(i/4)), c = loops>1 ? `Loop ${lp} of ${loops} · climb ${i+1} of ${order.length}` : `Climb ${i+1} of ${order.length}`;
     const again = i>0 && order[i-1]===k;
     out.push(climb(S.name, S.t, c, again ? "Second time up. Match your first split." : S.cue));
+    /* repeats (Phase 3+, opt-in): straight back down the back stairs on foot, and up again, twice */
+    if (o.repeats && k==="back" && !again && order[i+1]==="back" && !out.repeated){ out.repeated=true;
+      for (let r=2;r<=3;r++){
+        out.push(L("Walk down the back stairs","walk",70,"Walk, never jog. Hand near the rail, eyes on your feet. This is your recovery: breathe.","At the bottom",{zone:"Z2"}));
+        out.push(climb("Back stairs", S.t, `Repeat ${r} of 3`, r===3 ? "Last one. Match your first split." : "Straight back up. Hold the pace you climbed with the first time."));
+      } }
     if (mv && !again && i<=lastMoveClimb && (k!=="front" || i===0 || i===lastMoveClimb || i===order.length-1)) out.push(...moveAt[k](S.name.replace(" stairs","")));
     if (i===order.length-1) return;
     /* down the path to the hub, up the small stairs, over to the next one */
@@ -1447,7 +1475,7 @@ function build(o){
     revlunge: n => sl => sided((f,s)=> reps("Reverse lunge, knee drive","kneeUp","splitsquat",n,3,"strength","Step back into the lunge, back knee kisses the floor, then drive that knee up to hip height as you stand. Bells at your sides.",{...(useDb?dbo("AB",H,"Reverse lunge"):{}),flip:f,chips:[sl,s]})),
     walklunge: n => sl => reps("Walking lunges","splittop","splitsquat",n,2.6,"strength","Long steps down the hall, back knee kisses the floor, keep walking. Bells at your sides. Count every step.",{...(useDb?dbo("AB",H,"Walking lunge"):{}),chips:[sl],unitWord:"steps"}),
     bss: n => sl => sided((f,s)=> reps("Bulgarian split squat","splittop","splitsquat",n,3,"strength","Back foot on the couch or a chair. Drop straight down, front heel planted, slight forward lean for more glute.",{...(useDb?dbo("AB",H,"Bulgarian split squat"):{}),flip:f,chips:[sl,s]})),
-    slrdl: n => sl => sided((f,s)=> reps("Single-leg RDL","slrdlTop","slrdlBottom",n,3.4,"strength","Stand on one leg, push the free leg back as you hinge. Hips square to the floor, bells close to the standing leg.",{...(useDb?dbo("AB",H,"Single-leg RDL"):{}),flip:f,chips:[sl,s]})),
+    slrdl: n => sl => sided((f,s)=> reps("Single-leg RDL","slrdlTop","slrdlBottom",n,3.4,"strength","Stand on one leg, one bell in the opposite hand. Push the free leg back as you hinge, hips square to the floor, bell close to the standing leg.",{...(useDb?dbo("B",H,"Single-leg RDL"):{}),flip:f,chips:[sl,s]})),
     latlunge: n => sl => sided((f,s)=> reps("Lateral lunge","mountain","latB",n,3,"strength","Big step to the side, sit back over that foot, other leg straight. Push back to standing. One bell at your chest.",{...(useDb?dbo("B",H,"Lateral lunge"):{}),flip:f,chips:[sl,s]})),
     cossack: n => sl => sided((f,s)=> reps("Cossack squat","latB","latB",n,3.4,"strength","Wide stance, sink all the way down over one foot, the other leg long with toes up. Shift across low, like a negativa. Bell at your chest as a counterweight.",{...(useDb?dbo("B",L,"Cossack squat"):{}),flip:f,chips:[sl,s]})),
     skater: n => sl => sided((f,s)=> reps("Skater squat","splittop","splitsquat",n,3.4,"strength","Stand on one leg, back knee bends and lowers toward the floor behind you. Light bell held out front to balance.",{...(useDb?dbo("B",L,"Skater squat"):{}),flip:f,chips:[sl,s]}))
@@ -1520,7 +1548,7 @@ function build(o){
     const dbrdl = sl => reps("Dumbbell RDL","mountain","rdl",r10+X,3.5,"strength","Soft knees, push the hips back, bells slide down the thighs. Flat back.",{db:"AB",weight:wt(H),track:"Dumbbell RDL",setup:10,chips:[sl]});
     const dbsplit = sl => sided((f,sd)=>reps("Split squat","splittop","splitsquat",r8+X,3,"strength","Long stance, bells at your sides. Back knee straight down, front heel planted.",{db:"AB",weight:wt(L),track:"Split squat",setup:10,flip:f,chips:[sl,sd]}));
     const dbgoblet = sl => reps("Goblet squat","gobletup","goblet",r10+X,3,"strength","One bell at your chest. Sit between your heels, chest tall, knees out.",{db:"B",weight:wt(H),track:"Goblet squat",setup:10,chips:[sl]});
-    const dbslrdl = sl => sided((f,sd)=>reps("Single-leg RDL","slrdlTop","slrdlBottom",r8+X,3.4,"strength","Stand on one leg, push the free leg back as you hinge. Hips square, bells close to the standing leg.",{db:"AB",weight:wt(L),track:"Single-leg RDL",setup:8,flip:f,chips:[sl,sd]}));
+    const dbslrdl = sl => sided((f,sd)=>reps("Single-leg RDL","slrdlTop","slrdlBottom",r8+X,3.4,"strength","Stand on one leg, one bell in the opposite hand. Push the free leg back as you hinge, hips square, bell close to the standing leg.",{db:"B",weight:wt(L),track:"Single-leg RDL",setup:8,flip:f,chips:[sl,sd]}));
     const hipthrust = sl => reps("Dumbbell hip thrust","bridgedbdown","bridgedbup",r10+X,3,"strength","Shoulders on the bench edge, one heavy bell across the hips. Drive through the heels, chin tucked, squeeze at the top.",{db:"B",weight:wt(H),track:"Dumbbell hip thrust",setup:12,chips:[sl]});
     const dbwalk = sl => reps("Walking lunges","splittop","splitsquat",2*(r8+X),2.6,"strength","Bells at your sides, long steps, back knee kisses the floor. Count every step.",{db:"AB",weight:wt(L),track:"Walking lunge",setup:8,chips:[sl],unitWord:"steps"});
     const dbohp = sl => sided((f,sd)=>reps("Single-arm press","ohdown","ohpress",r8+X,3,"strength","Glutes and ribs tight so the press comes from the shoulder, not the lower back.",{db:"B",weight:wt(L),track:"Single-arm press",setup:10,flip:f,chips:[sl,sd]}));
@@ -1532,7 +1560,10 @@ function build(o){
     const hinge = SL("hinge", bn&&dbrdl, bn&&dbslrdl, trx&&TRX.ham, sm&&G_.smithrdl, bb&&(phase>=4?G_.deadlift:G_.bbrdl), bn&&hipthrust, bridge);
     const over  = SL("overhead", trx&&TRX.y, sm&&G_.smithohp, bb&&G_.ohp, dbohp, BW.pike(r8+X));
     const accessory = phase>=3 ? over : B ? SL("lunge", bn&&dbwalk, bn&&dbsplit, HOME.revlunge(r8+X)) : SL("pull2", mc&&G_.cablerow, bn&&dbrow, EX.renegade(6+X));
-    const list = (B ? [hinge, pull, squat, push, accessory] : [squat, push, pull, hinge, accessory]).concat(trx ? [SL("core", TRX.tuck)] : []);
+    /* dead hang closes each round when there's a bar: hold as long as you can, the seconds are the measure.
+       Target = your best + 5s, capped at 90. */
+    const hang = SL("hang", sl=>{ const h=hold("Dead hang","hang",o.hangT||30,"strength","Grip the bar shoulder-width, arms straight, let your shoulders stretch. Hold until your grip goes, then tap Done and log the seconds.",{chips:[sl,`Target ${fmtSecs(o.hangT||30)}`],setup:6}); h.tapEnd=true; h.iso="hang"; return h; });
+    const list = (B ? [hinge, pull, squat, push, accessory] : [squat, push, pull, hinge, accessory]).concat(trx ? [SL("core", TRX.tuck)] : []).concat(eq.bar ? [hang] : []);
     list.forEach(sl=>{ if (sl.v.length>1 && sl.slot!=="lunge") sl.di = B % sl.v.length; });
     /* a bodyweight bridge is never the main hinge at the gym */
     list.forEach(sl=>{ if (sl.names[sl.di||0]==="Glute bridge" && sl.v.length>1) sl.di=0; });
@@ -1547,6 +1578,25 @@ function build(o){
   }
   const warmMachine = secs => warmM ? machineEasy(warmM, secs, "Warm-up", "Easy pace, nose breathing. You should be able to hold a conversation.") : null;
   const flush = () => gym && eq.rower ? machineEasy("rower", 180, "Flush", "Easy rowing. Let the heart rate come down before you stretch.") : null;
+  /* wall squats: the blood-pressure protocol is 4 x 2 min. Lifting days at home get 2 holds to keep it going. */
+  const wallBlock = (n, rest=60) => { const o=[]; for (let i=1;i<=n;i++){ o.push(wallSquat(i,n,120)); if (i<n) o.push(restStep(rest)); } return o; };
+
+  /* ---------- Flow + capoeira: between yoga and the full series. No dumbbells. ---------- */
+  if (type==="mix"){
+    const day=(o.mixN||0)%3;
+    add(arrive(30), wrists(), catcow(), downdog(), sunA(2,null), phase>=2 && !R ? sunB(1) : null);
+    add(ginga((R?60:phase>=3?180:120)+(G?60:0)));
+    if (!R){
+      if (day===0) add(cocorinha(), esquivaBaixa(), phase>=3 ? esquiva() : null);
+      else if (day===1) add(legSwings(), meiaLua(), queixada(), phase>=3 ? armada() : null);
+      else add(negativa(), role(), phase>=3 ? auPrep() : null);
+      add(wallBlock(4, 60));
+    }
+    add(core(phase>=2?30:20, 15));
+    add(R ? child() : inversions(Math.max(2,phase)).slice(0,2));
+    add(shortClose());
+    return out;
+  }
 
   /* ---------- Yoga only ---------- */
   if (type==="yoga"){
@@ -1578,7 +1628,7 @@ function build(o){
     } else {
       add(second ? [downdog(), ...sunA(1,null), ginga(24)] : [catcow(), downdog(), ...sunA(2,null), phase>=2?ginga(32):null]);
       add(homeStrength(3, phase===1?30:40, true));
-      if (phase>=2) add(homeFinisher());
+      if (phase>=2) add(homeFinisher(), wallBlock(2));
       if (phase>=2) add(core(G?30:20, 15));
     }
     add(shortClose());
@@ -1616,7 +1666,7 @@ function build(o){
         add(machineEasy("run", 360, "Easy jog", "Out to the park. Conversational the whole way."));
         add(steady("run", 8*60, "Easy miles", "Red day. Flat ground only, skip the stairs, keep it easy."));
         add(machineEasy("run", 300, "Jog home", "Easy. Let the heart rate fall before you stop."));
-      } else add(stairPark({phase, G, bikeTo:o.bikeTo, bikeHome:o.bikeHome, lapT:o.lapT, stairN:o.stairN, stations:o.stations, longDay:o.longDay}));
+      } else add(stairPark({phase, G, bikeTo:o.bikeTo, bikeHome:o.bikeHome, lapT:o.lapT, stairN:o.stairN, stations:o.stations, longDay:o.longDay, repeats:o.repeats}));
       add(finisher(), shortClose());
       return out;
     }
@@ -1651,7 +1701,7 @@ function build(o){
   }
   if (phase===2){
     add(arrive(second?30:45), cap?ginga(60):null, wrists(), catcow(), downdog(), sunA(2, R?null:{pushups:8,squats:10}), sunB(1), standing(true));
-    if (!R) add(homeStrength(3, 30, false), homeFinisher());
+    if (!R) add(homeStrength(3, 30, false), homeFinisher(), wallBlock(2));
     add(core(G?30:20, 15));
     add(R ? child() : inversions(2));
     add(closing(false, R, true));
@@ -1660,7 +1710,7 @@ function build(o){
     add(arrive(30));
     if (cap) add(ginga(48), cocorinha(), ...(R?[]:[esquiva(), ...negativa(), auPrep()]));
     add(wrists(), downdog(), sunA(G?3:2,null), sunB(2), standing(true));
-    if (!R) add(homeStrength(3, 40, false), homeFinisher());
+    if (!R) add(homeStrength(3, 40, false), homeFinisher(), wallBlock(2));
     add(core(G?40:30, 20));
     add(R ? child() : inversions(3));
     add(closing(true, R, true));
@@ -1669,7 +1719,7 @@ function build(o){
     add(arrive(30));
     if (cap) add(ginga(48), ...(R?[cocorinha()]:[esquiva(), ...negativa(), au(), ...queda()]));
     add(wrists(), downdog(), sunA(G?3:2,null), sunB(2), standing(true));
-    if (!R) add(homeStrength(3, 40, false), homeFinisher());
+    if (!R) add(homeStrength(3, 40, false), homeFinisher(), wallBlock(2));
     add(core(G?45:40, 30));
     add(R ? child() : inversions(4));
     add(closing(true, R, true));
@@ -1693,7 +1743,8 @@ const TYPES = [
   {id:"full", name:"Full series", note:"Everything in one go."},
   {id:"yoga", name:"Yoga", note:"Flow, standing, core and inversions. No loading. Good first thing in the morning."},
   {id:"strength", name:"Strength", note:"Short warm-up, the lifting, and a quick cool-down. Good for the afternoon."},
-  {id:"cardio", name:"Cardio", note:"Warm up on one machine, work on the next, flush on a third. Always ends with one pulling movement."}
+  {id:"cardio", name:"Cardio", note:"Warm up on one machine, work on the next, flush on a third. Always ends with one pulling movement."},
+  {id:"mix", name:"Flow + capoeira", note:"Between yoga and the full series. A short flow, a capoeira block that rotates esquivas, kicks and floor work, then 4 wall squats for blood pressure. No dumbbells."}
 ];
 const EQ_GYM = [{id:"trx",name:"TRX"},{id:"machines",name:"Cables and machines"},{id:"bench",name:"Bench + dumbbells"},{id:"smith",name:"Smith machine"},{id:"barbell",name:"Free barbell"},{id:"bar",name:"Pull-up bar"},
   {id:"rower",name:"Rower"},{id:"arc",name:"Arc Trainer"},{id:"elliptical",name:"Elliptical"},{id:"gymbike",name:"Gym bike"},{id:"climber",name:"Ladder climber"},{id:"tread",name:"Treadmill"}];
@@ -1725,7 +1776,7 @@ const GUIDE = {
   "Cossack squat":         {s:["Hold a doorframe, half depth","Full depth, toes up on the long leg","No hands, bell held out in front"]},
   "TRX pistol squat":      {s:["Both feet: TRX squat","Pistol, straps for balance","Pistol, straps only on the way up"]},
   /* hinge */
-  "Single-leg RDL":        {s:["Kickstand: back toes stay on the floor","Free leg floats back, bells close","2-second pause at the bottom, or go heavier"]},
+  "Single-leg RDL":        {s:["Kickstand: back toes stay on the floor","Free leg floats back, bell close","2-second pause at the bottom, or go heavier"]},
   "B-stance RDL":          {s:["Regular RDL, both feet flat","Kickstand stance, most weight on the front leg","Single-leg RDL"]},
   "Dumbbell RDL":          {s:["Shorter range: bells to the knees","Bells to mid-shin, flat back","3-second lowering"]},
   "Romanian deadlift":     {s:["Shorter range: bells to the knees","Bells to mid-shin, flat back","3-second lowering"]},
@@ -1761,6 +1812,14 @@ const GUIDE = {
   "Smith row":             {s:["Chest-supported dumbbell row","Hinged to 45°, pull to the ribs","Pause at the ribs"]},
   "Barbell row":           {s:["Chest-supported dumbbell row","Hinged to 45°, pull to the ribs","Pause at the ribs"]},
   "Pull-ups":              {s:["Jump up, lower for 3 seconds","Band-assisted or full pull-ups","Pause with your chin over the bar"]},
+  "Wall squat":            {s:["Shallow, about 45° at the knee","About 70°: thighs halfway to parallel","90°: thighs parallel to the floor"]},
+  "Dead hang":             {s:["Toes on a box, take some weight","Full dead hang","Active hang: shoulders pulled down, ribs in"]},
+  "Leg swings":            {f:["Dynamic swings before kicks warm the hip through the exact range the kick uses.","Kick height comes from strong hip flexors as much as loose hamstrings.","Let each swing grow a little. Never force the top of the arc."]},
+  "Meia lua de frente":    {s:["Hand on a wall, knee-height arc","Hip-height arc from ginga","Head-height arc, straight back into ginga"]},
+  "Queixada":              {s:["Hand on a wall, knee height","Hip height from ginga","Head height, no pause"]},
+  "Armada":                {s:["The spin only, no kick","Spin and kick at hip height","Full height, land straight back in ginga"]},
+  "Esquiva baixa":         {s:["Hand on a chair, half depth","Chest to thigh, guard up","Straight from ginga, no pause"]},
+  "Negativa to rolê":      {s:["Negativa, then walk the hands around","Roll over the hand, stay low","Continuous: negativa, rolê, ginga, other side"]},
   "Free hang":             {s:["Toes touching a box","Full dead hang","Active hang: pull the shoulders down"]},
   "TRX row":               {s:["Stand more upright","Feet walked in until it's hard","Single-arm TRX row"]},
   "TRX Y-fly":             {s:["More upright","Lean back, lift into a Y","Feet further forward, pause at the top"]},
@@ -1899,14 +1958,16 @@ if (typeof document!=="undefined") (function(){
     const t=document.createElement("meta"); t.name="theme-color"; t.content=c||"#EDF0EB"; document.head.appendChild(t); }
   const loggedToday = () => realLog().filter(l=>l.d===today());
   const isSecond = () => (st.secOv && st.secOv.d===today()) ? st.secOv.v : loggedToday().length>0;
-  const gymCount = () => st.type==="cardio" ? realLog().filter(l=>l.t==="cardio").length : realLog().filter(l=>l.l==="gym" && l.t!=="yoga").length;
+  const gymCount = () => st.type==="cardio" ? realLog().filter(l=>l.t==="cardio").length : realLog().filter(l=>l.l==="gym" && l.t!=="yoga" && l.t!=="mix").length;
   const abNext = () => (st.abOv!==null && st.abOv!==undefined) ? st.abOv : (gymCount() % 2);
-  const opts = rec => ({phase:st.phase, rec, type:st.type, loc:st.loc, eq:st.eq, dbOn:st.dbOn, ab:abNext(), gymN: realLog().filter(l=>l.l==="gym").length, homeAb: realLog().filter(l=>l.l==="home" && (l.t==="strength"||l.t==="full")).length, finisher:!!st.finisher, bikeTo:!!st.bikeTo, bikeHome:!!st.bikeHome, lapT:st.lapLast||{}, stations:st.stations!==false, longDay:!!st.longDay,
+  /* best dead hang so far sets the next target: +5s, between 20 and 90 */
+  const holdBest = name => Math.max(0, ...st.sets.filter(r=>r.exercise===name && r.measure==="seconds").map(r=>+r.reps_or_seconds||0));
+  const opts = rec => ({phase:st.phase, rec, mixN: realLog().filter(l=>l.t==="mix").length, hangT: Math.min(90, Math.max(20, holdBest("Dead hang") ? holdBest("Dead hang")+5 : 30)), type:st.type, loc:st.loc, eq:st.eq, dbOn:st.dbOn, ab:abNext(), gymN: realLog().filter(l=>l.l==="gym").length, homeAb: realLog().filter(l=>l.l==="home" && (l.t==="strength"||l.t==="full")).length, finisher:!!st.finisher, bikeTo:!!st.bikeTo, bikeHome:!!st.bikeHome, lapT:st.lapLast||{}, stations:st.stations!==false, longDay:!!st.longDay, repeats: !!st.repeats && st.phase>=3 && !(()=>{ const L=liftedRecently(); return L && /legs|hamstrings/.test(L.what); })(),
     stairN: realLog().filter(l=>l.p===st.phase && (st.cardio||[]).some(c=>c.session_id===l.id && c.modality==="stairs")).length,
     W:{heavy:homeInv().at(-1), light:homeInv().length>1?homeInv().at(-2):homeInv()[0], gymHeavy:st.gymHeavy||0, gymLight:st.gymLight||0}, second:isSecond()});
   const sessionFor = rec => build(opts(rec));
   const total = steps => steps.reduce((a,s)=>a+s.dur,0);
-  const TYPE_NAME = {full:"full series", yoga:"yoga", strength:"strength", cardio:"cardio"};
+  const TYPE_NAME = {full:"full series", yoga:"yoga", strength:"strength", cardio:"cardio", mix:"flow + capoeira"};
 
   function seg(el, items, current, onPick){
     el.innerHTML="";
@@ -1926,6 +1987,26 @@ if (typeof document!=="undefined") (function(){
     return null;
   }
   /* ---------- Home ---------- */
+  /* stairs and park runs over time: the numbers that show you're getting fitter */
+  function renderPark(){
+    const box=$("parkBody"); if (!box) return;
+    const C=st.cardio||[], sess=[...new Set(C.filter(r=>r.modality==="stairs").map(r=>r.session_id))].sort();
+    if (!sess.length){ box.innerHTML='<p class="wnote">Do one stair session and your climb times show up here.</p>'; return; }
+    const dOf=id=>{ const l=st.log.find(x=>x.id===id); return l ? l.d.slice(5) : id.slice(6,8)+"-"+id.slice(8,10); };
+    const climbs=["Front stairs","Back stairs","Hidden stairs","Small stairs"];
+    const row=(name,fmt)=>{ const v=sess.map(id=>{ const xs=C.filter(r=>r.session_id===id && r.segment===name && +r.seconds>=10).map(r=>+r.seconds); return xs.length?Math.min(...xs):null; }).filter(x=>x!==null);
+      if (!v.length) return ""; const first=v[0], last=v[v.length-1], best=Math.min(...v), d=last-first;
+      return `<tr><td>${name}</td><td>${fmtSecs(first)}</td><td>${fmtSecs(last)}</td><td>${fmtSecs(best)}</td><td class="${d<0?"up":d>0?"down":""}">${v.length>1?(d<0?"−":"+")+fmtSecs(Math.abs(d)):"—"}</td></tr>`; };
+    let h=`<table><tr><th>Fastest climb</th><th>First</th><th>Latest</th><th>Best</th><th>Change</th></tr>${climbs.map(n=>row(n)).join("")}${row("Jog to the park")}</table>`;
+    /* per session: total time climbing, and share of the session spent on the stairs */
+    h+=`<table><tr><th>Session</th><th>Climbing</th><th>Climbs</th><th>Total</th></tr>`+sess.slice(-6).map(id=>{ const r=C.filter(x=>x.session_id===id), cl=r.filter(x=>x.modality==="stairs" && +x.seconds>=10), tot=r.reduce((a,x)=>a+(+x.seconds||0),0), c=cl.reduce((a,x)=>a+(+x.seconds||0),0);
+      return `<tr><td>${dOf(id)}</td><td>${fmtSecs(c)}</td><td>${cl.length}</td><td>${fmtSecs(tot)}</td></tr>`; }).join("")+`</table>`;
+    /* park runs with a distance logged: pace */
+    const runs=C.filter(r=>r.modality==="run" && r.metric && /mi|km/.test(r.metric_unit||"") && +r.seconds>120);
+    if (runs.length) h+=`<table><tr><th>Run</th><th>Distance</th><th>Time</th><th>Pace</th></tr>`+runs.slice(-6).map(r=>{ const p=(+r.seconds)/(+r.metric); return `<tr><td>${dOf(r.session_id)}</td><td>${r.metric} ${r.metric_unit}</td><td>${fmtSecs(+r.seconds)}</td><td>${fmtSecs(p)}/${r.metric_unit}</td></tr>`; }).join("")+`</table>`;
+    else h+=`<p class="wnote">Log the distance at the end of a run and your pace shows up here too.</p>`;
+    box.innerHTML=h;
+  }
   function renderHome(){
     if (typeof renderResume==="function") try{ renderResume(); }catch(e){}
     const ph=$("phases"); ph.innerHTML="";
@@ -1942,8 +2023,13 @@ if (typeof document!=="undefined") (function(){
     $("typeNote").textContent = TYPES.find(t=>t.id===st.type).note;
     $("finBox").hidden = true;
     const stairsToday = sessionFor(st.rec).some(x=>x.climb);
+    try{ renderPark(); }catch(e){}
     $("stairBox").hidden = !stairsToday;
     if (stairsToday){ $("bikeTo").checked=!!st.bikeTo; $("bikeHome").checked=!!st.bikeHome; $("stOn").checked=st.stations!==false; $("ldOn").checked=!!st.longDay;
+      $("rpRow").hidden = st.phase<3; $("rpOn").checked=!!st.repeats;
+      const legs = liftedRecently(); const legDay = legs && /legs|hamstrings/.test(legs.what);
+      $("rpNote").hidden = !(st.phase>=3 && st.repeats);
+      $("rpNote").textContent = legDay ? `Off today: you loaded your legs ${legs.when}, and walking down stairs on tired quads is how knees get hurt. Normal loop instead.` : "Back stairs three times: climb, walk down the stairs (never jog), climb again. Then the normal loop.";
       const best=st.stairs&&st.stairs["Back stairs"];
       $("stairNote").textContent = (st.bikeTo ? "Ride there, five minutes of easy jogging, then the stairs. " : "Jog there, about 11 minutes. ")
         + "Up the stairs, down the paths: each big stair, then down to the small stairs, then over to the next. Tap at every top and every arrival; your times become next session's targets. Moves at the top add 2 reps every stair day this phase, up to +6." + (best ? ` Back stairs best: ${fmtSecs(best.best)}.` : ""); }
@@ -2027,7 +2113,8 @@ if (typeof document!=="undefined") (function(){
       const li=document.createElement("li"); li.className="it";
       const extra=[...s.chips.filter(c=>!/^\d+(s| min|:\d+)$/.test(c)), s.track && (st.lifts[s.track] || estW(s.track)) ? "" : s.weight].filter(Boolean).join(", ");
       const ew = !st.lifts[s.track] && estW(s.track);
-      const last = s.track && st.lifts[s.track] ? `<small class="last">Last time: ${st.lifts[s.track]} lb</small>` : ew ? `<small class="last">First time: start around ${ew} lb, from your other lifts</small>` : "";
+      const hb = s.iso ? holdBest(s.name) : 0;
+      const last = hb ? `<small class="last">Best so far: ${fmtSecs(hb)}${GUIDE[s.name]?` · stage ${stageOf(s.name)}`:""}</small>` : s.track && st.lifts[s.track] ? `<small class="last">Last time: ${st.lifts[s.track]} lb</small>` : ew ? `<small class="last">First time: start around ${ew} lb, from your other lifts</small>` : "";
       li.innerHTML=`<span>${s.name}${extra?`<small>${extra}</small>`:""}${last}</span><span class="d">${fmtSecs(s.dur)}</span>`;
       ol.appendChild(li);
     });
@@ -2115,6 +2202,7 @@ if (typeof document!=="undefined") (function(){
   $("secOn").onchange=e=>{ st.secOv={d:today(), v:e.target.checked}; save(); renderHome(); };
   $("bikeTo").onchange=e=>{ st.bikeTo=e.target.checked; save(); renderHome(); };
   $("bikeHome").onchange=e=>{ st.bikeHome=e.target.checked; save(); renderHome(); };
+  $("rpOn").onchange=e=>{ st.repeats=e.target.checked; save(); renderHome(); };
   $("ldOn").onchange=e=>{ st.longDay=e.target.checked; save(); renderHome(); };
   $("stOn").onchange=e=>{ st.stations=e.target.checked; save(); renderHome(); };
   $("finOn").onchange=e=>{ st.finisher=e.target.checked; save(); renderHome(); };
@@ -2297,7 +2385,7 @@ if (typeof document!=="undefined") (function(){
     squat:{"Leg press":1,"Back squat":.5,"Smith squat":.45,"Goblet squat":.21,"Front-rack squat":.125,"Split squat":.1,"Bulgarian split squat":.085,"Reverse lunge":.1,"Walking lunge":.1,"Skater squat":.06,"Lateral lunge":.1,"Cossack squat":.06},
     push:{"Dumbbell bench press":1,"Dumbbell press":.9,"Incline dumbbell press":.8,"Single-arm press":.6,"Bench press":2,"Smith bench press":1.8,"Overhead press":1.3,"Smith overhead press":1.2},
     pull:{"Lat pulldown":1,"Seated cable row":1,"Dumbbell row":.35,"Single-arm row":.3,"Renegade row":.15,"Barbell row":.75,"Smith row":.7},
-    hinge:{"Dumbbell RDL":1,"Barbell RDL":2,"Smith RDL":1.8,"Deadlift":2.5,"Single-leg RDL":.6,"B-stance RDL":.75,"Glute bridge":1.5,"Dumbbell hip thrust":1.5,"Suitcase hold":1}
+    hinge:{"Dumbbell RDL":1,"Barbell RDL":2,"Smith RDL":1.8,"Deadlift":2.5,"Single-leg RDL":.75,"B-stance RDL":.75,"Glute bridge":1.5,"Dumbbell hip thrust":1.5,"Suitcase hold":1}
   };
   const STACK = /Leg press|Lat pulldown|cable row/;
   function estW(track){
@@ -2330,7 +2418,7 @@ if (typeof document!=="undefined") (function(){
     $("pTrackU").textContent = s.db==="AB" ? "lb each" : "lb";
     if (w){ const e=document.createElement("span"); e.className="chip w"; e.textContent = (s.track && st.aim[s.track] ? "Aim " : isEst(s) ? "Start ~" : "") + w + (s.db==="AB" ? " lb each" : " lb"); ch.appendChild(e); }
     $("pSwap").hidden = !(s.unit || s.mach);
-    $("pSkip").textContent = s.lap ? s.doneLabel : s.unit ? "Done" : s.mach ? "Next" : "Skip";
+    $("pSkip").textContent = s.lap ? s.doneLabel : s.tapEnd ? "I'm done" : s.unit ? "Done" : s.mach ? "Next" : "Skip";
     $("pPlus").hidden = !s.ivl || !s.work;
     if (s.climb){ const r=(st.stairs||{})[s.name]; if (r){ const e=document.createElement("span"); e.className="chip w"; e.textContent=`Last ${fmtSecs(r.last)} · Best ${fmtSecs(r.best)}`; ch.appendChild(e); } }
     const tr=$("pTrack"); tr.hidden=!s.track;
@@ -2366,7 +2454,8 @@ if (typeof document!=="undefined") (function(){
   $("pTrackIn").oninput=$("pTrackIn").onchange=e=>{ const s=P.steps[P.i]; if (s && s.track) logW(s.track, e.target.value); };
   const BLOCK_OUT = s => s.block==="cardio" ? "cardio" : s.block==="close" ? "cooldown"
     : ["strength","core","invert"].includes(s.block) ? "main"
-    : (P.type==="yoga" && ["flow","standing"].includes(s.block)) ? "main" : "warmup";
+    : (P.type==="yoga" && ["flow","standing"].includes(s.block)) ? "main"
+    : (P.type==="mix" && s.block==="capoeira") ? "main" : "warmup";
   const LOAD_TYPE = s => /Pull-ups|Free hang/.test(s.name) ? "bodyweight" : s.db==="AB" ? "per_hand" : s.db==="B" ? "single_db"
     : s.plate ? "barbell" : s.track ? "machine_stack" : "bodyweight";
   const sideOf = s => { const c=s.chips.find(c=>/side/.test(c)); return c ? (c.startsWith("Right")?"R":"L") : ""; };
@@ -2656,11 +2745,12 @@ if (typeof document!=="undefined") (function(){
     const unitSteps=P.steps.filter(x=>x.unit===cur.unit);
     st.sets = st.sets.filter(r=>!(r.session_id===P.sid && r._u===cur.unit));
     const isReps = !!cur.reps;
-    const rows = unitSteps.map(x=>{ const r=setRow(x, {amount: isReps ? x.reps : x.secs, measure: isReps?"reps":"seconds",
+    const held = !isReps && cur.tapEnd ? Math.round(Math.min(P.t, cur.dur)) : null;
+    const rows = unitSteps.map(x=>{ const r=setRow(x, {amount: isReps ? x.reps : (held ?? x.secs), measure: isReps?"reps":"seconds",
       load: cur.track ? (st.lifts[cur.track]||"") : (defW(x)||"")}); r._u=cur.unit; return r; });
     if (P.sid){ st.sets.push(...rows); touch(); save(); }
     $("shRepsLab").textContent = isReps ? (unitSteps.length>1 ? "Reps per side" : "Reps done") : "Seconds held";
-    $("shRepsIn").value = isReps ? cur.reps : (cur.secs||"");
+    $("shRepsIn").value = isReps ? cur.reps : (held ?? cur.secs ?? "");
     $("shRepsIn").oninput = e=>{ const v=parseInt(e.target.value); rows.forEach(r=>r.reps_or_seconds = v>=0 ? v : ""); save(); };
     if (cur.track) $("shTrackIn").oninput=$("shTrackIn").onchange=e=>{ logW(cur.track, e.target.value); const v=parseFloat(e.target.value); rows.forEach(r=>r.load = v>0 ? v : ""); save(); if (P.feel) $("shAdvice").innerHTML=adviceFor(cur,P.feel); };
     const fe=$("shFeel"); fe.innerHTML="";
@@ -2801,6 +2891,16 @@ if (typeof document!=="undefined") (function(){
       rg.appendChild(b); }
     $("doneNotes").value="";
     renderDoneSets(P.doneId);
+    /* wall squats: every hold at the full 2 minutes moves you a stage deeper next time */
+    const ws = st.sets.filter(r=>r.session_id===P.doneId && r.exercise==="Wall squat");
+    let isoNote = "";
+    if (ws.length){
+      const full = ws.every(r=>+r.reps_or_seconds>=115), sg=stageOf("Wall squat"), tot=ws.reduce((a,r)=>a+(+r.reps_or_seconds||0),0);
+      if (full && sg<3){ st.stage=st.stage||{}; st.stage["Wall squat"]=sg+1; save(); isoNote=` Wall squats: ${fmtSecs(tot)} held, every hold full. Next time is stage ${sg+1}.`; }
+      else isoNote = ` Wall squats: ${fmtSecs(tot)} held at stage ${sg}.`;
+    }
+    const dh = st.sets.filter(r=>r.session_id===P.doneId && r.exercise==="Dead hang");
+    if (dh.length){ const b=Math.max(...dh.map(r=>+r.reps_or_seconds||0)); isoNote += ` Dead hang best today: ${fmtSecs(b)}.`; }
     if (entry) $("doneWhoop").innerHTML = `In WHOOP: one <b>${P.whoop}</b> activity, <b>${entry.start}–${entry.end}</b>. If WHOOP split it or picked it up on its own, merge or edit it to match.`;
     $("doneNotes").oninput=e=>{ const en=st.log.find(l=>l.id===P.doneId); if (en){ en.notes=e.target.value; save(); } };
     $("player").hidden=true; $("done").hidden=false;
@@ -2810,8 +2910,10 @@ if (typeof document!=="undefined") (function(){
       : st.rec==="red"
       ? `${mins} minutes, soft version. Showing up on a red day is the habit that makes the green days count.`
       : P.type==="yoga" ? `${mins} minutes of Phase ${st.phase} yoga. Logged. If you lift later, the app will know it's your second session.`
+      : P.type==="mix" ? `${mins} minutes of flow and capoeira. Logged.`
       : P.type==="strength" ? `${mins} minutes of strength. Logged, along with any weights you entered. Beat one of them next time.`
       : `${mins} minutes of Phase ${st.phase}. Logged. If a gate felt close today, test it next time you're green.`;
+    if (isoNote) $("doneNote").textContent += isoNote;
     CUE.finish(); say("Practice done.");
   }
   $("startBtn").onclick=()=>{ unlockAudio(); start(); };
@@ -2872,7 +2974,7 @@ if (typeof document!=="undefined") (function(){
     else if (e.key==="ArrowLeft") $("pPrev").click();
     else if (e.key==="Escape") $("pExit").click();
   });
-  const APP_VER="v33";
+  const APP_VER="v36";
   $("brOn").onchange=e=>{ st.breath=e.target.checked; save(); };
   $("testSnd").onclick=()=>{
     unlockAudio(); const a=null;
@@ -2906,11 +3008,12 @@ if (typeof document!=="undefined") (function(){
     e.setUint32(0,0x06054b50,true); e.setUint16(8,files.length,true); e.setUint16(10,files.length,true); e.setUint32(12,csize,true); e.setUint32(16,off,true);
     return new Blob([...parts, ...cen, new Uint8Array(e.buffer)], {type:"application/zip"});
   }
-  const TEMPLATE = {full:"Full", yoga:"Yoga", strength:"Strength", cardio:"Cardio"};
+  const TEMPLATE = {full:"Full", yoga:"Yoga", strength:"Strength", cardio:"Cardio", mix:"Flow + capoeira"};
   /* the WHOOP activity to log a session as: one activity, the whole session */
   const WHOOP_NAME = {rower:"Rowing", elliptical:"Elliptical", arc:"Elliptical", gymbike:"Spin", peloton:"Spin", outbike:"Cycling", tread:"Running", run:"Running", rope:"Jumping Rope", climber:"Stairmaster"};
   function whoopFor(type, loc, steps){
     if (type==="yoga") return "Yoga";
+    if (type==="mix") return "Martial Arts";
     if (type==="cardio"){
       if (steps && steps.some(x=>x.climb || x.mod==="stairs")) return "Stadium Steps";
       const t={}; (steps||[]).forEach(x=>{ if (x.mach) t[x.mach]=(t[x.mach]||0)+x.dur; });
