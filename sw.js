@@ -1,7 +1,7 @@
 /* The Series - offline shell.
    Pages: network first, so a new index.html shows up on the next open; the cache is the offline fallback.
    Fonts and icons: cache first. Bump CACHE with every release. */
-const CACHE = "series-v38";
+const CACHE = "series-v39";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./local-fonts.css", "./icon-192.png", "./icon-512.png", "./icon-180.png", "./atkinson-hyperlegible-latin-400-normal.woff2", "./atkinson-hyperlegible-latin-700-normal.woff2", "./bodoni-moda-latin-700-normal.woff2", "./bodoni-moda-latin-900-normal.woff2", "./bricolage-grotesque-latin-500-normal.woff2", "./bricolage-grotesque-latin-700-normal.woff2", "./bricolage-grotesque-latin-800-normal.woff2", "./familjen-grotesk-latin-400-normal.woff2", "./familjen-grotesk-latin-700-normal.woff2", "./unbounded-latin-600-normal.woff2", "./unbounded-latin-800-normal.woff2"];
 
 self.addEventListener("install", e => {
@@ -17,10 +17,13 @@ self.addEventListener("fetch", e => {
   const url = new URL(req.url);
   const isPage = req.mode === "navigate" || url.pathname.endsWith("/") || url.pathname.endsWith(".html") || url.pathname.endsWith("sw.js");
   if (url.origin === location.origin && isPage) {
-    e.respondWith(fetch(req, {cache: "no-store"}).then(res => {
+    /* fetch by URL, not by re-wrapping the navigation request: Safari is strict about that */
+    e.respondWith(fetch(req.url, {cache: "no-store", credentials: "same-origin"}).then(res => {
       if (res && res.ok) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(req, cp)); }
+      /* Safari refuses to show a redirected response from a service worker: hand back a clean copy */
+      if (res && res.redirected) return res.blob().then(b => new Response(b, {status: res.status, headers: res.headers}));
       return res;
-    }).catch(() => caches.match(req).then(hit => hit || caches.match("./index.html"))));
+    }).catch(() => caches.match(req).then(hit => hit || caches.match("./index.html")).then(hit => hit || new Response("Offline. Open the app again when you have a connection.", {status: 503, headers: {"Content-Type": "text/plain"}}))));
     return;
   }
   e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {

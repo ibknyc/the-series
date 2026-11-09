@@ -773,6 +773,32 @@ section{margin-bottom:34px}
 </style>
 </head>
 <body>
+<script>
+/* If anything stops the app from starting, say what it was instead of leaving a white screen,
+   and offer a way out that keeps your data (it only clears the cached copy of the app). */
+(function(){
+  let shown=false;
+  function show(msg){
+    if (shown) return; shown=true;
+    const d=document.createElement("div");
+    d.setAttribute("role","alert");
+    d.style.cssText="position:fixed;inset:0;z-index:9999;background:#f3f4ef;color:#17201c;font:16px/1.5 system-ui,sans-serif;padding:calc(env(safe-area-inset-top,0px) + 24px) 20px 24px;overflow:auto";
+    d.innerHTML='<h2 style="margin:0 0 8px;font-size:22px">The Series didn\'t start</h2><p style="margin:0 0 12px">Screenshot this and send it over. Your workouts are safe: they\'re stored separately from the app itself.</p><pre id="bootErr" style="white-space:pre-wrap;background:#fff;border:1px solid #ccd;padding:10px;font-size:13px;border-radius:8px"></pre><button id="bootFix" style="margin-top:14px;padding:12px 16px;font-size:16px;font-weight:700;border-radius:10px;border:0;background:#17201c;color:#fff">Reload a fresh copy</button>';
+    document.documentElement.appendChild(d);
+    d.querySelector("#bootErr").textContent=msg;
+    d.querySelector("#bootFix").onclick=async()=>{
+      try{ if (window.caches) for (const k of await caches.keys()) await caches.delete(k); }catch(e){}
+      try{ if (navigator.serviceWorker) for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister(); }catch(e){}
+      location.reload();
+    };
+  }
+  window.__bootFail=show;
+  window.addEventListener("error",e=>{ if (!window.__booted) show((e.message||"Error")+(e.filename?"\n"+e.filename.split("/").pop()+":"+e.lineno:"")+(e.error&&e.error.stack?"\n\n"+e.error.stack.split("\n").slice(0,4).join("\n"):"")); });
+  window.addEventListener("unhandledrejection",e=>{ if (!window.__booted) show("Unhandled: "+(e.reason&&e.reason.message||e.reason)); });
+  /* nothing drawn after 6 seconds: say so too */
+  setTimeout(()=>{ if (!window.__booted) show("The app loaded but never finished starting (no error was reported)."); },6000);
+})();
+</script>
 <main id="home">
   <div class="resume" id="resumeBox" hidden>
     <p id="resumeText"></p>
@@ -3065,7 +3091,7 @@ if (typeof document!=="undefined") (function(){
     else if (e.key==="ArrowLeft") $("pPrev").click();
     else if (e.key==="Escape") $("pExit").click();
   });
-  const APP_VER="v38";
+  const APP_VER="v39";
   $("brOn").onchange=e=>{ st.breath=e.target.checked; save(); };
   $("testSnd").onclick=()=>{
     unlockAudio(); const a=null;
@@ -3204,6 +3230,7 @@ gates.csv     one row per gate test. pass = y | n.
     };
     r.readAsText(f);
   };
+  window.__booted=true;
   if ("serviceWorker" in navigator){
     window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{}));
     let reloaded=false;
