@@ -698,6 +698,11 @@ section{margin-bottom:34px}
 .wgrid.tri{grid-template-columns:repeat(3,minmax(0,1fr))}
 .wgrid.tri .wfield input{font-size:20px}
 .feel.rir{grid-template-columns:repeat(5,1fr)}
+.chiprow{display:flex;flex-wrap:wrap;gap:6px}
+.chiprow button{background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:999px;padding:7px 12px;font-weight:700;font-size:14px}
+.chiprow button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chiprow button.sug{border-color:var(--green)}
+.wlab{margin:0 0 8px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);font-weight:700}
 .parkprog{margin-top:14px}
 .parkprog summary{font-weight:700;cursor:pointer}
 .parkprog table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px;font-variant-numeric:tabular-nums}
@@ -787,6 +792,20 @@ section{margin-bottom:34px}
     <h2 id="tyH">Session</h2>
     <div class="seg" id="typeSeg"></div>
     <p class="segnote" id="typeNote"></p>
+    <div class="secondbox" id="cardBox" hidden>
+      <p class="wlab">Today's cardio</p>
+      <div class="chiprow" id="cModeRow"></div>
+      <div id="pelBox" hidden style="margin-top:14px">
+        <p class="wlab">Peloton class</p>
+        <p class="wnote" id="pelSug"></p>
+        <div class="chiprow" id="pelKind"></div>
+        <div class="chiprow" id="pelMins" style="margin-top:8px"></div>
+        <div class="wgrid" style="margin-top:12px">
+          <label class="wfield"><span>FTP (watts)</span><div class="inwrap"><input id="ftpIn" type="number" inputmode="numeric" placeholder="—" aria-label="FTP in watts"></div></label>
+          <div class="wfield"><span>Last FTP test</span><p class="wnote" id="ftpDate" style="margin:6px 0 0">Never</p></div>
+        </div>
+      </div>
+    </div>
     <div class="secondbox" id="stairBox" hidden>
       <div class="switchrow"><label for="bikeTo">Citi Bike to the park</label><input type="checkbox" class="switch" id="bikeTo" role="switch"></div>
       <div class="switchrow" style="margin-top:12px"><label for="bikeHome">Citi Bike home</label><input type="checkbox" class="switch" id="bikeHome" role="switch"></div>
@@ -1288,6 +1307,21 @@ function intervals(m, rounds, work=30, easy=30){
     : `${work} seconds hard, ${easy} easy. Hard means you can't talk, not that your form falls apart.`;
   const s=step("Intervals","cardio",cue,seq,{chips:[MNAME(m), `${rounds} rounds`]}); s.mach=m; s.zone=long?"Z4":"Z4-5"; s.ivl=`${rounds}x${work}s/${easy}s`; Object.assign(s,{work, easy, rounds}); return s;
 }
+/* Peloton classes you actually ride. zones = Power Zones targeted. */
+const PCLASS = {
+  pz:    {name:"Power Zone",           zones:[3,4,5], zoneLab:"PZ 3–5", tempo:.6,  label:"Ride the zones", cue:"Hold each zone the instructor calls. Zone 4 should feel hard but steady; don't overshoot the first efforts."},
+  pzend: {name:"Power Zone Endurance", zones:[2,3],   zoneLab:"PZ 2–3", tempo:.85, label:"Steady",         cue:"Most of it in Zone 2, a little Zone 3. It should feel too easy. That's the point: this is the aerobic base."},
+  pzmax: {name:"Power Zone Max",       zones:[5,6,7], zoneLab:"PZ 5–7", tempo:.5,  label:"Max efforts",    cue:"Short, all-out efforts with real recovery. Only on green days, never the day after legs."},
+  ivl:   {name:"Intervals",            zones:[4,5,6], zoneLab:"Hard/easy", tempo:.55, label:"Intervals",   cue:"Hard means hard. Recover fully between efforts so the next one is just as strong."},
+  free:  {name:"Free ride",            zones:[2],     zoneLab:"PZ 2",   tempo:.9,  label:"Steady",         cue:"Your own pace, Zone 2: you could hold a conversation."},
+  low:   {name:"Low impact",           zones:[1,2],   zoneLab:"PZ 1–2", tempo:1,   label:"Easy",           cue:"Recovery ride. Light resistance, easy legs. It should leave you fresher than you started."},
+  ftp:   {name:"FTP test",             zones:[],      zoneLab:"Test",   tempo:.5,  label:"All-out 20",     cue:"Take the FTP warm-up first. Start the 20 minutes a little under what you think you can hold, build, empty it in the last 3 minutes. Your FTP is 95% of your average output."}
+};
+const PZ_PCT = {1:[0,55],2:[56,75],3:[76,90],4:[91,105],5:[106,120],6:[121,150],7:[151,999]};
+function zoneWatts(ftp, zones){
+  if (!ftp || !zones.length) return "";
+  return "Your zones: " + zones.map(z=>{ const [a,b]=PZ_PCT[z]; return b>900 ? `Z${z} ${Math.round(ftp*a/100)}+ W` : `Z${z} ${Math.round(ftp*a/100)}–${Math.round(ftp*b/100)} W`; }).join(", ") + ".";
+}
 /* Interval shape per machine. 30-second bursts never got the heart rate past zone 3 (Oct 14, Oct 20),
    so the work bouts are long enough for it to catch up. Rounds grow by phase; green adds one. */
 const IVL = {
@@ -1637,7 +1671,17 @@ function build(o){
 
   /* ---------- Cardio ---------- */
   if (type==="cardio"){
+    /* Peloton: you ride a class; the app picks the kind, times it, and logs it */
+    if (!gym && o.cMode==="peloton" && o.pel){
+      const k=PCLASS[o.pel.kind]||PCLASS.pz, mins=o.pel.mins||45;
+      const s=step(`${k.name} ${mins}`,"cardio",k.cue+(o.ftp?` ${zoneWatts(o.ftp,k.zones)}`:""),cardioSeq("peloton",mins*60,k.tempo,k.label),{chips:["Peloton",`${mins} min`,k.zoneLab]});
+      s.mach="peloton"; s.zone=k.zoneLab; s.pclass=o.pel.kind;
+      add(s, shortClose());
+      return out;
+    }
     let m1=pick(0), m2=pick(1), m3=pick(2);
+    /* you picked today's cardio: it leads */
+    if (!gym && o.cMode && o.cMode!=="peloton" && avail.includes(o.cMode)){ m1=o.cMode; const rest=spin.filter(k=>k!==m1); m2=rest[0]||m1; m3=rest[1]||m2; }
     /* gym: rower bookends, the work happens on the machine whose turn it is */
     if (gym && eq.rower && ivPool.length){ m1="rower"; m2=ivM; m3="rower"; }
     const hasBar = !!eq.bar;
@@ -1962,7 +2006,7 @@ if (typeof document!=="undefined") (function(){
   const abNext = () => (st.abOv!==null && st.abOv!==undefined) ? st.abOv : (gymCount() % 2);
   /* best dead hang so far sets the next target: +5s, between 20 and 90 */
   const holdBest = name => Math.max(0, ...st.sets.filter(r=>r.exercise===name && r.measure==="seconds").map(r=>+r.reps_or_seconds||0));
-  const opts = rec => ({phase:st.phase, rec, mixN: realLog().filter(l=>l.t==="mix").length, hangT: Math.min(90, Math.max(20, holdBest("Dead hang") ? holdBest("Dead hang")+5 : 30)), type:st.type, loc:st.loc, eq:st.eq, dbOn:st.dbOn, ab:abNext(), gymN: realLog().filter(l=>l.l==="gym").length, homeAb: realLog().filter(l=>l.l==="home" && (l.t==="strength"||l.t==="full")).length, finisher:!!st.finisher, bikeTo:!!st.bikeTo, bikeHome:!!st.bikeHome, lapT:st.lapLast||{}, stations:st.stations!==false, longDay:!!st.longDay, repeats: !!st.repeats && st.phase>=3 && !(()=>{ const L=liftedRecently(); return L && /legs|hamstrings/.test(L.what); })(),
+  const opts = rec => ({cMode: st.type==="cardio" && st.loc==="home" ? st.cMode : null, pel: (st.pel && st.pelDay===today()) ? st.pel : (st.type==="cardio" && st.cMode==="peloton" ? pelSuggest() : null), ftp: st.ftp, phase:st.phase, rec, mixN: realLog().filter(l=>l.t==="mix").length, hangT: Math.min(90, Math.max(20, holdBest("Dead hang") ? holdBest("Dead hang")+5 : 30)), type:st.type, loc:st.loc, eq:st.eq, dbOn:st.dbOn, ab:abNext(), gymN: realLog().filter(l=>l.l==="gym").length, homeAb: realLog().filter(l=>l.l==="home" && (l.t==="strength"||l.t==="full")).length, finisher:!!st.finisher, bikeTo:!!st.bikeTo, bikeHome:!!st.bikeHome, lapT:st.lapLast||{}, stations:st.stations!==false, longDay:!!st.longDay, repeats: !!st.repeats && st.phase>=3 && !(()=>{ const L=liftedRecently(); return L && /legs|hamstrings/.test(L.what); })(),
     stairN: realLog().filter(l=>l.p===st.phase && (st.cardio||[]).some(c=>c.session_id===l.id && c.modality==="stairs")).length,
     W:{heavy:homeInv().at(-1), light:homeInv().length>1?homeInv().at(-2):homeInv()[0], gymHeavy:st.gymHeavy||0, gymLight:st.gymLight||0}, second:isSecond()});
   const sessionFor = rec => build(opts(rec));
@@ -1988,6 +2032,41 @@ if (typeof document!=="undefined") (function(){
   }
   /* ---------- Home ---------- */
   /* stairs and park runs over time: the numbers that show you're getting fitter */
+  /* which Peloton class today: recovery, what you did the last two days, and how long since an FTP test */
+  function pelSuggest(){
+    const days = n => dkey(new Date(Date.now()-n*864e5));
+    const recent = realLog().filter(l=>[days(1),days(2),today()].includes(l.d));
+    const hardCardio = recent.some(l=>l.t==="cardio" && (st.cardio||[]).some(r=>r.session_id===l.id && (/Interval|Max|Power Zone(?! Endurance)|stairs/.test(r.segment||"") || r.modality==="stairs")));
+    const legs = (()=>{ const L=liftedRecently(); return L && /legs|hamstrings/.test(L.what); })();
+    const ftpAge = st.ftpDate ? Math.round((Date.now()-new Date(st.ftpDate))/864e5) : null;
+    const lastEnd = (st.cardio||[]).filter(r=>/Endurance|Free ride/.test(r.segment||"")).map(r=>r.session_id).sort().pop();
+    const endAge = lastEnd ? Math.round((Date.now()-new Date(lastEnd.slice(2,6)+"-"+lastEnd.slice(6,8)+"-"+lastEnd.slice(8,10)))/864e5) : 99;
+    if (st.rec==="red") return {kind:"low", mins:20, why:"Red day: an easy 20 to move the legs, nothing more."};
+    if (st.rec==="green" && !legs && !hardCardio && (ftpAge===null || ftpAge>=56)) return {kind:"ftp", mins:20, why: ftpAge===null ? "No FTP test on record. Fresh legs and a green day: test now so every Power Zone class is set right." : `Your last FTP test was ${ftpAge} days ago. After 8 weeks of training, it's likely out of date.`};
+    if (legs || hardCardio) return {kind:"pzend", mins:45, why: legs ? "You loaded your legs recently: endurance keeps it aerobic without digging the hole deeper." : "You went hard in the last two days: today is base work."};
+    if (endAge>=7) return {kind:"pzend", mins:45, why:"No endurance ride in a week. Most of your riding should be easy; this keeps that balance."};
+    if (st.rec==="green") return {kind: st.phase>=3 ? "pzmax":"pz", mins: st.phase>=3 ? 30 : 45, why:"Green, fresh legs, base work done this week: a hard class is earned."};
+    return {kind:"pz", mins:45, why:"Yellow day: a standard Power Zone class. Back off to endurance if Zone 4 feels like Zone 5."};
+  }
+  function renderCardioPick(){
+    const box=$("cardBox"), show = st.type==="cardio" && st.loc==="home";
+    box.hidden=!show; if (!show) return;
+    const av=["stairs","peloton","run","outbike","rope"].filter(k=>st.eq[k]);
+    const row=$("cModeRow"); row.innerHTML="";
+    [["",`Rotate`],...av.map(k=>[k,CARDIO[k].name])].forEach(([k,n])=>{ const b=document.createElement("button"); b.type="button"; b.textContent=k==="peloton"?"Peloton class":n;
+      b.setAttribute("aria-pressed",String((st.cMode||"")===k)); b.onclick=()=>{ st.cMode=k||null; save(); renderHome(); }; row.appendChild(b); });
+    const pb=$("pelBox"); pb.hidden = st.cMode!=="peloton"; if (pb.hidden) return;
+    /* a pick holds for the day; tomorrow starts from a fresh suggestion */
+    const sg=pelSuggest(); if (!st.pel || st.pelDay!==today()){ st.pel={kind:sg.kind, mins:sg.mins}; st.pelDay=today(); save(); }
+    $("pelSug").innerHTML=`<b>Suggested: ${PCLASS[sg.kind].name} ${sg.mins}.</b> ${sg.why}`;
+    const kr=$("pelKind"); kr.innerHTML="";
+    Object.entries(PCLASS).forEach(([k,c])=>{ const b=document.createElement("button"); b.type="button"; b.textContent=c.name; if (k===sg.kind) b.classList.add("sug");
+      b.setAttribute("aria-pressed",String(st.pel.kind===k)); b.onclick=()=>{ st.pel={kind:k, mins: k==="ftp"?20:st.pel.mins}; st.pelDay=today(); save(); renderHome(); }; kr.appendChild(b); });
+    const mr=$("pelMins"); mr.innerHTML="";
+    (st.pel.kind==="ftp"?[20]:[20,30,45,60]).forEach(m=>{ const b=document.createElement("button"); b.type="button"; b.textContent=`${m} min`;
+      b.setAttribute("aria-pressed",String(st.pel.mins===m)); b.onclick=()=>{ st.pel.mins=m; st.pelDay=today(); save(); renderHome(); }; mr.appendChild(b); });
+    $("ftpIn").value=st.ftp||""; $("ftpDate").textContent = st.ftpDate ? `${st.ftpDate} (${Math.round((Date.now()-new Date(st.ftpDate))/864e5)} days ago)` : "Never";
+  }
   function renderPark(){
     const box=$("parkBody"); if (!box) return;
     const C=st.cardio||[], sess=[...new Set(C.filter(r=>r.modality==="stairs").map(r=>r.session_id))].sort();
@@ -2024,6 +2103,7 @@ if (typeof document!=="undefined") (function(){
     $("finBox").hidden = true;
     const stairsToday = sessionFor(st.rec).some(x=>x.climb);
     try{ renderPark(); }catch(e){}
+    try{ renderCardioPick(); }catch(e){ console.error(e); }
     $("stairBox").hidden = !stairsToday;
     if (stairsToday){ $("bikeTo").checked=!!st.bikeTo; $("bikeHome").checked=!!st.bikeHome; $("stOn").checked=st.stations!==false; $("ldOn").checked=!!st.longDay;
       $("rpRow").hidden = st.phase<3; $("rpOn").checked=!!st.repeats;
@@ -2202,6 +2282,7 @@ if (typeof document!=="undefined") (function(){
   $("secOn").onchange=e=>{ st.secOv={d:today(), v:e.target.checked}; save(); renderHome(); };
   $("bikeTo").onchange=e=>{ st.bikeTo=e.target.checked; save(); renderHome(); };
   $("bikeHome").onchange=e=>{ st.bikeHome=e.target.checked; save(); renderHome(); };
+  $("ftpIn").onchange=e=>{ const v=parseInt(e.target.value); if (v>50){ st.ftp=v; st.ftpDate=today(); } else { delete st.ftp; } save(); renderHome(); };
   $("rpOn").onchange=e=>{ st.repeats=e.target.checked; save(); renderHome(); };
   $("ldOn").onchange=e=>{ st.longDay=e.target.checked; save(); renderHome(); };
   $("stOn").onchange=e=>{ st.stations=e.target.checked; save(); renderHome(); };
@@ -2613,9 +2694,10 @@ if (typeof document!=="undefined") (function(){
     $("shKick").textContent = `${MNAME(m)} · ${fmtSecs(Math.round(P.t))}${P.t>cur.dur+5?` (planned ${fmtSecs(cur.dur)})`:""}`;
     $("shTitle").textContent = cur.name + " done";
     $("cLast").innerHTML = prev ? `Last time on the ${MNAME(m).toLowerCase()}: <b>${prev.metric} ${prev.metric_unit}</b> in ${fmtSecs(prev.seconds)}${prev.level!==""?`, ${(LEVEL_LAB[m]||"level").toLowerCase()} ${prev.level}`:""}.` : "Type what the machine's screen shows, so next time has a number to beat. Skip it if you'd rather not.";
-    const u=$("cUnit"); u.innerHTML=UNITS.map(x=>`<option>${x}</option>`).join(""); u.value = st.cardioUnit[m] || DEF_UNIT[m] || "m";
+    const u=$("cUnit"); u.innerHTML=UNITS.map(x=>`<option>${x}</option>`).join(""); u.value = cur.pclass==="ftp" ? "avg W" : (st.cardioUnit[m] || DEF_UNIT[m] || "m");
     $("cMetric").value=""; $("cLevel").value=""; const ll=LEVEL_LAB[m]===undefined?"Level":LEVEL_LAB[m];
     $("cLevelLab").textContent=ll; $("cLevel").parentElement.hidden=!ll;
+    if (cur.pclass==="ftp") $("cLast").innerHTML = `Type your <b>average output for the 20 minutes</b> (avg W). Your new FTP is 95% of it${st.ftp?`; the old one was ${st.ftp} W`:""}.`;
     const upd=()=>{ if (!row) return; const v=parseFloat($("cMetric").value); row.metric = v>0 ? v : ""; row.metric_unit = v>0 ? u.value : ""; const lv=parseFloat($("cLevel").value); row.level = lv>=0 && $("cLevel").value!=="" ? lv : ""; st.cardioUnit[m]=u.value; save(); };
     $("cMetric").oninput=upd; u.onchange=upd; $("cLevel").oninput=upd;
     const ce=$("cEff"); ce.innerHTML="";
@@ -2899,6 +2981,9 @@ if (typeof document!=="undefined") (function(){
       if (full && sg<3){ st.stage=st.stage||{}; st.stage["Wall squat"]=sg+1; save(); isoNote=` Wall squats: ${fmtSecs(tot)} held, every hold full. Next time is stage ${sg+1}.`; }
       else isoNote = ` Wall squats: ${fmtSecs(tot)} held at stage ${sg}.`;
     }
+    /* FTP test: 95% of the 20-minute average becomes your FTP */
+    const ft=(st.cardio||[]).find(r=>r.session_id===P.doneId && /^FTP test/.test(r.segment||"") && r.metric_unit==="avg W" && +r.metric>50);
+    if (ft){ const old=st.ftp, nf=Math.round(+ft.metric*.95); st.ftp=nf; st.ftpDate=today(); save(); isoNote += ` New FTP: ${nf} W${old?` (was ${old}, ${nf>=old?"+":""}${nf-old})`:""}. Your Power Zone targets update from here.`; }
     const dh = st.sets.filter(r=>r.session_id===P.doneId && r.exercise==="Dead hang");
     if (dh.length){ const b=Math.max(...dh.map(r=>+r.reps_or_seconds||0)); isoNote += ` Dead hang best today: ${fmtSecs(b)}.`; }
     if (entry) $("doneWhoop").innerHTML = `In WHOOP: one <b>${P.whoop}</b> activity, <b>${entry.start}–${entry.end}</b>. If WHOOP split it or picked it up on its own, merge or edit it to match.`;
@@ -2974,7 +3059,7 @@ if (typeof document!=="undefined") (function(){
     else if (e.key==="ArrowLeft") $("pPrev").click();
     else if (e.key==="Escape") $("pExit").click();
   });
-  const APP_VER="v36";
+  const APP_VER="v37";
   $("brOn").onchange=e=>{ st.breath=e.target.checked; save(); };
   $("testSnd").onclick=()=>{
     unlockAudio(); const a=null;
