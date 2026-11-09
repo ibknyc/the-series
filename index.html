@@ -607,7 +607,7 @@ section{margin-bottom:34px}
 .typebtn .sample{display:block;font-size:30px;line-height:1;margin-bottom:5px;font-variant-numeric:tabular-nums}
 .typebtn b{display:block;font-size:13px;line-height:1.1;font-weight:700}
 .skins{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-@media (max-width:420px){.skins{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:420px){.skins{grid-template-columns:repeat(2,1fr)}}
 .skinbtn{position:relative;border:2px solid transparent;border-radius:14px;background:var(--card);padding:10px;text-align:left;overflow:hidden}
 .skinbtn[aria-pressed="true"]{border-color:var(--ink)}
 .skinbtn .sw{display:flex;gap:4px;margin-bottom:8px}
@@ -744,7 +744,7 @@ section{margin-bottom:34px}
 .glink{border:0;padding:4px 0 0 34px;text-decoration:underline;color:var(--ink-2);font-weight:400}
 .glast{display:block;font-size:13px;color:var(--ink-2)}
 .seg{display:grid;grid-template-columns:repeat(var(--n,4),1fr);background:var(--card);border-radius:14px;padding:4px;gap:4px}
-#laySeg{grid-template-columns:repeat(3,1fr)}
+#laySeg{grid-template-columns:repeat(4,1fr)}
 #typeSeg{grid-template-columns:repeat(2,1fr)}
 @media (min-width:460px){ #typeSeg{grid-template-columns:repeat(4,1fr)} }
 .seg button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -873,7 +873,7 @@ section{margin-bottom:34px}
 
   <section aria-labelledby="skH">
     <h2 id="skH">Look</h2>
-    <div class="seg" id="laySeg" style="--n:3;margin-bottom:12px"></div>
+    <div class="seg" id="laySeg" style="--n:4;margin-bottom:12px"></div>
     <p class="segnote" id="layNote" style="margin:0 0 16px"></p>
     <div class="types" id="typeSet"></div>
     <p class="segnote" id="typNote" style="margin:0 0 16px"></p>
@@ -1994,8 +1994,14 @@ if (typeof document!=="undefined") (function(){
     {id:"volume",    name:"Volume",    face:'"Unbounded",sans-serif', w:800,
      note:"Unbounded — wide geometric with odd terminals. Loud without shouting."}
   ];
+  /* the looks you kept (Nov 9). Anything else saved falls back to the first in each list. */
+  const KEEP = {skin:["plain","sodium","mysore","cyano"], layout:["plate","bleed","split","quiet"], face:["standard","editorial","volume"]};
+  [[SKINS,"skin"],[LAYOUTS,"layout"],[TYPESETS,"face"]].forEach(([arr,k])=>{ for (let i=arr.length-1;i>=0;i--) if (!KEEP[k].includes(arr[i].id)) arr.splice(i,1); });
+  if (!KEEP.skin.includes(st.skin)) st.skin="plain";
+  if (!KEEP.layout.includes(st.layout)) st.layout="plate";
+  if (!KEEP.face.includes(st.face)) st.face="standard";
   function applySkin(){ document.documentElement.setAttribute("data-skin", st.skin||"plain");
-    document.documentElement.setAttribute("data-layout", st.layout||"stacked");
+    document.documentElement.setAttribute("data-layout", st.layout||"plate");
     document.documentElement.setAttribute("data-type", st.face||"standard");
     const m=document.querySelector('meta[name="theme-color"]'); if (m) m.remove();
     const c=getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
@@ -2237,7 +2243,7 @@ if (typeof document!=="undefined") (function(){
       el.title = es.length ? es.map(e=>`${TYPE_NAME[e.t]||"session"}, ${e.m} min`).join("; ") : key;
       wk.appendChild(el);
     }
-    seg($("laySeg"), LAYOUTS, st.layout||"stacked", id=>{ st.layout=id; save(); applySkin(); renderHome(); });
+    seg($("laySeg"), LAYOUTS, st.layout||"plate", id=>{ st.layout=id; save(); applySkin(); renderHome(); });
     const ty=$("typeSet"); ty.innerHTML="";
     TYPESETS.forEach(t=>{ const b=document.createElement("button"); b.className="typebtn"; b.type="button";
       b.setAttribute("aria-pressed", String((st.face||"standard")===t.id));
@@ -2245,7 +2251,7 @@ if (typeof document!=="undefined") (function(){
       b.onclick=()=>{ st.face=t.id; save(); applySkin(); renderHome(); };
       ty.appendChild(b); });
     $("typNote").textContent=(TYPESETS.find(t=>t.id===(st.face||"standard"))||TYPESETS[0]).note;
-    $("layNote").textContent = (LAYOUTS.find(l=>l.id===(st.layout||"stacked"))||LAYOUTS[0]).note;
+    $("layNote").textContent = (LAYOUTS.find(l=>l.id===(st.layout||"plate"))||LAYOUTS[0]).note;
     const sk=$("skins"); sk.innerHTML="";
     SKINS.forEach(k=>{ const b=document.createElement("button"); b.className="skinbtn"; b.type="button";
       b.setAttribute("aria-pressed", String((st.skin||"plain")===k.id));
@@ -3059,7 +3065,7 @@ if (typeof document!=="undefined") (function(){
     else if (e.key==="ArrowLeft") $("pPrev").click();
     else if (e.key==="Escape") $("pExit").click();
   });
-  const APP_VER="v37";
+  const APP_VER="v38";
   $("brOn").onchange=e=>{ st.breath=e.target.checked; save(); };
   $("testSnd").onclick=()=>{
     unlockAudio(); const a=null;
