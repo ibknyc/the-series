@@ -1,4 +1,5 @@
 /* Start-up: load saved state, wire each part, draw the home screen. */
+import { initSteppers } from "./util/dom.js";
 import { showing } from "./util/screens.js";
 import { load } from "./store.js";
 import { initSession } from "./player/session.js";
@@ -22,6 +23,7 @@ load();
 applyLook();
 [initSession, initControls, initSheet, initSetSheet, initCardioSheet,
  initHome, initToday, initCardioPick, initStairs, initWeights, initPlan, initWeek, initResume, initDone, initSettings].forEach(init=>init());
+initSteppers();
 renderHome();
 window.__booted = true;   /* tells the boot guard in index.html that the app started */
 

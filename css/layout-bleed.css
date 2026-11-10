@@ -35,3 +35,5 @@
   font-family:var(--display);text-transform:none;letter-spacing:-.01em;margin-right:auto}
 :root[data-layout="bleed"] .ptop{padding:10px 20px 2px}
 :root[data-layout="bleed"] .pprog{height:2px;border-radius:0}
+/* the oversized clock's box lies over the controls beside it: taps go through to them */
+:root[data-layout="bleed"] .clock{pointer-events:none}

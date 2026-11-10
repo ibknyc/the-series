@@ -211,7 +211,7 @@ try{ var s=JSON.parse(localStorage.getItem("the-series-v1")||"{}"), h=document.d
       <p class="psub" id="pSub"></p>
       <div class="chips" id="pChips"></div>
       <button class="swapbtn" id="pSwap" hidden>Swap</button> <button class="swapbtn" id="pPlus" hidden>+1 round</button><br>
-      <label class="track" id="pTrack" hidden><span>Weight used</span><input id="pTrackIn" type="number" inputmode="decimal" step="2.5" min="0"><span id="pTrackU">lb</span></label>
+      <label class="track" id="pTrack" for="pTrackIn" hidden><span>Weight used</span><button type="button" class="stp" data-for="pTrackIn" data-step="-5" aria-label="5 pounds less">−5</button><input id="pTrackIn" type="number" inputmode="decimal" step="2.5" min="0"><button type="button" class="stp" data-for="pTrackIn" data-step="5" aria-label="5 pounds more">+5</button><span id="pTrackU">lb</span></label>
       <div class="lights" id="lights" hidden aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
       <div class="clock" id="pTime" aria-live="off"></div>
       <p class="pcue" id="pCue"></p>
@@ -245,7 +245,7 @@ try{ var s=JSON.parse(localStorage.getItem("the-series-v1")||"{}"), h=document.d
       <div class="feel rir" id="shFeel"></div>
       <div class="shfields">
         <label class="track" id="shReps"><span id="shRepsLab">Reps done</span><input id="shRepsIn" type="number" inputmode="numeric" min="0" max="300"></label>
-        <label class="track" id="shTrack" hidden><span>Weight</span><input id="shTrackIn" type="number" inputmode="decimal" step="2.5" min="0"><span id="shTrackU">lb</span></label>
+        <label class="track" id="shTrack" for="shTrackIn" hidden><span>Weight</span><button type="button" class="stp" data-for="shTrackIn" data-step="-5" aria-label="5 pounds less">−5</button><input id="shTrackIn" type="number" inputmode="decimal" step="2.5" min="0"><button type="button" class="stp" data-for="shTrackIn" data-step="5" aria-label="5 pounds more">+5</button><span id="shTrackU">lb</span></label>
       </div>
       <p class="shadvice" id="shAdvice"></p>
     </div>
