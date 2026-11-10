@@ -28,6 +28,8 @@ export function optionsFor(rec){
     homeAb: realLog().filter(l=>l.l==="home" && (l.t==="strength"||l.t==="full")).length,
     mixN: realLog().filter(l=>l.t==="mix").length,
     hangT: hangTarget(),
+    /* an easy day at the gym holds for the day, like a Peloton pick */
+    easy: st.loc==="gym" && st.gymEasy===today() ? (st.easyM||"elliptical") : null,
     /* cardio */
     cMode: st.type==="cardio" && st.loc==="home" ? st.cMode : null,
     pel: todaysClass(), ftp: st.ftp,

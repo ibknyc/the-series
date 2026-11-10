@@ -3,7 +3,7 @@
    install downloads every file fresh, and only then does the new version take over.
    Everything is served from that cache. Bump CACHE (and APP_VER in js/version.js) with every release;
    ASSETS must list every file the app loads. tools/check.mjs verifies both. */
-const CACHE = "series-v43";
+const CACHE = "series-v44";
 const ASSETS = [
   "./",
   "./index.html",

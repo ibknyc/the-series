@@ -21,6 +21,9 @@ export const ROTATION = {
   gym:  ["rower","arc","elliptical","gymbike","climber","tread"],
   home: ["run","stairs","peloton","outbike","rope"]
 };
+/* Gym machines that get the heart rate to zone 4-5. The intervals rotate through these only:
+   the bike, elliptical and rower never got there (Oct 14 - Nov 9 sessions against WHOOP). */
+export const HARD_GYM = ["arc","climber"];
 /* the order the "Today's cardio" chips show in at home */
 export const PICK_ORDER = ["stairs","peloton","run","outbike","rope"];
 /* what Swap offers mid-session. The stair route can't be swapped into from the living room. */
@@ -46,7 +49,7 @@ export const PZ_PCT = {1:[0,55],2:[56,75],3:[76,90],4:[91,105],5:[106,120],6:[12
 export const IVL = {
   arc:       {work:120, easy:60, r:[3,4,5,6], cue:"Crank the incline or resistance, not just the speed."},
   elliptical:{work:120, easy:60, r:[3,4,5,6], cue:"Resistance up a few levels for the hard part."},
-  climber:   {work:90,  easy:90, r:[3,4,5,6], cue:"Steady rungs, full reach. Ninety seconds is plenty on this one."},
+  climber:   {work:120, easy:60, r:[3,4,5,6], cue:"Steady rungs, full reach. Pick a pace you can hold for the whole two minutes."},
   gymbike:   {work:60,  easy:60, r:[5,6,7,8], cue:"Resistance up, cadence high. Sit tall."},
   tread:     {work:120, easy:60, r:[3,4,5,6], cue:"Hard = fast run or a steep incline walk. Easy = walk."},
   rower:     {work:60,  easy:60, r:[4,5,6,7], cue:"Legs first, then lean, then pull."},

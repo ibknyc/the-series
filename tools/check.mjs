@@ -51,6 +51,7 @@ function* matrix(){
   for (const loc of ["home","gym"]) for (const eq of (loc==="gym"?eqG:eqH)) for (const ab of [0,1]) for (const second of [false,true]) for (const dbOn of [false,true]){
     const base={phase,rec,type,loc,eq,ab,homeAb:ab,gymN:ab+1,second,dbOn,mixN:ab+1,hangT:35,W:{heavy:30,light:25,gymHeavy:40,gymLight:30}};
     yield base;
+    if (loc==="gym" && type!=="yoga" && type!=="mix") yield {...base, easy:"elliptical"};
     if (type==="cardio" && loc==="home"){
       for (const cMode of ["stairs","run","rope"]) yield {...base, cMode, repeats:true, longDay:!!ab, bikeTo:!!ab, lapT:{"Back stairs":75}};
       for (const kind of ["pz","pzend","pzmax","ftp","low"]) yield {...base, cMode:"peloton", pel:{kind,mins:30}, ftp:200};

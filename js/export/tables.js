@@ -5,7 +5,7 @@ import { fmtSecs } from "../util/format.js";
 import { TEMPLATE } from "../data/catalog.js";
 
 export const COLS = {
-  sessions:["session_id","date","start_time","end_time","tz","location","phase","template","whoop_activity","session_rpe","completed","notes","duration_min","recovery_color","entry","whoop_strain","avg_hr","max_hr"],
+  sessions:["session_id","date","start_time","end_time","tz","location","phase","template","whoop_activity","session_rpe","completed","notes","duration_min","recovery_color","entry","whoop_strain","avg_hr","max_hr","zone45_min"],
   sets:["session_id","start_time","block","exercise","set_no","side","reps_or_seconds","measure","load","load_type","RIR","planned_load","planned_reps","swapped_from","stage"],
   cardio:["session_id","start_time","modality","segment","seconds","duration_min","metric","metric_unit","level","effort","intervals","target_zone","target_seconds","swapped_from"],
   gates:["date","gate","result","pass"]
@@ -14,7 +14,7 @@ export function tables(){
   const sessions = [...st.log].sort((a,b)=>{ const x=a.d+(a.start||""), y=b.d+(b.start||""); return x<y?-1:x>y?1:0; }).map(l=>({
     session_id:l.id, date:l.d, start_time:l.start||"", end_time:l.end||"", tz:l.tz||(l.start?TZ:""), location:l.l, phase:l.p, template:TEMPLATE[l.t]||l.t,
     session_rpe:l.rpe||"", completed:l.done, notes:l.notes||"", duration_min:l.m, recovery_color:l.r,
-    whoop_activity: l.whoop||"", whoop_strain: l.strain||"", avg_hr: l.hrAvg||"", max_hr: l.hrMax||"",
+    whoop_activity: l.whoop||"", whoop_strain: l.strain||"", avg_hr: l.hrAvg||"", max_hr: l.hrMax||"", zone45_min: l.z45 ?? "",
     entry: l.manual ? "manual" : l.id.includes("legacy") ? "legacy" : l.done==="skipped" ? "skipped" : "timer" }));
   const sets = st.sets.map(({_u,...r})=>r);
   return {sessions, sets, cardio:st.cardio, gates:st.gateLog};
@@ -26,7 +26,7 @@ export const README = `The Series export. One CSV per table, full history every 
 sessions.csv  one row per session. whoop_activity = the one WHOOP activity to log it as (Weightlifting, Elliptical, Stadium Steps...).
                start_time/end_time are local 24h HH:MM in tz. completed = full | partial | skipped.
               entry = timer | manual | legacy | skipped. Legacy rows predate timestamps, so their times are blank.
-              whoop_strain, avg_hr, max_hr = what WHOOP showed for the activity, typed in after the session (blank if skipped).
+              whoop_strain, avg_hr, max_hr, zone45_min (minutes in heart rate zones 4-5) = what WHOOP showed for the activity, typed in after the session (blank if skipped).
               session_rpe 1-10. recovery_color is the green/yellow/red picked in the app. duration_min is time on the timer.
 sets.csv      one row per set, per side for single-arm or single-leg moves (side = R | L | blank).
               reps_or_seconds is read with measure = reps | seconds. load is in lb.
@@ -46,7 +46,7 @@ gates.csv     one row per gate test. pass = y | n.
 export function sessionSummary(T){
   const L=[];
   T.sessions.forEach(x=>{
-    L.push(`${x.date} ${x.start_time||"?"}–${x.end_time||"?"} ${x.tz}  ${x.template}, ${x.location}, phase ${x.phase}, ${x.duration_min} min, ${x.completed}${x.session_rpe?`, RPE ${x.session_rpe}`:""}${x.whoop_strain?`, strain ${x.whoop_strain}`:""}${x.avg_hr?`, avg HR ${x.avg_hr}`:""}${x.max_hr?`, max HR ${x.max_hr}`:""}`);
+    L.push(`${x.date} ${x.start_time||"?"}–${x.end_time||"?"} ${x.tz}  ${x.template}, ${x.location}, phase ${x.phase}, ${x.duration_min} min, ${x.completed}${x.session_rpe?`, RPE ${x.session_rpe}`:""}${x.whoop_strain?`, strain ${x.whoop_strain}`:""}${x.avg_hr?`, avg HR ${x.avg_hr}`:""}${x.max_hr?`, max HR ${x.max_hr}`:""}${x.zone45_min!==""?`, zone 4-5 ${x.zone45_min} min`:""}`);
     if (x.notes) L.push(`Notes: ${x.notes}`);
     const cr=T.cardio.filter(c=>c.session_id===x.session_id);
     if (cr.length){ L.push("","Cardio"); cr.forEach(c=>L.push(`  ${c.segment||c.modality}  ${fmtSecs(c.seconds||c.duration_min*60)}${c.target_seconds?` (usual ${fmtSecs(c.target_seconds)})`:""}  ${c.target_zone}`)); }

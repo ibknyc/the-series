@@ -36,7 +36,7 @@ function renderRpe(){
     b.onclick=()=>{ rg.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); const e=entryById(doneId); if (e){ e.rpe=n; save(); } };
     rg.appendChild(b); }
 }
-const EFFORT_FIELDS = {doneStrain:"strain", doneHrAvg:"hrAvg", doneHrMax:"hrMax"};
+const EFFORT_FIELDS = {doneStrain:"strain", doneHrAvg:"hrAvg", doneHrMax:"hrMax", doneZ45:"z45"};
 /* how the last session of this kind compared, so today's numbers mean something */
 function renderEffort(entry){
   Object.keys(EFFORT_FIELDS).forEach(id=>{ $(id).value=""; });

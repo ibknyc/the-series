@@ -4,6 +4,7 @@ import { dkey, hhmm } from "../util/time.js";
 import { st, realLog, changed } from "../store.js";
 import { TYPE_NAME } from "../data/catalog.js";
 import { newEntry } from "../log/entries.js";
+import { tracksZones, hardMinutes, HARD_GOAL } from "../progress/effort.js";
 
 export function renderWeek(){
   const wk=$("week"); wk.innerHTML="";
@@ -24,6 +25,7 @@ export function renderWeek(){
   const inPhase=realLog().filter(l=>l.p===st.phase).length;
   $("logNote").textContent = days===0 ? "Nothing logged this week. Today's a good day to start." :
     `${days} of 7 days, ${sessions} ${sessions===1?"session":"sessions"}. ${inPhase} logged in Phase ${st.phase}.`;
+  if (tracksZones()) $("logNote").textContent += ` Zone 4–5: ${hardMinutes()} of ${HARD_GOAL} min.`;
 }
 function fillManDay(){
   const sel=$("manDay"), keep=sel.value; sel.innerHTML="";

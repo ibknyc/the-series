@@ -9,6 +9,11 @@ import { stairPark } from "./stairs.js";
 import { MNAME } from "../data/cardio.js";
 import { fmtSecs } from "../util/format.js";
 
+/* the cardio block on a gym lifting day: intervals on the machine whose turn it is, or steady on the one you picked */
+const gymWork = (d, easySecs, extra=0) =>
+  d.easyM ? steady(d.easyM, easySecs, "Easy cardio", `${MNAME(d.easyM)}, steady. Easy enough to talk in full sentences the whole way.`)
+  : d.ivM ? ivFor(d.ivM, d.phase, d.G, extra) : null;
+
 /* Flow + capoeira: between yoga and the full series. No dumbbells. */
 export function mixSession(d){
   const {o, phase, R, G} = d, {out, add} = collector();
@@ -43,7 +48,7 @@ export function yogaSession(d){
 }
 
 export function strengthSession(d){
-  const {phase, R, G, gym, second, mach, warmM, ivM, GR, GREST, homeStrength, gymStrength, homeFinisher, warmMachine, flush} = d, {out, add} = collector();
+  const {phase, R, G, gym, second, mach, warmM, GR, GREST, homeStrength, gymStrength, homeFinisher, warmMachine, flush} = d, {out, add} = collector();
   if (R){
     if (mach) add(machineEasy(mach, 600, "Easy cardio", "Red day, no lifting. Zone 2: easy enough to talk in full sentences. This is the cholesterol work."));
     add(catcow(), downdog(), sunA(2,null), standing(false), child());
@@ -53,7 +58,7 @@ export function strengthSession(d){
   if (gym){
     add(warmM ? warmMachine(second?180:300) : [catcow(), downdog(), ...sunA(2,null)]);
     add(gymStrength(GR, GREST));
-    if (ivM) add(ivFor(ivM, phase, G), flush());
+    const work=gymWork(d, 600); if (work) add(work, flush());
   } else {
     add(second ? [downdog(), ...sunA(1,null), ginga(24)] : [catcow(), downdog(), ...sunA(2,null), phase>=2?ginga(32):null]);
     add(homeStrength(3, phase===1?30:40, true));
@@ -73,6 +78,7 @@ export function cardioSession(d){
   if (!gym && o.cMode && o.cMode!=="peloton" && avail.includes(o.cMode)){ m1=o.cMode; const rest=spin.filter(k=>k!==m1); m2=rest[0]||m1; m3=rest[1]||m2; }
   /* gym: rower bookends, the work happens on the machine whose turn it is */
   if (gym && eq.rower && ivPool.length){ m1="rower"; m2=ivM; m3="rower"; }
+  if (d.easyM) m2=d.easyM;
   const hasBar = !!eq.bar;
   const FIN = SL("finish",
     hasBar && (sl=>reps("Pull-ups","hang","pullup",R?3:G?7:5,3.5,"strength","Dead hang, shoulders down, chin over the bar. Band or jump-and-lower if you run out.",{track:"Pull-ups",setup:8,chips:[sl]})),
@@ -107,6 +113,7 @@ export function cardioSession(d){
   /* mixed: warm up on one, work on the next, flush on a third */
   add(machineEasy(m1, R?300:480, "Warm-up", `${MNAME(m1)} first. Easy pace, nose breathing — you should be able to hold a conversation.`));
   if (R) add(steady(m2, 12*60, "Zone 2", `Move to the ${MNAME(m2).toLowerCase()}. Twelve minutes steady. If you can't speak a full sentence, back off.`));
+  else if (d.easyM) add(steady(m2, (G?25:20)*60, "Easy cardio", `Move to the ${MNAME(m2).toLowerCase()}. Steady the whole way, easy enough to talk in full sentences.`));
   else {
     add(steady(m2, G?300:360, "Zone 2", `Switch to the ${MNAME(m2).toLowerCase()}. Steady, building.`));
     add(ivFor(m2, phase, G));
@@ -121,9 +128,9 @@ export function fullSession(d){
   return d.gym ? fullAtGym(d) : fullAtHome(d);
 }
 function fullAtGym(d){
-  const {phase, R, G, second, mach, ivM, gymStrength, warmMachine} = d, {out, add} = collector();
+  const {phase, R, G, second, mach, gymStrength, warmMachine} = d, {out, add} = collector();
   add(warmMachine(second?180:300), catcow(), downdog(), sunA(G?3:2,null), standing(false));
-  if (!R){ add(gymStrength(phase>=4?3:2, phase>=3?45:60)); if (ivM && phase>=2) add(ivFor(ivM, phase, G, -1)); }
+  if (!R){ add(gymStrength(phase>=4?3:2, phase>=3?45:60)); if (phase>=2) add(gymWork(d, 480, -1)); }
   else add(mach ? machineEasy(mach, 480, "Easy cardio", "Zone 2: easy enough to talk in full sentences.") : child());
   add(core(G?30:20, 15));
   add(closing(false, R, true));

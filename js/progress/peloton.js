@@ -2,6 +2,7 @@
 import { st, realLog } from "../store.js";
 import { dkey, today } from "../util/time.js";
 import { liftedRecently } from "./recovery.js";
+import { hardShort, hardMinutes, HARD_GOAL } from "./effort.js";
 
 export function pelSuggest(){
   const days = n => dkey(new Date(Date.now()-n*864e5));
@@ -14,6 +15,7 @@ export function pelSuggest(){
   if (st.rec==="red") return {kind:"low", mins:20, why:"Red day: an easy 20 to move the legs, nothing more."};
   if (st.rec==="green" && !legs && !hardCardio && (ftpAge===null || ftpAge>=56)) return {kind:"ftp", mins:20, why: ftpAge===null ? "No FTP test on record. Fresh legs and a green day: test now so every Power Zone class is set right." : `Your last FTP test was ${ftpAge} days ago. After 8 weeks of training, it's likely out of date.`};
   if (legs || hardCardio) return {kind:"pzend", mins:45, why: legs ? "You loaded your legs recently: endurance keeps it aerobic without digging the hole deeper." : "You went hard in the last two days: today is base work."};
+  if (st.rec==="green" && hardShort()) return {kind:"pzmax", mins:30, why:`${hardMinutes()} of ${HARD_GOAL} minutes in zone 4–5 this week, and your legs are fresh. A Max class is the quickest way to add them.`};
   if (endAge>=7) return {kind:"pzend", mins:45, why:"No endurance ride in a week. Most of your riding should be easy; this keeps that balance."};
   if (st.rec==="green") return {kind: st.phase>=3 ? "pzmax":"pz", mins: st.phase>=3 ? 30 : 45, why:"Green, fresh legs, base work done this week: a hard class is earned."};
   return {kind:"pz", mins:45, why:"Yellow day: a standard Power Zone class. Back off to endurance if Zone 4 feels like Zone 5."};
