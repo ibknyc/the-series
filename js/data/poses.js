@@ -67,6 +67,10 @@ const RAW = {
   latdown:      "98,73 97,88 95,138 93,112 105,92 95,112 107,92 131,139 131,176 133,139 133,176",
   crowout:      "83,95 82,110 78,158 106,118 130,124 107,119 131,125 114,148 148,158 115,149 149,159",
   crowin:       "77,95 78,110 78,158 57,120 84,120 58,121 85,121 114,148 148,158 115,149 149,159",
+  legcurlOut:   "98,73 97,88 95,138 100,114 112,130 102,114 114,130 131,139 167,143 133,139 169,143",
+  legcurlIn:    "98,73 97,88 95,138 100,114 112,130 102,114 114,130 131,139 122,174 133,139 124,174",
+  dipUp:        "100,36 100,50 100,100 99,76 98,100 101,76 102,100 98,132 86,156 102,132 90,156",
+  dipDown:      "104,62 102,76 100,124 84,84 98,100 86,84 102,100 98,154 84,174 102,154 88,174",
   lpdown:       "52,116 60,128 88,164 72,150 90,160 73,151 91,161 112,128 140,138 113,129 141,139",
   lpup:         "52,116 60,128 88,164 72,150 90,160 73,151 91,161 120,144 156,124 121,145 157,125",
   benchdown:    "40,142 55,147 102,147 50,158 57,136 51,158 58,136 134,150 130,177 135,151 131,177",
@@ -113,7 +117,7 @@ export const POSE = {};
 for (const k in RAW) POSE[k] = RAW[k].trim().split(/\s+/).map(s => s.split(',').map(Number));
 export const WALL = { legsupwall:153, headtuck:78, lhandstand:151, wallsit:76 };
 export const PROP_OF = { rowcatch:"rower", rowfinish:"rower", climbA:"climber", climbB:"climber", latup:"lat", latdown:"lat",
-  crowout:"cable", crowin:"cable", lpdown:"legpress", lpup:"legpress", benchdown:"bench", benchup:"bench",
+  crowout:"cable", crowin:"cable", lpdown:"legpress", lpup:"legpress", legcurlOut:"legcurl", legcurlIn:"legcurl", dipUp:"dipbars", dipDown:"dipbars", benchdown:"bench", benchup:"bench",
   ellipA:"elliptical", ellipB:"elliptical", bikeA:"bike", bikeB:"bike",
   ropeA:"rope", ropeB:"rope", stairA:"stairs", stairB:"stairs", hang:"bar", pullup:"bar",
   trxRowA:"trxRowA", trxRowB:"trxRowB", trxY:"trxY", trxPlank:"trxPlank", trxPushDown:"trxPlank", trxTuck:"trxTuck",
@@ -124,6 +128,8 @@ export const PROPS = {
   lat:`<rect x="72" y="140" width="50" height="6" rx="2"/><line x1="97" y1="146" x2="97" y2="178"/><rect x="126" y="125" width="16" height="7" rx="3"/><line x1="170" y1="4" x2="170" y2="178"/><line x1="100" y1="6" x2="170" y2="6"/>`,
   cable:`<rect x="40" y="160" width="60" height="6" rx="2"/><line x1="152" y1="178" x2="152" y2="148"/><rect x="166" y="60" width="18" height="118" rx="2"/>`,
   legpress:`<line x1="38" y1="100" x2="84" y2="166"/><line x1="70" y1="170" x2="110" y2="170"/><line x1="100" y1="178" x2="186" y2="108"/>`,
+  legcurl:`<rect x="72" y="140" width="50" height="6" rx="2"/><line x1="97" y1="146" x2="97" y2="178"/><line x1="84" y1="82" x2="84" y2="140"/><rect x="150" y="150" width="16" height="7" rx="3"/>`,
+  dipbars:`<line x1="72" y1="102" x2="128" y2="102"/><line x1="124" y1="102" x2="124" y2="178"/>`,
   bench:`<rect x="28" y="152" width="90" height="7" rx="2"/><line x1="40" y1="159" x2="40" y2="178"/><line x1="106" y1="159" x2="106" y2="178"/>`,
   elliptical:`<line x1="168" y1="24" x2="168" y2="178"/><line x1="40" y1="178" x2="178" y2="178"/><line x1="48" y1="170" x2="150" y2="158"/><line x1="48" y1="162" x2="150" y2="150"/><line x1="156" y1="44" x2="180" y2="32"/><line x1="156" y1="44" x2="180" y2="58"/>`,
   bike:`<circle cx="62" cy="158" r="19"/><circle cx="152" cy="158" r="19"/><path d="M62 158 L112 150 L152 158 M112 150 L140 102 M140 102 L152 158 M140 102 L96 120"/>`,

@@ -30,7 +30,7 @@ export const TYPES = [
   {id:"cardio", name:"Cardio", note:"Warm up on one machine, work on the next, flush on a third. Always ends with one pulling movement."},
   {id:"mix", name:"Flow + capoeira", note:"Between yoga and the full series. A short flow, a capoeira block that rotates esquivas, kicks and floor work, then 4 wall squats for blood pressure. No dumbbells."}
 ];
-export const EQ_GYM = [{id:"trx",name:"TRX"},{id:"machines",name:"Cables and machines"},{id:"bench",name:"Bench + dumbbells"},{id:"smith",name:"Smith machine"},{id:"barbell",name:"Free barbell"},{id:"bar",name:"Pull-up bar"},
+export const EQ_GYM = [{id:"trx",name:"TRX"},{id:"machines",name:"Cables and machines"},{id:"aircable",name:"Air cable (Keiser)"},{id:"bench",name:"Bench + dumbbells"},{id:"smith",name:"Smith machine"},{id:"barbell",name:"Free barbell"},{id:"bar",name:"Pull-up bar"},
   {id:"rower",name:"Rower"},{id:"arc",name:"Arc Trainer"},{id:"elliptical",name:"Elliptical"},{id:"gymbike",name:"Gym bike"},{id:"climber",name:"Ladder climber"},{id:"tread",name:"Treadmill"}];
 export const EQ_HOME = [{id:"bar",name:"Pull-up bar"},{id:"run",name:"Running"},{id:"stairs",name:"Park stairs"},{id:"peloton",name:"Peloton"},{id:"outbike",name:"Bike ride"},{id:"rope",name:"Jump rope"}];
 

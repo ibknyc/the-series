@@ -22,6 +22,12 @@ export function adviceFor(cur, feel){
     if (down){ st.aim[key]=down; save(); return `Drop to <b>${down} lb${each}</b>, or stay at ${w} and stop 2 reps short.`; }
     st.aim[key]=w; save(); return "Stop 2 reps short next set. Form over numbers.";
   }
+  if (key && w && cur.assist){
+    const inc=INC(key), less=Math.max(0,w-inc);
+    if (feel==="easy"){ st.aim[key]=less; save(); return less ? `Take help off: <b>${less} lb of assistance</b> next set.` : "No help left to take off. <b>Next set on the plain bar.</b>"; }
+    if (feel==="solid"){ st.aim[key]=w; save(); return `Right where you want it. <b>Stay at ${w} lb of assistance.</b>`; }
+    st.aim[key]=w+inc; save(); return `Add help: <b>${w+inc} lb of assistance</b> next set, or stop 2 reps short.`;
+  }
   if (key && w){
     const inc=INC(key);
     if (feel==="easy"){ st.aim[key]=w+inc; save(); return `Go up to <b>${w+inc} lb</b> next set.`; }

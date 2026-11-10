@@ -29,7 +29,8 @@ sessions.csv  one row per session. whoop_activity = the one WHOOP activity to lo
               session_rpe 1-10. recovery_color is the green/yellow/red picked in the app. duration_min is time on the timer.
 sets.csv      one row per set, per side for single-arm or single-leg moves (side = R | L | blank).
               reps_or_seconds is read with measure = reps | seconds. load is in lb.
-              load_type: per_hand = the weight of ONE dumbbell, two in use | single_db = one dumbbell | machine_stack | barbell | bodyweight.
+              load_type: per_hand = the weight of ONE dumbbell, two in use | single_db = one dumbbell | machine_stack | barbell | bodyweight |
+              assistance = the help an assisted pull-up or dip machine gave you (less is harder).
               RIR = reps in reserve, 4 means 4 or more, blank = not rated. planned_* is what the app prescribed.
               stage is the version you did, 1 easier, 2 as planned, 3 harder (blank for moves without stages).
               swapped_from is the exercise it replaced. Warm-up, flow and cooldown moves are logged with seconds done.

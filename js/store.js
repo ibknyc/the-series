@@ -7,7 +7,7 @@ export const KEY = "the-series-v1";
 const LIVE = KEY+"-live";
 const LIVE_MAX_AGE = 3*3600*1000;
 
-export const st = { phase:1, rec:"yellow", type:"full", loc:"home", eq:{machines:true,bench:true,smith:true,barbell:false,bar:true,rower:true,elliptical:true,gymbike:true,climber:true,tread:true,run:true,stairs:true,peloton:true,outbike:true,rope:true},
+export const st = { phase:1, rec:"yellow", type:"full", loc:"home", eq:{machines:true,aircable:true,bench:true,smith:true,barbell:false,bar:true,rower:true,elliptical:true,gymbike:true,climber:true,tread:true,run:true,stairs:true,peloton:true,outbike:true,rope:true},
   dbOn:false, skin:"plain", layout:"split", face:"standard", breath:true, heavy:30, light:20, gymHeavy:40, gymLight:30, gates:{1:[],2:[],3:[],4:[]}, log:[], sound:0, lifts:{}, aim:{}, abOv:null, secOv:null, sets:[], cardio:[], gateLog:[], daily:{} };
 
 export const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} };

@@ -33,6 +33,10 @@ export const GUIDE = {
   "Deadlift":              {s:["Block pulls: bar raised a few inches","Deadlift from the floor, reset each rep","Pause 1 inch off the floor"]},
   "Hip hinge":             {s:["Hands on hips, small range","Hips back to a full hamstring stretch","Single-leg hinge"]},
   "Glute bridge":          {s:["Lift and lower, no hold","Squeeze 1 second at the top","Single-leg bridge"]},
+  "Leg curl":              {s:["Lighter, 3 seconds back out","Full curl, 2-second return","Curl with both, lower with one leg"]},
+  "Cable pull-through":    {s:["Lighter, pause at the hinge","Hips back, drive through","Staggered stance, most weight on the front leg"]},
+  "Assisted pull-up":      {s:["More help, 3 seconds down","Dead hang to chin over the bar","Pause 2 seconds at the top"]},
+  "Assisted dip":          {s:["More help, half depth","Shoulders to elbow height","3 seconds down"]},
   "Dumbbell hip thrust":   {s:["Glute bridge on the floor","Shoulders on the bench, bell across the hips","3-second hold at the top"]},
   "TRX hamstring curl":    {s:["Heels in the straps, hold the bridge","Hips up, curl the heels in","Single-leg curl"]},
   /* push */

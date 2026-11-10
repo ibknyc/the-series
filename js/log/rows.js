@@ -7,7 +7,7 @@ const blockOf = (s, type) => s.block==="cardio" ? "cardio" : s.block==="close" ?
   : (type==="yoga" && ["flow","standing"].includes(s.block)) ? "main"
   : (type==="mix" && s.block==="capoeira") ? "main" : "warmup";
 const loadType = s => /Pull-ups|Free hang/.test(s.name) ? "bodyweight" : s.db==="AB" ? "per_hand" : s.db==="B" ? "single_db"
-  : s.plate ? "barbell" : s.track ? "machine_stack" : "bodyweight";
+  : s.plate ? "barbell" : s.assist ? "assistance" : s.track ? "machine_stack" : "bodyweight";
 const sideOf = s => { const c=s.chips.find(c=>/side/.test(c)); return c ? (c.startsWith("Right")?"R":"L") : ""; };
 
 export function setRow(ses, s, o){

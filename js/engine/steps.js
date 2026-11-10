@@ -5,7 +5,7 @@ import { fmtSecs } from "../util/format.js";
 export const T = (pose, t, label, flip=false, b=false) => ({pose, t, label, flip, b});
 export const clean = a => a.filter(Boolean);
 export function step(name, block, cue, seq, o={}) {
-  return { name, block, cue, seq, dur: seq.reduce((a,s)=>a+s.t,0), db:o.db||"", plate:o.plate||"", chips:clean(o.chips||[]), weight:o.weight||"", track:o.track||"" };
+  return { name, block, cue, seq, dur: seq.reduce((a,s)=>a+s.t,0), db:o.db||"", plate:o.plate||"", chips:clean(o.chips||[]), weight:o.weight||"", track:o.track||"", ...(o.assist ? {assist:true} : {}) };
 }
 export function hold(name, pose, secs, block, cue, o={}) {
   /* strength holds get the same lead-in as a lifted set: time to get into
