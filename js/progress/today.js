@@ -8,6 +8,7 @@ import { hangTarget } from "./holds.js";
 import { homeInv } from "./weights.js";
 import { legsLoaded } from "./recovery.js";
 import { todaysClass } from "./peloton.js";
+import { gymMode, riding } from "./cardioChoice.js";
 
 export const loggedToday = () => realLog().filter(l=>l.d===today());
 export const isSecond = () => (st.secOv && st.secOv.d===today()) ? st.secOv.v : loggedToday().length>0;
@@ -28,10 +29,10 @@ export function optionsFor(rec){
     homeAb: realLog().filter(l=>l.l==="home" && (l.t==="strength"||l.t==="full")).length,
     mixN: realLog().filter(l=>l.t==="mix").length,
     hangT: hangTarget(),
-    /* an easy day at the gym holds for the day, like a Peloton pick */
-    easy: st.loc==="gym" && st.gymEasy===today() ? (st.easyM||"elliptical") : null,
+    /* an easy day at the gym: steady on the machine you last picked for it */
+    easy: gymMode()==="easy" ? (st.easyM||"elliptical") : null,
     /* cardio */
-    cMode: st.type==="cardio" && st.loc==="home" ? st.cMode : null,
+    cMode: riding() ? "peloton" : (st.type==="cardio" && st.loc==="home" ? st.cMode : null),
     pel: todaysClass(), ftp: st.ftp,
     /* the stair route */
     bikeTo:!!st.bikeTo, bikeHome:!!st.bikeHome, lapT:st.lapLast||{}, stations:st.stations!==false, longDay:!!st.longDay,

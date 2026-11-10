@@ -39,6 +39,8 @@ function migrate(){
       if (r && r.sid===l.id && Date.now()-r.at < LIVE_MAX_AGE) return;
       l.live=false; l.done="partial"; if (!l.end && l.lastAt) l.end=l.lastAt; }
   });
+  /* v44 kept an easy gym day as a bare date; it's now one of several choices for the day */
+  if (st.gymEasy){ st.gymCardio={d:st.gymEasy, mode:"easy"}; delete st.gymEasy; }
   Object.keys(KEPT).forEach(k=>{ if (!KEPT[k].includes(st[k])) st[k]=FALLBACK[k]; });
 }
 

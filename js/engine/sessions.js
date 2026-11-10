@@ -9,9 +9,11 @@ import { stairPark } from "./stairs.js";
 import { MNAME } from "../data/cardio.js";
 import { fmtSecs } from "../util/format.js";
 
-/* the cardio block on a gym lifting day: intervals on the machine whose turn it is, or steady on the one you picked */
+/* the cardio block on a gym lifting day: intervals on the machine whose turn it is, steady on the one
+   you picked, or a Peloton class */
 const gymWork = (d, easySecs, extra=0) =>
-  d.easyM ? steady(d.easyM, easySecs, "Easy cardio", `${MNAME(d.easyM)}, steady. Easy enough to talk in full sentences the whole way.`)
+  d.ride ? pelotonClass(d.ride, d.o.ftp)
+  : d.easyM ? steady(d.easyM, easySecs, "Easy cardio", `${MNAME(d.easyM)}, steady. Easy enough to talk in full sentences the whole way.`)
   : d.ivM ? ivFor(d.ivM, d.phase, d.G, extra) : null;
 
 /* Flow + capoeira: between yoga and the full series. No dumbbells. */
@@ -58,7 +60,7 @@ export function strengthSession(d){
   if (gym){
     add(warmM ? warmMachine(second?180:300) : [catcow(), downdog(), ...sunA(2,null)]);
     add(gymStrength(GR, GREST));
-    const work=gymWork(d, 600); if (work) add(work, flush());
+    const work=gymWork(d, 600); if (work) add(work, d.ride ? null : flush());   /* a class has its own cool-down */
   } else {
     add(second ? [downdog(), ...sunA(1,null), ginga(24)] : [catcow(), downdog(), ...sunA(2,null), phase>=2?ginga(32):null]);
     add(homeStrength(3, phase===1?30:40, true));
@@ -72,7 +74,7 @@ export function strengthSession(d){
 export function cardioSession(d){
   const {o, phase, R, G, gym, eq, avail, spin, pick, ivPool, ivM, EX, BW} = d, {out, add} = collector();
   /* Peloton: you ride a class; the app picks the kind, times it, and logs it */
-  if (!gym && o.cMode==="peloton" && o.pel){ add(pelotonClass(o.pel, o.ftp), shortClose()); return out; }
+  if (d.ride){ add(pelotonClass(d.ride, o.ftp), shortClose()); return out; }
   let m1=pick(0), m2=pick(1), m3=pick(2);
   /* you picked today's cardio: it leads */
   if (!gym && o.cMode && o.cMode!=="peloton" && avail.includes(o.cMode)){ m1=o.cMode; const rest=spin.filter(k=>k!==m1); m2=rest[0]||m1; m3=rest[1]||m2; }

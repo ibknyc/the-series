@@ -19,6 +19,8 @@ export function makeContext(o){
   const ivM = ivPool.length ? ivPool[(o.gymN||0) % ivPool.length] : mach2;
   /* an easy day at the gym: steady on the machine you picked, no intervals. o.easy = that machine. */
   const easyM = gym && o.easy ? (avail.includes(o.easy) ? o.easy : avail.find(k=>k!=="rower") || avail[0] || null) : null;
+  /* today's cardio is a Peloton class: {kind, mins} */
+  const ride = o.cMode==="peloton" && o.pel ? o.pel : null;
   const warmM = gym && eq.rower ? "rower" : mach;
   /* phase sets the lifting volume and density: rounds 3/3/3/4, rest 75/75/60/45 */
   const GR = phase>=4 ? 4 : 3, GREST = phase>=4 ? 45 : phase===3 ? 60 : 75;
@@ -29,5 +31,5 @@ export function makeContext(o){
   /* TRX joins in Phase 3, when the moves get harder. Difficulty is foot position, not weight. */
   const trx = phase>=3 && gym && !!eq.trx, T4 = phase>=4 ? 2 : 0;  /* TRX lives at the gym */
   return {o, phase, rec, type, loc, second, eq, W, G, R, X, gym, useDb, wt, dbo, avail, spin, pick, mach, mach2,
-    ivPool, ivM, easyM, warmM, GR, GREST, H, L, main, r10, r8, HB, trx, T4};
+    ivPool, ivM, easyM, ride, warmM, GR, GREST, H, L, main, r10, r8, HB, trx, T4};
 }

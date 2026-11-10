@@ -3,6 +3,7 @@ import { st, realLog } from "../store.js";
 import { dkey, today } from "../util/time.js";
 import { liftedRecently } from "./recovery.js";
 import { hardShort, hardMinutes, HARD_GOAL } from "./effort.js";
+import { riding, ridingAfterLifting } from "./cardioChoice.js";
 
 export function pelSuggest(){
   const days = n => dkey(new Date(Date.now()-n*864e5));
@@ -13,6 +14,9 @@ export function pelSuggest(){
   const lastEnd = (st.cardio||[]).filter(r=>/Endurance|Free ride/.test(r.segment||"")).map(r=>r.session_id).sort().pop();
   const endAge = lastEnd ? Math.round((Date.now()-new Date(lastEnd.slice(2,6)+"-"+lastEnd.slice(6,8)+"-"+lastEnd.slice(8,10)))/864e5) : 99;
   if (st.rec==="red") return {kind:"low", mins:20, why:"Red day: an easy 20 to move the legs, nothing more."};
+  if (ridingAfterLifting()) return hardShort()
+    ? {kind:"ivl", mins:20, why:`After lifting, keep it short. ${hardMinutes()} of ${HARD_GOAL} minutes in zone 4–5 this week, so make it an intervals class.`}
+    : {kind:"pz", mins:20, why:"After lifting, keep it short: a 20-minute Power Zone class. Never an FTP test on legs you've just loaded."};
   if (st.rec==="green" && !legs && !hardCardio && (ftpAge===null || ftpAge>=56)) return {kind:"ftp", mins:20, why: ftpAge===null ? "No FTP test on record. Fresh legs and a green day: test now so every Power Zone class is set right." : `Your last FTP test was ${ftpAge} days ago. After 8 weeks of training, it's likely out of date.`};
   if (legs || hardCardio) return {kind:"pzend", mins:45, why: legs ? "You loaded your legs recently: endurance keeps it aerobic without digging the hole deeper." : "You went hard in the last two days: today is base work."};
   if (st.rec==="green" && hardShort()) return {kind:"pzmax", mins:30, why:`${hardMinutes()} of ${HARD_GOAL} minutes in zone 4–5 this week, and your legs are fresh. A Max class is the quickest way to add them.`};
@@ -21,5 +25,5 @@ export function pelSuggest(){
   return {kind:"pz", mins:45, why:"Yellow day: a standard Power Zone class. Back off to endurance if Zone 4 feels like Zone 5."};
 }
 /* a pick holds for the day; tomorrow starts from a fresh suggestion */
-export const todaysClass = () => (st.pel && st.pelDay===today()) ? st.pel : (st.type==="cardio" && st.cMode==="peloton" ? pelSuggest() : null);
+export const todaysClass = () => (st.pel && st.pelDay===today()) ? st.pel : (riding() ? pelSuggest() : null);
 export function pickClass(pel){ st.pel=pel; st.pelDay=today(); }
