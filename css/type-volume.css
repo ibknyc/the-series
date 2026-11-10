@@ -1,0 +1,12 @@
+/* Type: volume. Applies when <html data-type="volume">. */
+/* VOLUME — Unbounded. Wide geometric with odd terminals.
+   Loud without shouting. */
+:root[data-type="volume"]{
+  --display:"Unbounded","Avenir Next",system-ui,sans-serif;
+  --body:"Familjen Grotesk","Segoe UI",system-ui,sans-serif;
+  --dw:800; --dwq:600; --tz:.78; --nz:.8;
+}
+:root[data-type="volume"] .clock{letter-spacing:-.05em}
+:root[data-type="volume"] .pname,:root[data-type="volume"] .top h1{letter-spacing:-.04em;line-height:1.04}
+:root[data-type="volume"] h2{font-size:19px;letter-spacing:-.03em}
+:root[data-type="volume"] .blocktag,:root[data-type="volume"] .chip{letter-spacing:.1em}

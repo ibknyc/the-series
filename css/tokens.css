@@ -1,0 +1,34 @@
+/* Colors, type and resets. The Plain skin is these defaults; the other skins override them. */
+:root{
+  --bg:#EDF0EB; --card:#F7F9F5; --ink:#1B2420; --ink-2:#5F6A64; --line:#D3D9D2;
+  --accent:#3447B0; --accent-ink:#FFFFFF;
+  --fig:#1B2420; --fig-far:#A7B2AB;
+  --green:#1F9D6B; --yellow:#D9A514; --red:#D0473A;
+  --display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111613; --card:#19201C; --ink:#E4EBE6; --ink-2:#9AA69F; --line:#2B342F;
+    --accent:#8C9BF2; --accent-ink:#0F1430;
+    --fig:#E4EBE6; --fig-far:#56625B;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111613; --card:#19201C; --ink:#E4EBE6; --ink-2:#9AA69F; --line:#2B342F;
+  --accent:#8C9BF2; --accent-ink:#0F1430;
+  --fig:#E4EBE6; --fig-far:#56625B;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important}
+}

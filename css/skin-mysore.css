@@ -1,0 +1,15 @@
+/* Skin: mysore. Applies when <html data-skin="mysore">. */
+/* ================= SKIN: MYSORE ================= */
+:root[data-skin="mysore"]{
+  --bg:#E8CE92; --card:#F3E4C2; --ink:#2B1D12; --ink-2:#7A6244; --line:#CBAE78;
+  --accent:#BC3A1C; --accent-ink:#F7EBD2;
+  --fig:#2B1D12; --fig-far:#A98D5F;
+  --green:#4A7A32; --yellow:#C98A1B; --red:#A52C14;
+}
+:root[data-skin="mysore"] .top h1{font-weight:var(--dw,900);letter-spacing:-.02em}
+:root[data-skin="mysore"] h2,:root[data-skin="mysore"] .pname{font-weight:var(--dw,900)}
+:root[data-skin="mysore"] .clock{font-weight:var(--dw,900);color:var(--accent)}
+:root[data-skin="mysore"] .plan .it{border-bottom:1.5px solid var(--line)}
+:root[data-skin="mysore"] .phases::before{background:var(--ink);height:1.5px}
+:root[data-skin="mysore"] .blocktag i{border-radius:50%}
+:root[data-skin="mysore"] .lights i{border-color:var(--ink)}

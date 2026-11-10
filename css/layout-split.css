@@ -1,0 +1,40 @@
+/* Layout: split. Applies when <html data-layout="split">. */
+/* =========================================================
+   SPLIT — a hard horizontal division. Figure in an inverted
+   block up top, everything else on the ground below.
+   ========================================================= */
+:root[data-layout="split"] .pbody{grid-template-rows:42vh auto;gap:0;max-width:none;padding:0;position:relative;overflow:hidden}
+:root[data-layout="split"] .stage{background:var(--ink);padding:16px 20px;position:relative}
+:root[data-layout="split"] .stage svg{max-height:none;height:100%;max-width:none;width:100%}
+:root[data-layout="split"] .stage .near,:root[data-layout="split"] .stage #torso,:root[data-layout="split"] .stage #nLeg,:root[data-layout="split"] .stage #nArm{stroke:var(--bg)}
+:root[data-layout="split"] .stage .head{fill:var(--bg)}
+:root[data-layout="split"] .stage .far{stroke:var(--ink-2)}
+:root[data-layout="split"] .stage .ground,:root[data-layout="split"] .stage .prop line,:root[data-layout="split"] .stage .prop circle,:root[data-layout="split"] .stage .prop path,:root[data-layout="split"] .stage .prop rect{stroke:var(--ink-2);opacity:.6}
+:root[data-layout="split"] .blocktag{position:absolute;top:14px;left:20px;color:var(--bg);opacity:.75;
+  font-size:11px;letter-spacing:.2em;text-transform:uppercase;z-index:2}
+:root[data-layout="split"] .clock{position:absolute;right:20px;color:var(--bg);
+  font-size:calc(clamp(50px,15vw,86px)*var(--tz,1));line-height:.85;margin:0;z-index:2;
+  top:calc(42vh - 1.02em);line-height:.82}
+:root[data-layout="split"] .lights{position:absolute;left:20px;margin:0;justify-content:flex-start;z-index:2;
+  top:calc(42vh - 34px)}
+:root[data-layout="split"] .lights i{border-color:rgba(128,128,128,.4)}
+:root[data-layout="split"] .pinfo{text-align:left;padding:16px 20px 0;position:static}
+:root[data-layout="split"] .pname{font-size:calc(clamp(28px,8vw,46px)*var(--nz,1));margin:0;letter-spacing:-.035em;line-height:.98}
+:root[data-layout="split"] .psub{font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+  font-weight:500;color:var(--ink-2);margin-top:6px;min-height:0}
+:root[data-layout="split"] .chips{justify-content:flex-start;gap:12px;margin:10px 0 0;min-height:0}
+:root[data-layout="split"] .chip{background:none;border-radius:0;padding:0;font-size:12px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+:root[data-layout="split"] .chip.w{color:var(--accent);font-weight:700}
+:root[data-layout="split"] .swapbtn,:root[data-layout="split"] .track{margin:10px 0 0;border-radius:0;background:none;padding:0}
+:root[data-layout="split"] .swapbtn{border:0;border-bottom:2px solid var(--accent);font-size:12px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+:root[data-layout="split"] .track input{border-radius:0;background:none;border-bottom:2px solid var(--accent);width:76px}
+:root[data-layout="split"] .pcue{margin:12px 0 0;max-width:40ch;font-size:14px;min-height:0}
+:root[data-layout="split"] .pnext{text-align:left;padding:10px 20px 0;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+:root[data-layout="split"] .controls{justify-content:flex-start;gap:16px;padding:8px 20px 16px}
+:root[data-layout="split"] .controls button{background:none;min-width:0;font-size:13px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);padding:12px 0}
+:root[data-layout="split"] .controls .big{background:var(--ink);color:var(--bg);padding:14px 26px;
+  font-size:16px;text-transform:none;letter-spacing:0;margin-right:auto;border-radius:0}
+:root[data-layout="split"] .ptop{padding:10px 20px 6px}

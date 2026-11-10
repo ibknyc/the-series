@@ -1,0 +1,65 @@
+/* The player: figure, clock, cue, controls. */
+#player{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.ptop{display:flex;align-items:center;gap:14px;padding:12px 18px}
+.ptop button{background:none;border:0;color:var(--ink-2);padding:6px 0;font-weight:700}
+.pprog{flex:1;height:6px;border-radius:6px;background:var(--line);overflow:hidden}
+.pprog div{height:100%;background:var(--ink);width:0}
+.pleft{font-variant-numeric:tabular-nums;color:var(--ink-2);font-size:14px;min-width:44px;text-align:right}
+.pbody{flex:1;display:grid;grid-template-rows:minmax(0,1fr) auto;min-height:0;max-width:1000px;width:100%;margin:0 auto}
+.stage{min-height:0;display:flex;align-items:center;justify-content:center;padding:0 18px}
+.stage svg{width:100%;height:100%;max-height:46vh;max-width:520px}
+.pinfo{padding:4px 22px 0;text-align:center}
+.blocktag{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-2);font-weight:700}
+.blocktag i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.pname{font-family:var(--display);font-weight:var(--dw,800);font-size:calc(clamp(26px,6vw,38px)*var(--nz,1));line-height:1.05;letter-spacing:-.02em;margin:6px 0 4px}
+.psub{margin:0;font-size:18px;font-weight:700;min-height:1.5em}
+.chips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:10px 0 0;min-height:28px}
+.chip{font-size:14px;background:var(--card);border-radius:999px;padding:3px 11px}
+.chip.w{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.clock{font-family:var(--display);font-weight:var(--dw,800);font-size:calc(clamp(64px,17vw,110px)*var(--tz,1));line-height:1;letter-spacing:-.04em;font-variant-numeric:tabular-nums;margin:8px 0 4px}
+.pcue{margin:0 auto;max-width:44ch;color:var(--ink-2);font-size:16px;min-height:3em}
+.pnext{text-align:center;font-size:14px;color:var(--ink-2);padding:8px 20px 0}
+.pnext b{color:var(--ink)}
+.controls{display:flex;justify-content:center;align-items:center;gap:14px;padding:14px 18px 18px}
+.controls button{background:var(--card);border:0;border-radius:999px;padding:13px 18px;font-weight:700;min-width:76px}
+.controls .big{background:var(--ink);color:var(--bg);min-width:120px;padding:17px 24px;font-family:var(--display);font-size:19px}
+.controls .snd{font-size:14px;min-width:0;padding:13px 14px}
+@media (min-width:860px) and (min-height:520px){
+  .pbody{grid-template-columns:1.1fr 1fr;grid-template-rows:1fr;align-items:center}
+  .stage svg{max-height:70vh}
+  .pinfo{text-align:left;padding-right:40px}
+  .chips{justify-content:flex-start}
+  .pcue{margin:0}
+}
+@media (max-height:640px){
+  .clock{font-size:calc(60px*var(--tz,1))}
+  .stage svg{max-height:34vh}
+}
+.near,.far{fill:none;stroke-width:7;stroke-linecap:round;stroke-linejoin:round}
+.near{stroke:var(--fig)}
+.far{stroke:var(--fig-far)}
+.head{fill:var(--fig)}
+.ground{stroke:var(--line);stroke-width:2.5;stroke-linecap:round}
+.wall{stroke:var(--ink-2);stroke-width:3;stroke-dasharray:3 6;stroke-linecap:round}
+.db rect{fill:var(--accent)}
+.lights{display:flex;gap:7px;justify-content:center;margin:6px 0 2px}
+.lights i{width:16px;height:16px;border-radius:50%;background:var(--line);border:1px solid var(--line);transition:background .06s linear,box-shadow .06s linear}
+.lights i.on{background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.clock.cd{color:var(--accent)}
+.clock.ot{color:var(--green)}
+.paway{margin:0 auto;max-width:44ch;text-align:center;font-size:14px;color:var(--accent);font-weight:700;padding:0 20px}
+.clock.over{color:var(--ink-2)}
+.lights.go i{background:var(--green);box-shadow:0 0 16px var(--green)}
+@media (min-width:860px) and (min-height:520px){
+  .lights{justify-content:flex-start}
+}
+.pguide{margin:10px auto 0;max-width:44ch;font-size:14px;color:var(--ink-2);text-align:left}
+.pguide .stg{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.pguide .stg b{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-right:4px}
+.pguide .stg button{min-width:34px;padding:4px 0;border-radius:8px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:700;font-size:15px}
+.pguide .stg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pguide .stx{color:var(--ink)}
+.pguide .fact{font-style:italic}
+.prop line,.prop rect,.prop circle,.prop path{stroke:var(--ink-2);stroke-width:3;fill:none;stroke-linecap:round;opacity:.55}
+.plate circle{fill:var(--accent)}
+.plate circle.hub{fill:var(--bg)}

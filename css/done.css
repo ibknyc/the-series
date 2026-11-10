@@ -1,0 +1,19 @@
+/* The screen after a session. */
+#done{max-width:560px;margin:0 auto;padding:18vh 24px 40px;text-align:left}
+#done h1{font-family:var(--display);font-weight:800;font-size:clamp(44px,12vw,72px);line-height:.95;letter-spacing:-.03em;margin:0 0 14px}
+#done p{color:var(--ink-2);font-size:18px;max-width:36ch}
+#done button{margin-top:22px;background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:15px 26px;font-family:var(--display);font-weight:700;font-size:18px}
+#doneSetList .dsrow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line,rgba(127,127,127,.25))}
+#doneSetList .dsrow b{display:block;font-size:15px}
+#doneSetList .dsrow small{color:var(--ink-2);font-size:13px}
+#doneSetList .dsrow.blank small{color:var(--red,#c33)}
+#doneSetList .feel.rir{grid-template-columns:repeat(5,34px);gap:4px;margin:0}
+#doneSetList .feel.rir button{font-size:15px;padding:6px 0;margin:0!important;background:var(--card);color:var(--ink);border:2px solid transparent;border-radius:8px}
+#doneSetList .feel.rir button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.rpeh{font-family:var(--display);font-size:20px;margin:30px 0 4px}
+.rpekey{font-size:14px!important;margin:0 0 12px}
+.rpegrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.rpegrid button{background:var(--card);border:2px solid transparent;border-radius:10px;padding:12px 0;font-family:var(--display);font-weight:700;font-size:18px;margin:0!important;color:var(--ink)}
+.rpegrid button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+#done button.ghost{display:block;background:none;color:var(--ink);border:2px solid var(--ink);margin-top:14px}
+#doneNotes{display:block;width:100%;margin-top:14px;border:0;border-radius:12px;background:var(--card);padding:12px 14px;font:inherit;font-size:16px;color:var(--ink);resize:vertical}

@@ -1,0 +1,14 @@
+/* Skin: cyano. Applies when <html data-skin="cyano">. */
+/* ================= SKIN: CYANOTYPE ================= */
+:root[data-skin="cyano"]{
+  --bg:#17496E; --card:#1E5880; --ink:#EEF6FB; --ink-2:#A3C4DA; --line:#2E6A94;
+  --accent:#F2FAFF; --accent-ink:#11395A;
+  --fig:#EEF6FB; --fig-far:#5E8FB2;
+  --green:#8FE3C4; --yellow:#FFD98A; --red:#FFA39E;
+}
+:root[data-skin="cyano"] .top h1{font-weight:var(--dw,700);letter-spacing:-.03em}
+:root[data-skin="cyano"] .clock{font-weight:var(--dw,700)}
+:root[data-skin="cyano"] .near,:root[data-skin="cyano"] .far{stroke-linecap:square}
+:root[data-skin="cyano"] .recbtn,:root[data-skin="cyano"] .weights,:root[data-skin="cyano"] .seg,:root[data-skin="cyano"] .gates label,:root[data-skin="cyano"] .secondbox,:root[data-skin="cyano"] .abrow,:root[data-skin="cyano"] .shlist button,:root[data-skin="cyano"] .chip{border-radius:2px}
+:root[data-skin="cyano"] .startbar button,:root[data-skin="cyano"] .controls button{border-radius:2px}
+:root[data-skin="cyano"] .plan .it{border-bottom:1px solid var(--line)}

@@ -1,0 +1,10 @@
+/* Controls that appear on more than one screen. */
+.feel{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.feel button{background:var(--card);border:2px solid transparent;border-radius:12px;padding:12px 6px;font-weight:700}
+.feel button small{display:block;font-weight:400;font-size:12px;color:var(--ink-2)}
+.feel button[aria-pressed="true"]{border-color:var(--ink)}
+.swapbtn{margin-top:10px;background:none;border:2px solid var(--line);border-radius:999px;padding:5px 14px;font-weight:700;font-size:14px}
+.feel.rir{grid-template-columns:repeat(5,1fr)}
+.feel.rir button{font-family:var(--display);font-size:20px;padding:10px 4px}
+.track{display:inline-flex;align-items:center;gap:8px;margin-top:10px;background:var(--card);border-radius:12px;padding:4px 12px;font-size:14px;color:var(--ink-2)}
+.track input{width:72px;border:0;background:var(--bg);border-radius:8px;padding:6px 8px;font-family:var(--display);font-weight:700;font-size:18px;color:var(--ink);text-align:center}

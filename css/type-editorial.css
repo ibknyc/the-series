@@ -1,0 +1,12 @@
+/* Type: editorial. Applies when <html data-type="editorial">. */
+/* EDITORIAL — Bodoni Moda. Hairline-to-slab contrast, the
+   numerals carry the drama. */
+:root[data-type="editorial"]{
+  --display:"Bodoni Moda","Didot",Georgia,serif;
+  --body:"Familjen Grotesk","Segoe UI",system-ui,sans-serif;
+  --dw:900; --dwq:700; --tz:1.1; --nz:1.06;
+}
+:root[data-type="editorial"] .clock{letter-spacing:-.025em}
+:root[data-type="editorial"] .pname,:root[data-type="editorial"] .top h1{letter-spacing:-.015em}
+:root[data-type="editorial"] .blocktag,:root[data-type="editorial"] .chip,:root[data-type="editorial"] .psub{letter-spacing:.2em}
+:root[data-type="editorial"] h2{font-weight:900}

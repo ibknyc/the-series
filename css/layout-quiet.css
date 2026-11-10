@@ -1,0 +1,35 @@
+/* Layout: quiet. Applies when <html data-layout="quiet">. */
+/* =========================================================
+   QUIET — almost nothing. Name and count, centred, enormous
+   leading. The figure is a faint watermark you can ignore.
+   ========================================================= */
+:root[data-layout="quiet"] .pbody{grid-template-rows:1fr;max-width:620px;position:relative;overflow:hidden}
+:root[data-layout="quiet"] .stage{position:absolute;inset:auto 0 -5% 0;height:19vh;padding:0;z-index:0;opacity:.15;pointer-events:none}
+:root[data-layout="quiet"] .stage svg{max-height:19vh}
+:root[data-layout="quiet"] .pinfo{position:relative;z-index:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:0 28px;height:100%}
+:root[data-layout="quiet"] .blocktag{opacity:.5;font-size:11px;letter-spacing:.24em;text-transform:uppercase}
+:root[data-layout="quiet"] .blocktag i{display:none}
+:root[data-layout="quiet"] .pname{font-size:calc(clamp(30px,8.4vw,48px)*var(--nz,1));margin:18px 0 0;letter-spacing:-.03em;line-height:1.02}
+:root[data-layout="quiet"] .psub{font-size:14px;letter-spacing:.16em;text-transform:uppercase;
+  font-weight:500;color:var(--ink-2);margin-top:10px;min-height:0}
+:root[data-layout="quiet"] .clock{font-size:calc(min(40vw,22vh)*var(--tz,1));font-weight:var(--dwq,500);letter-spacing:-.05em;
+  line-height:1;margin:18px 0 0;opacity:.9}
+:root[data-layout="quiet"] .chips{gap:14px;margin:14px 0 0;min-height:0}
+:root[data-layout="quiet"] .chip{background:none;border-radius:0;padding:0;font-size:12px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+:root[data-layout="quiet"] .chip.w{color:var(--accent)}
+:root[data-layout="quiet"] .pcue{margin:16px auto 0;max-width:32ch;font-size:14px;min-height:0;opacity:.75}
+:root[data-layout="quiet"] .lights{margin:16px 0 0}
+:root[data-layout="quiet"] .swapbtn,:root[data-layout="quiet"] .track{margin-top:14px;background:none;border-radius:0;padding:0}
+:root[data-layout="quiet"] .swapbtn{border:0;border-bottom:1px solid var(--line);font-size:12px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+:root[data-layout="quiet"] .track input{border-radius:0;background:none;border-bottom:1px solid var(--line);width:76px}
+:root[data-layout="quiet"] .pnext{opacity:.55;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+:root[data-layout="quiet"] .ptop{padding:12px 24px 0;opacity:.65}
+:root[data-layout="quiet"] .pprog{height:1px;border-radius:0}
+:root[data-layout="quiet"] .controls{gap:26px;padding:10px 24px 20px}
+:root[data-layout="quiet"] .controls button{background:none;min-width:0;padding:12px 0;font-size:13px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+:root[data-layout="quiet"] .controls .big{background:none;color:var(--ink);font-family:var(--display);
+  font-size:19px;text-transform:none;letter-spacing:-.01em}

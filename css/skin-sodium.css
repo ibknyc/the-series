@@ -1,0 +1,13 @@
+/* Skin: sodium. Applies when <html data-skin="sodium">. */
+/* ================= SKIN: SODIUM ================= */
+:root[data-skin="sodium"]{
+  --bg:#16130F; --card:#221C15; --ink:#F3E7D5; --ink-2:#9C8B74; --line:#362D22;
+  --accent:#FF8A1E; --accent-ink:#1A1208;
+  --fig:#F3E7D5; --fig-far:#6A5A45;
+  --green:#8FBF4A; --yellow:#FFC01E; --red:#E05A2B;
+}
+:root[data-skin="sodium"] .top h1{text-transform:uppercase;letter-spacing:.01em}
+:root[data-skin="sodium"] .pname{text-transform:uppercase}
+:root[data-skin="sodium"] .clock{font-weight:var(--dw,800);color:var(--accent);text-shadow:0 0 28px rgba(255,138,30,.35)}
+:root[data-skin="sodium"] .lights i.on{box-shadow:0 0 16px var(--accent)}
+:root[data-skin="sodium"] .startbar button{box-shadow:0 0 24px rgba(255,138,30,.25)}

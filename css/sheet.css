@@ -1,0 +1,20 @@
+/* The sheet that slides up over the player. */
+.sheet{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:rgba(10,14,12,.45)}
+.sheetin{width:100%;max-width:560px;max-height:88vh;overflow-y:auto;background:var(--bg);border-radius:22px 22px 0 0;padding:22px 20px calc(20px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.2)}
+.shkick{margin:0;font-size:14px;font-weight:700;color:var(--ink-2)}
+.sheetin h3{font-family:var(--display);font-weight:800;font-size:28px;letter-spacing:-.02em;margin:2px 0 14px;line-height:1.05}
+.sheetin h4{font-family:var(--display);font-weight:700;font-size:17px;margin:18px 0 8px}
+.shadvice{margin:10px 0 0;font-size:15px;min-height:1.4em}
+.shadvice b{color:var(--accent)}
+.shlist{display:grid;gap:8px}
+.shlist button{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;background:var(--card);border:0;border-radius:12px;padding:13px 16px;font-weight:700}
+.shlist button small{font-weight:400;color:var(--ink-2);font-size:13px}
+.shlist button.primary{background:var(--ink);color:var(--bg)}
+.shlist button.primary small{color:var(--bg);opacity:.75}
+.restck{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:15px}
+.restck input{width:20px;height:20px;accent-color:var(--accent)}
+.shlink{background:none;border:0;padding:12px 0 0;color:var(--ink-2);text-decoration:underline;font-size:14px}
+#shCardio select{border:0;background:var(--bg);border-radius:8px;padding:6px 4px;font-size:15px;color:var(--ink)}
+#cEff button{padding:10px 0;font-size:15px}
+.shfields{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.shfields .track{margin-top:0}
