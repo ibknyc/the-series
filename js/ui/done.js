@@ -6,6 +6,7 @@ import { st, save, changed } from "../store.js";
 import { TYPE_NAME } from "../data/catalog.js";
 import { entryById } from "../log/entries.js";
 import { reviewSession } from "../progress/review.js";
+import { setEffort, lastComparable, effortLine } from "../progress/effort.js";
 import { exportZip } from "../export/index.js";
 
 let doneId = null;
@@ -35,6 +36,14 @@ function renderRpe(){
     b.onclick=()=>{ rg.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); const e=entryById(doneId); if (e){ e.rpe=n; save(); } };
     rg.appendChild(b); }
 }
+const EFFORT_FIELDS = {doneStrain:"strain", doneHrAvg:"hrAvg", doneHrMax:"hrMax"};
+/* how the last session of this kind compared, so today's numbers mean something */
+function renderEffort(entry){
+  Object.keys(EFFORT_FIELDS).forEach(id=>{ $(id).value=""; });
+  const prev = entry && lastComparable(entry), box=$("doneCompare");
+  box.hidden=!prev;
+  if (prev) box.textContent = `Last ${TYPE_NAME[prev.t]} ${prev.l==="gym"?"at the gym":"at home"} (${prev.d.slice(5)}): ${effortLine(prev)}.`;
+}
 function summary({partial, mins, type}){
   return partial
     ? `${mins} minutes logged as a partial ${TYPE_NAME[type]} session. Cut short beats not counted.`
@@ -50,6 +59,7 @@ function renderDone(ses){
   doneId = entry && entry.id;
   renderRpe();
   $("doneNotes").value="";
+  renderEffort(entry);
   renderDoneSets(doneId);
   const earned = reviewSession(doneId);
   if (entry) $("doneWhoop").innerHTML = `In WHOOP: one <b>${whoop}</b> activity, <b>${entry.start}–${entry.end}</b>. If WHOOP split it or picked it up on its own, merge or edit it to match.`;
@@ -60,6 +70,7 @@ function renderDone(ses){
 export function initDone(){
   on("session:finished", renderDone);
   $("doneNotes").oninput=e=>{ const en=entryById(doneId); if (en){ en.notes=e.target.value; save(); } };
+  Object.entries(EFFORT_FIELDS).forEach(([id,key])=>{ $(id).oninput=e=>{ const en=entryById(doneId); if (en){ setEffort(en, key, e.target.value); save(); } }; });
   $("doneExp").onclick=()=>{ if (doneId) exportZip(doneId); };
   $("doneBtn").onclick=()=>{ show("home"); changed(); window.scrollTo(0,0); };
 }

@@ -17,3 +17,6 @@
 .rpegrid button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
 #done button.ghost{display:block;background:none;color:var(--ink);border:2px solid var(--ink);margin-top:14px}
 #doneNotes{display:block;width:100%;margin-top:14px;border:0;border-radius:12px;background:var(--card);padding:12px 14px;font:inherit;font-size:16px;color:var(--ink);resize:vertical}
+#doneEffort{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+#doneEffort .track{display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:8px 10px;margin:0}
+#doneEffort .track input{width:100%;min-width:0;text-align:center;padding:6px 2px}
