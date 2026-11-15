@@ -8,7 +8,7 @@ export const BLOCKS = {
   strength:{name:"Strength", color:"#B5452F"},
   core:{name:"Core", color:"#8A5BB0"},
   invert:{name:"Inversions", color:"#1F9D6B"},
-  close:{name:"Closing", color:"#5F6A64"}
+  close:{name:"Cool-down", color:"#5F6A64"}
 };
 
 export const PHASES = [{n:1, name:"Foundation"}, {n:2, name:"Load"}, {n:3, name:"Flow and flight"}, {n:4, name:"Your series"}];

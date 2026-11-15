@@ -49,6 +49,8 @@ function needsGap(i){
   return true;
 }
 export function go(i){ logLeaving(i); if (i>=P.steps.length){ finish(); return; } P.i=Math.max(0,i); P.t=0; P.lastCue=null; lights(null); showStep();
+  /* the first cool-down step: the work is done, so ask before carrying on. If you're away, it just runs. */
+  if (P.steps[P.i].optional && !P.cooled){ P.cooled=true; if (!P.catching){ emit("player:cooldown-offered"); return; } }
   P.gap = needsGap(P.i) ? GAP : 0;
   if (!P.steps[P.i].startedAt) P.steps[P.i].startedAt = Date.now();
   if (P.catching) return;
@@ -154,7 +156,7 @@ export async function wake(on){ try{ if (on && "wakeLock" in navigator) P.lock=a
 function run(){ cancelAnimationFrame(P.raf); P.raf=requestAnimationFrame(frame); }
 
 export function start(){
-  P.steps=sessionFor(st.rec); P.whoop=whoopFor(st.type, st.loc, P.steps); P.total=total(P.steps); P.last=0; P.lastWall=0; P.type=st.type; P.loc=st.loc; P.rec=st.rec; P.startedAt=Date.now(); $("pAway").hidden=true;
+  P.steps=sessionFor(st.rec); P.whoop=whoopFor(st.type, st.loc, P.steps); P.total=total(P.steps); P.last=0; P.lastWall=0; P.type=st.type; P.loc=st.loc; P.rec=st.rec; P.startedAt=Date.now(); P.cooled=false; $("pAway").hidden=true;
   P.sid = newEntry({d:today(), start:hhmm(new Date()), end:"", m:0, done:"partial", live:true}).id;
   show("player");
   renderSound(); snapPose(P.steps[0].seq[0].pose);
@@ -173,7 +175,7 @@ export function resume(r){
   if (i<0) i=Math.min(r.i, P.steps.length-1);
   /* steps already done were logged when you left them; don't log them twice */
   P.steps.slice(0,i).forEach(x=>x.logged=true);
-  P.total=total(P.steps); P.type=r.type; P.loc=r.loc; P.rec=r.rec; P.startedAt=r.startedAt; P.sid=r.sid; P.last=0; P.lastWall=0;
+  P.total=total(P.steps); P.type=r.type; P.loc=r.loc; P.rec=r.rec; P.startedAt=r.startedAt; P.sid=r.sid; P.last=0; P.lastWall=0; P.cooled=false;
   show("player");
   renderSound(); snapPose(P.steps[i].seq[0].pose);
   P.catching=true; go(i); P.catching=false; P.t=r.t; P.gap=r.gap;

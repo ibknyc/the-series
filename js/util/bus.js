@@ -4,6 +4,7 @@
    state:changed        saved state changed in a way the home screen shows
    player:set-done      a lifted set just ended
    player:machine-done  a cardio machine block was ended by tapping Next
+   player:cooldown-offered  the session reached its cool-down, which is optional
    player:stopped       the timer stopped (finished, or left)
    session:finished     {entry, partial, mins, type, whoop}
    session:left         left without logging */

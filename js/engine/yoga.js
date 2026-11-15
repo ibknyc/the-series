@@ -52,11 +52,6 @@ export function closing(legsUp, red, short){
     hold("Savasana","savasana",(short?90:120)+(red?30:0),"close","Do nothing on purpose. This counts.")
   ]);
 }
-export function shortClose(){
-  return [hold("Seated forward fold","seatedfold",30,"close","Lead with the chest. Let the heart rate come down."),
-    ...sided((f,s)=>hold("Pigeon","pigeon",30,"close","Hips were working. Give them this.",{flip:f,chips:[s]})),
-    hold("Savasana","savasana",60,"close","One minute of nothing before you go back to your day.")];
-}
 export const arrive = s => hold("Box breathing","seat",s,"arrive","In for 4, hold 4, out for 4, hold 4. Arrive before you move.");
 export const wrists = () => hold("Wrist prep","table",20,"arrive","Circle both ways, then rock gently over the hands. Your wrists carry this whole practice.");
 export const catcow = () => step("Cat and cow","flow","Move with the breath. Five slow rounds.",repeat(5,()=>[T("cow",BR,"Cow, inhale and lift"),T("cat",BR,"Cat, exhale and round")]),{chips:["5 rounds"]});

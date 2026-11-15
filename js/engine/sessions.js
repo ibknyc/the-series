@@ -1,11 +1,12 @@
 /* One function per session type. Each takes the day (context + exercise kit + lifting blocks)
    and returns the list of steps, in order. This is where a session's shape is read. */
 import { T, step, hold, reps, repeat, SL, circuit, collector } from "./steps.js";
-import { arrive, wrists, catcow, downdog, child, sunA, sunB, standing, core, closing, shortClose, inversions } from "./yoga.js";
+import { arrive, wrists, catcow, downdog, child, sunA, sunB, standing, core, closing, inversions } from "./yoga.js";
 import { ginga, cocorinha, esquiva, esquivaBaixa, negativa, role, auPrep, au, queda, legSwings, meiaLua, queixada, armada } from "./capoeira.js";
 import { wallBlock } from "./isometrics.js";
 import { machineEasy, steady, ivFor, pelotonClass } from "./cardio.js";
 import { stairPark } from "./stairs.js";
+import { cooldown } from "./cooldown.js";
 import { MNAME } from "../data/cardio.js";
 import { fmtSecs } from "../util/format.js";
 
@@ -30,7 +31,7 @@ export function mixSession(d){
   }
   add(core(phase>=2?30:20, 15));
   add(R ? child() : inversions(Math.max(2,phase)).slice(0,2));
-  add(shortClose());
+  add(cooldown(out, d));
   return out;
 }
 
@@ -67,14 +68,14 @@ export function strengthSession(d){
     if (phase>=2) add(homeFinisher(), wallBlock(2));
     if (phase>=2) add(core(G?30:20, 15));
   }
-  add(shortClose());
+  add(cooldown(out, d));
   return out;
 }
 
 export function cardioSession(d){
   const {o, phase, R, G, gym, eq, avail, spin, pick, ivPool, ivM, EX, BW} = d, {out, add} = collector();
   /* Peloton: you ride a class; the app picks the kind, times it, and logs it */
-  if (d.ride){ add(pelotonClass(d.ride, o.ftp), shortClose()); return out; }
+  if (d.ride){ add(pelotonClass(d.ride, o.ftp)); add(cooldown(out, d)); return out; }
   let m1=pick(0), m2=pick(1), m3=pick(2);
   /* you picked today's cardio: it leads */
   if (!gym && o.cMode && o.cMode!=="peloton" && avail.includes(o.cMode)){ m1=o.cMode; const rest=spin.filter(k=>k!==m1); m2=rest[0]||m1; m3=rest[1]||m2; }
@@ -97,7 +98,7 @@ export function cardioSession(d){
       reps("Air squats","mountain","squat",15,2,"cardio","Quick but controlled. Heels down.",{chips:[`Round ${i+1}`]}),
       step("Mountain climbers","cardio","Plank position, drive the knees in fast. Hips stay level.",repeat(16,()=>[T("plank",.7,"Drive"),T("chaturanga",.7,"Drive")]),{chips:[`Round ${i+1}`,"30s"]}),
       step("Breathe","cardio","Stand, hands on your head, nose breathing.",[T("mountain",G?30:45,"Recover")],{chips:[fmtSecs(G?30:45)]}));
-    add(standing(false), finisher(), shortClose());
+    add(standing(false), finisher()); add(cooldown(out, d));
     return out;
   }
 
@@ -108,7 +109,7 @@ export function cardioSession(d){
       add(steady("run", 8*60, "Easy miles", "Red day. Flat ground only, skip the stairs, keep it easy."));
       add(machineEasy("run", 300, "Jog home", "Easy. Let the heart rate fall before you stop."));
     } else add(stairPark({phase, G, bikeTo:o.bikeTo, bikeHome:o.bikeHome, lapT:o.lapT, stairN:o.stairN, stations:o.stations, longDay:o.longDay, repeats:o.repeats}));
-    add(finisher(), shortClose());
+    add(finisher()); add(cooldown(out, d));
     return out;
   }
 
@@ -122,7 +123,7 @@ export function cardioSession(d){
   }
   if (m3 && m3!==m1 && m3!==m2) add(machineEasy(m3, R?240:360, "Flush", `Last switch, onto the ${MNAME(m3).toLowerCase()}. Easy — let the heart rate come down.`));
   else add(machineEasy(m1, R?180:240, "Flush", "Back where you started. Easy, let the heart rate come down."));
-  add(finisher(), shortClose());
+  add(finisher()); add(cooldown(out, d));
   return out;
 }
 
@@ -135,7 +136,7 @@ function fullAtGym(d){
   if (!R){ add(gymStrength(phase>=4?3:2, phase>=3?45:60)); if (phase>=2) add(gymWork(d, 480, -1)); }
   else add(mach ? machineEasy(mach, 480, "Easy cardio", "Zone 2: easy enough to talk in full sentences.") : child());
   add(core(G?30:20, 15));
-  add(closing(false, R, true));
+  add(cooldown(out, d));
   return out;
 }
 function fullAtHome(d){
@@ -144,14 +145,14 @@ function fullAtHome(d){
   if (phase===1){
     add(arrive(second?30:60), wrists(), catcow(), downdog(), sunA(G?4:3, R?null:{pushups:5,squats:5}), standing(false));
     if (!R) add(homeStrength(G?2:1, 30, false)); else add(child());
-    add(closing(false, R, second));
+    add(cooldown(out, d));
   }
   if (phase===2){
     add(arrive(second?30:45), cap?ginga(60):null, wrists(), catcow(), downdog(), sunA(2, R?null:{pushups:8,squats:10}), sunB(1), standing(true));
     if (!R) add(homeStrength(3, 30, false), homeFinisher(), wallBlock(2));
     add(core(G?30:20, 15));
     add(R ? child() : inversions(2));
-    add(closing(false, R, true));
+    add(cooldown(out, d));
   }
   if (phase===3){
     add(arrive(30));
@@ -160,7 +161,7 @@ function fullAtHome(d){
     if (!R) add(homeStrength(3, 40, false), homeFinisher(), wallBlock(2));
     add(core(G?40:30, 20));
     add(R ? child() : inversions(3));
-    add(closing(true, R, true));
+    add(cooldown(out, d));
   }
   if (phase===4){
     add(arrive(30));
@@ -169,7 +170,7 @@ function fullAtHome(d){
     if (!R) add(homeStrength(3, 40, false), homeFinisher(), wallBlock(2));
     add(core(G?45:40, 30));
     add(R ? child() : inversions(4));
-    add(closing(true, R, true));
+    add(cooldown(out, d));
   }
   return out;
 }

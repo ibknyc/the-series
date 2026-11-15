@@ -32,6 +32,9 @@ const RAW = {
   warrior1:     "100,53 100,68 100,118 104,44 108,20 106,44 110,20 75,148 48,177 135,140 140,177",
   warrior2:     "101,53 100,68 100,118 75,69 50,70 125,69 150,70 75,148 48,177 135,140 140,177",
   reversewarrior:"84,56 89,70 100,118 74,92 64,116 92,45 90,20 75,148 48,177 135,140 140,177",
+  halfsplit:    "122,104 108,116 78,140 102,146 98,174 104,146 100,175 66,175 30,177 118,160 154,172",
+  calfwall:     "118,46 116,62 100,108 132,68 148,72 134,72 148,78 86,142 70,177 122,142 124,177",
+  quadstand:    "100,40 100,55 100,105 112,78 124,92 92,84 85,114 98,141 98,177 104,143 84,122",
   lowlunge:     "103,80 102,95 100,145 106,71 110,47 108,71 112,47 64,175 28,177 136,145 137,177",
   lungetwist:   "104,81 102,95 100,145 102,70 102,46 118,112 134,128 64,175 28,177 136,145 137,177",
   triangle:     "156,93 144,98 100,110 143,73 143,48 146,122 148,147 75,143 50,177 125,143 150,177",
@@ -115,7 +118,7 @@ const RAW = {
 };
 export const POSE = {};
 for (const k in RAW) POSE[k] = RAW[k].trim().split(/\s+/).map(s => s.split(',').map(Number));
-export const WALL = { legsupwall:153, headtuck:78, lhandstand:151, wallsit:76 };
+export const WALL = { legsupwall:153, headtuck:78, lhandstand:151, wallsit:76, calfwall:152 };
 export const PROP_OF = { rowcatch:"rower", rowfinish:"rower", climbA:"climber", climbB:"climber", latup:"lat", latdown:"lat",
   crowout:"cable", crowin:"cable", lpdown:"legpress", lpup:"legpress", legcurlOut:"legcurl", legcurlIn:"legcurl", dipUp:"dipbars", dipDown:"dipbars", benchdown:"bench", benchup:"bench",
   ellipA:"elliptical", ellipB:"elliptical", bikeA:"bike", bikeB:"bike",

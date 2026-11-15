@@ -7,6 +7,7 @@ import { initControls } from "./player/controls.js";
 import { initSheet } from "./player/sheet.js";
 import { initSetSheet } from "./player/setSheet.js";
 import { initCardioSheet } from "./player/cardioSheet.js";
+import { initCooldownSheet } from "./player/cooldownSheet.js";
 import { applyLook } from "./ui/look.js";
 import { initHome, renderHome } from "./ui/home.js";
 import { initToday } from "./ui/today.js";
@@ -21,7 +22,7 @@ import { initSettings } from "./ui/settings.js";
 
 load();
 applyLook();
-[initSession, initControls, initSheet, initSetSheet, initCardioSheet,
+[initSession, initControls, initSheet, initSetSheet, initCardioSheet, initCooldownSheet,
  initHome, initToday, initCardioPick, initStairs, initWeights, initPlan, initWeek, initResume, initDone, initSettings].forEach(init=>init());
 initSteppers();
 renderHome();

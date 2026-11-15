@@ -24,6 +24,7 @@ export function optionsFor(rec){
     phase:st.phase, rec, type:st.type, loc:st.loc, eq:st.eq, dbOn:st.dbOn, second:isSecond(),
     W:{heavy:inv.at(-1), light:inv.length>1?inv.at(-2):inv[0], gymHeavy:st.gymHeavy||0, gymLight:st.gymLight||0},
     /* rotation counters */
+    coolN: realLog().length,
     ab:abNext(),
     gymN: realLog().filter(l=>l.l==="gym").length,
     homeAb: realLog().filter(l=>l.l==="home" && (l.t==="strength"||l.t==="full")).length,

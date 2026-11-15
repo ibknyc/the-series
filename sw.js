@@ -3,7 +3,7 @@
    install downloads every file fresh, and only then does the new version take over.
    Everything is served from that cache. Bump CACHE (and APP_VER in js/version.js) with every release;
    ASSETS must list every file the app loads. tools/check.mjs verifies both. */
-const CACHE = "series-v45";
+const CACHE = "series-v46";
 const ASSETS = [
   "./",
   "./index.html",
@@ -43,11 +43,13 @@ const ASSETS = [
   "./js/data/guide.js",
   "./js/data/looks.js",
   "./js/data/poses.js",
+  "./js/data/stretches.js",
   "./js/engine/build.js",
   "./js/engine/capoeira.js",
   "./js/engine/cardio.js",
   "./js/engine/context.js",
   "./js/engine/exercises.js",
+  "./js/engine/cooldown.js",
   "./js/engine/isometrics.js",
   "./js/engine/plan-edit.js",
   "./js/engine/sessions.js",
@@ -67,6 +69,7 @@ const ASSETS = [
   "./js/player/cardioSheet.js",
   "./js/player/controls.js",
   "./js/player/exitSheet.js",
+  "./js/player/cooldownSheet.js",
   "./js/player/figure.js",
   "./js/player/session.js",
   "./js/player/setSheet.js",
