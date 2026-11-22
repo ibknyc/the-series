@@ -5,6 +5,8 @@ import { renderResume } from "./resume.js";
 import { renderToday } from "./today.js";
 import { renderCardioPick } from "./cardioPick.js";
 import { renderStairs } from "./stairsBox.js";
+import { renderLegsOff } from "./legsOff.js";
+import { renderBalance } from "./balance.js";
 import { renderWeights } from "./weightsBox.js";
 import { renderPlan } from "./plan.js";
 import { renderGates } from "./gates.js";
@@ -16,8 +18,10 @@ export function renderHome(){
   renderToday();
   try{ renderCardioPick(); }catch(e){ console.error(e); }
   renderStairs();
+  renderLegsOff();
   renderWeights();
   renderPlan();
+  renderBalance();
   renderGates();
   renderWeek();
   renderLook();

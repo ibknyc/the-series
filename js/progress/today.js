@@ -9,6 +9,7 @@ import { homeInv } from "./weights.js";
 import { legsLoaded } from "./recovery.js";
 import { todaysClass } from "./peloton.js";
 import { gymMode, riding } from "./cardioChoice.js";
+import { missingPatterns, balanceOn } from "./balance.js";
 
 export const loggedToday = () => realLog().filter(l=>l.d===today());
 export const isSecond = () => (st.secOv && st.secOv.d===today()) ? st.secOv.v : loggedToday().length>0;
@@ -17,6 +18,10 @@ const gymCount = () => st.type==="cardio" ? realLog().filter(l=>l.t==="cardio").
 export const abNext = () => (st.abOv!==null && st.abOv!==undefined) ? st.abOv : (gymCount() % 2);
 /* the cardio you've ticked for where you are, in rotation order */
 export const cardioAvailable = () => ROTATION[st.loc==="gym" ? "gym" : "home"].filter(k=>st.eq[k]);
+/* legs off: a gym lifting day without leg work, chosen for today only */
+export const legsOffDay = () => st.loc==="gym" && ["strength","full"].includes(st.type) && st.rec!=="red";
+export const legsOff = () => legsOffDay() && st.legsOff===today();
+export function setLegsOff(on){ if (on) st.legsOff=today(); else delete st.legsOff; }
 
 export function optionsFor(rec){
   const inv=homeInv();
@@ -30,6 +35,9 @@ export function optionsFor(rec){
     homeAb: realLog().filter(l=>l.l==="home" && (l.t==="strength"||l.t==="full")).length,
     mixN: realLog().filter(l=>l.t==="mix").length,
     hangT: hangTarget(),
+    legsOff: legsOff(),
+    /* a short block for patterns the week has missed, if you added it today */
+    balance: balanceOn() ? missingPatterns() : null,
     /* an easy day at the gym: steady on the machine you last picked for it */
     easy: gymMode()==="easy" ? (st.easyM||"elliptical") : null,
     /* cardio */
@@ -41,4 +49,5 @@ export function optionsFor(rec){
     stairN: realLog().filter(l=>l.p===st.phase && (st.cardio||[]).some(c=>c.session_id===l.id && c.modality==="stairs")).length
   };
 }
-export const sessionFor = rec => build(optionsFor(rec));
+/* over: options to change, to see what another choice would build */
+export const sessionFor = (rec, over) => build({...optionsFor(rec), ...(over||{})});

@@ -31,6 +31,8 @@ Where things go:
 - A new rule about what to do next: `js/progress/`. It reads `st`; the engine gets the result as an option.
 - A new home section: markup in `index.html`, a file in `js/ui/` with `render…` and `init…`, called from `ui/home.js` and `main.js`.
 - A new look: an entry in `data/looks.js` and a stylesheet in `css/` linked from `index.html`.
+- A movement pattern the week should include: `data/patterns.js`; the exercises that cover it in `engine/balance.js`.
+- A new sheet in the player: markup inside `#sheet` in `index.html`, a part in `sheetParts()` (`player/sheet.js`), and its own file in `js/player/`.
 
 ## Shipping
 

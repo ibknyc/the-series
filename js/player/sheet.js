@@ -12,9 +12,9 @@ export function sheetShow(isOpen){ P.sheet=isOpen; $("sheet").hidden=!isOpen; if
 /* close without restarting the clock (the session is ending) */
 export function sheetDismiss(){ $("sheet").hidden=true; P.sheet=false; }
 /* which parts of the sheet show */
-export function sheetParts({rate=false, rest=false, drop=false, cardio}={}){
-  $("shRate").hidden=!rate; $("shRestWrap").hidden=!rest; $("shDrop").hidden=!drop;
-  if (cardio!==undefined) $("shCardio").hidden=!cardio;
+export function sheetParts({rate=false, rest=false, drop=false, cardio=false, best=false, extra=false}={}){
+  $("shRate").hidden=!rate; $("shRestWrap").hidden=!rest; $("shDrop").hidden=!drop; $("shCardio").hidden=!cardio;
+  $("shBest").hidden=!best; $("shExtra").hidden=!extra; $("shNotDone").hidden=true; $("shNotNote").hidden=true;
 }
 export function sheetHead(kick, title, nextH){ $("shKick").textContent=kick; $("shTitle").textContent=title; if (nextH!==undefined) $("shNextH").textContent=nextH; }
 export const clearNext = () => { $("shNext").innerHTML=""; };

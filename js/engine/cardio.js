@@ -45,9 +45,22 @@ export function lapStep(name, m, target, cue, done, o={}){
   Object.assign(s,{lap:true, target:t, base:target, doneLabel:done, mod:m, zone:o.zone||"", noGap:!o.climb, climb:!!o.climb});
   return s;
 }
+/* a ride the app structures itself: warm-up, hard/easy rounds, cool-down */
+function plannedRide(k, ftp){
+  const p=k.plan, seq=[...cardioSeq("peloton",p.warm,.9,"Warm-up")];
+  const watts = ftp ? ` (${Math.round(ftp*p.hard[0]/100)}–${Math.round(ftp*p.hard[1]/100)} W)` : "";
+  for (let i=1;i<=p.rounds;i++) seq.push(...cardioSeq("peloton",p.work,.5,`Round ${i} of ${p.rounds}: hard${watts}`,true), ...cardioSeq("peloton",p.easy,1,`Round ${i} of ${p.rounds}: easy`,true));
+  seq.push(...cardioSeq("peloton",p.cool,1,"Cool-down",true));
+  const mins=Math.round((p.warm+p.rounds*(p.work+p.easy)+p.cool)/60);
+  const cue=k.cue+(ftp ? ` Hard rounds at ${p.hard[0]}–${p.hard[1]}% of your FTP: ${Math.round(ftp*p.hard[0]/100)}–${Math.round(ftp*p.hard[1]/100)} W.` : " Set your FTP on the home screen for watt targets.");
+  const s=step(`${k.name}`,"cardio",cue,seq,{chips:["Peloton",`${mins} min`,k.zoneLab]});
+  Object.assign(s,{mach:"peloton", zone:"Z4", ivl:`${p.rounds}x${p.work}s/${p.easy}s`});
+  return s;
+}
 /* Peloton: you ride a class; the app times it and logs it */
 export function pelotonClass(pel, ftp){
   const k=PCLASS[pel.kind]||PCLASS.pz, mins=pel.mins||45;
+  if (k.plan){ const s=plannedRide(k, ftp); s.pclass=pel.kind; return s; }
   const s=step(`${k.name} ${mins}`,"cardio",k.cue+(ftp?` ${zoneWatts(ftp,k.zones)}`:""),cardioSeq("peloton",mins*60,k.tempo,k.label),{chips:["Peloton",`${mins} min`,k.zoneLab]});
   s.mach="peloton"; s.zone=k.zoneLab; s.pclass=pel.kind;
   return s;

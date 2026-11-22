@@ -24,7 +24,7 @@ export const retotal = () => { P.total = total(P.steps); P.lastSec=-1; };
 /* steps that aren't lifted sets get logged when you move past them */
 export function logLeaving(target){
   const s=P.steps[P.i];
-  if (!P.sid || !s || s.logged || s.isRest || s.unit || target<=P.i) return;
+  if (!P.sid || !s || s.logged || s.isRest || s.unit || s.ask || target<=P.i) return;
   const actual = (s.lap || s.mach) ? P.t : Math.min(P.t, s.dur); if (actual<3) return;
   s.logged=true;
   if (s.mach || s.mod){
@@ -49,15 +49,30 @@ function needsGap(i){
   return true;
 }
 export function go(i){ logLeaving(i); if (i>=P.steps.length){ finish(); return; } P.i=Math.max(0,i); P.t=0; P.lastCue=null; lights(null); showStep();
-  /* the first cool-down step: the work is done, so ask before carrying on. If you're away, it just runs. */
-  if (P.steps[P.i].optional && !P.cooled){ P.cooled=true; if (!P.catching){ emit("player:cooldown-offered"); return; } }
+  /* the first cool-down step: the work is done. Log the session as complete now, so closing the app
+     here can't lose it, then ask before carrying on. If you're away, the cool-down just runs. */
+  if (P.steps[P.i].optional && !P.cooled){ P.cooled=true; closeWork(); if (!P.catching){ emit("player:cooldown-offered"); return; } }
   P.gap = needsGap(P.i) ? GAP : 0;
   if (!P.steps[P.i].startedAt) P.steps[P.i].startedAt = Date.now();
   if (P.catching) return;
   $("pAway").hidden=true;
   if (!P.gap && !(P.steps[P.i].block==="strength"&&!P.steps[P.i].isRest)) CUE.step(); announce(); }
-/* the step's time is up, or you tapped Done / Next. A finished set or machine block needs you first. */
-export function advance(){ if (unitEnds(P.steps, P.i)) emit("player:set-done"); else if (P.steps[P.i].mach && !P.catching) emit("player:machine-done"); else go(P.i+1); }
+/* the step's time is up, or you tapped Done / Next. A finished set, a machine block, or a step that
+   asks for a number (crow: your best hold) needs you first. */
+export function advance(){
+  const s=P.steps[P.i];
+  if (unitEnds(P.steps, P.i)) emit("player:set-done");
+  else if (s.mach && !P.catching) emit("player:machine-done");
+  else if (s.ask && !s.logged && !P.catching) emit("player:ask-best");
+  else go(P.i+1);
+}
+/* the work is done and the rest is optional: close the log entry as complete and stop keeping the live copy */
+function closeWork(){
+  const e=entryById(P.sid); if (!e) return;
+  if (P.whoop) e.whoop=P.whoop;
+  closeEntry(P.sid, P.steps, P.startedAt, false);
+  P.workDone=true; live.clear();
+}
 export function back(){ if (P.t>3) go(P.i); else go(P.i-1); }
 
 /* ---------- time away ---------- */
@@ -70,7 +85,10 @@ function catchUp(sec){
   while (sec>0.01){
     const cs=P.steps[P.i];
     if (P.gap>0){ const u=Math.min(P.gap,sec); P.gap-=u; sec-=u; continue; }
-    if (cs.lap || (cs.mach && P.t+sec>=cs.dur)){ P.t+=sec; sec=0; break; }
+    if (cs.lap){ P.t+=sec; sec=0; break; }
+    /* a machine block or a class: away time counts up to its planned end. You might have kept going,
+       but the app can't know, and a class doesn't run long. */
+    if (cs.mach && P.t+sec>=cs.dur){ P.t=Math.max(P.t, cs.dur); sec=0; break; }
     const left=cs.dur-P.t;
     if (sec<left){ P.t+=sec; sec=0; break; }
     sec-=left; P.t=cs.dur;
@@ -86,10 +104,13 @@ function catchUp(sec){
 }
 /* survive iOS killing the app: keep where we are, so it can pick back up */
 function persist(){
-  if (!P.sid || !showing("player")) return;
+  if (!P.sid || P.workDone || !showing("player")) return;
   P.savedAt=Date.now();
-  live.write({sid:P.sid, i:P.i, t:P.t, gap:P.gap||0, name:P.steps[P.i].name, run:P.run && !P.sheet,
-    at:Date.now(), type:P.type, loc:P.loc, rec:P.rec||st.rec, startedAt:P.startedAt});
+  const cs=P.steps[P.i], now=Date.now();
+  live.write({sid:P.sid, i:P.i, t:P.t, gap:P.gap||0, name:cs.name, run:P.run && !P.sheet,
+    at:now, type:P.type, loc:P.loc, rec:P.rec||st.rec, startedAt:P.startedAt,
+    /* where the step in progress would end: how long the session ran, if it's never reopened */
+    ends: now + Math.max(0, cs.dur-P.t)*1000});
 }
 
 /* ---------- the clock ---------- */
@@ -156,7 +177,7 @@ export async function wake(on){ try{ if (on && "wakeLock" in navigator) P.lock=a
 function run(){ cancelAnimationFrame(P.raf); P.raf=requestAnimationFrame(frame); }
 
 export function start(){
-  P.steps=sessionFor(st.rec); P.whoop=whoopFor(st.type, st.loc, P.steps); P.total=total(P.steps); P.last=0; P.lastWall=0; P.type=st.type; P.loc=st.loc; P.rec=st.rec; P.startedAt=Date.now(); P.cooled=false; $("pAway").hidden=true;
+  P.steps=sessionFor(st.rec); P.whoop=whoopFor(st.type, st.loc, P.steps); P.total=total(P.steps); P.last=0; P.lastWall=0; P.type=st.type; P.loc=st.loc; P.rec=st.rec; P.startedAt=Date.now(); P.cooled=false; P.workDone=false; $("pAway").hidden=true;
   P.sid = newEntry({d:today(), start:hhmm(new Date()), end:"", m:0, done:"partial", live:true}).id;
   show("player");
   renderSound(); snapPose(P.steps[0].seq[0].pose);
@@ -175,10 +196,12 @@ export function resume(r){
   if (i<0) i=Math.min(r.i, P.steps.length-1);
   /* steps already done were logged when you left them; don't log them twice */
   P.steps.slice(0,i).forEach(x=>x.logged=true);
-  P.total=total(P.steps); P.type=r.type; P.loc=r.loc; P.rec=r.rec; P.startedAt=r.startedAt; P.sid=r.sid; P.last=0; P.lastWall=0; P.cooled=false;
+  P.total=total(P.steps); P.type=r.type; P.loc=r.loc; P.rec=r.rec; P.startedAt=r.startedAt; P.sid=r.sid; P.last=0; P.lastWall=0; P.cooled=false; P.workDone=false;
   show("player");
   renderSound(); snapPose(P.steps[i].seq[0].pose);
   P.catching=true; go(i); P.catching=false; P.t=r.t; P.gap=r.gap;
+  /* the step started before the phone killed the app, not now: its logged start and the session's end depend on it */
+  P.steps[i].startedAt = r.at - r.t*1000;
   setRun(true); wake(true);
   const away=(Date.now()-r.at)/1000;
   if (r.run && away>1.5) catchUp(away); else { $("pAway").textContent="Picked up where you left off."; $("pAway").hidden=false; }
@@ -187,12 +210,21 @@ export function resume(r){
 }
 function stop(){ live.clear(); cancelAnimationFrame(P.raf); P.run=false; P.sheet=false; P.lastCue=null; lights(null); wake(false); hush(); emit("player:stopped"); }
 export function finish(partial){
+  if (P.workDone) partial=false;   /* only the optional cool-down was left */
   logLeaving(Infinity); stop();
   const e=entryById(P.sid); if (e && P.whoop) e.whoop=P.whoop;
   const entry=closeEntry(P.sid, P.steps, P.startedAt, partial), mins=entry ? entry.m : Math.max(1, Math.round((Date.now()-P.startedAt)/60000));
   P.sid=null;
   emit("session:finished", {entry, partial, mins, type:P.type, whoop:P.whoop});
   CUE.finish(); say("Practice done.");
+}
+/* "Log what was done" for a session the phone killed: rebuild it, move it on by the time away,
+   and finish there. Sets that ended while you were away aren't logged, since nobody confirmed them. */
+export function endInterrupted(r){
+  P.ending=true; resume(r); P.ending=false;
+  if (!P.sid) return;   /* the time away ran it to the end: resume already finished it */
+  const cs=P.steps[P.i], workLeft = P.steps.slice(P.i+1).some(s=>!s.optional) || (!cs.optional && P.t < cs.dur);
+  finish(workLeft);
 }
 export function leaveWithoutLogging(){
   stop();

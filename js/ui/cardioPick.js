@@ -4,7 +4,8 @@
 import { $ } from "../util/dom.js";
 import { today, daysSince } from "../util/time.js";
 import { st, save, commit } from "../store.js";
-import { CARDIO, PCLASS, PICK_ORDER, MNAME } from "../data/cardio.js";
+import { CARDIO, PCLASS, PCLASS_MINS, PICK_ORDER, MNAME } from "../data/cardio.js";
+import { legsLoaded } from "../progress/recovery.js";
 import { sessionFor, cardioAvailable } from "../progress/today.js";
 import { hardShort, hardMinutes, HARD_GOAL } from "../progress/effort.js";
 import { pelSuggest, pickClass } from "../progress/peloton.js";
@@ -18,13 +19,16 @@ const note = text => { $("cNote").hidden=!text; $("cNote").textContent=text||"";
 /* which class: the suggestion, then kind and length. A pick holds for the day; tomorrow starts fresh. */
 function renderClassPicker(){
   const sg=pelSuggest(); if (!st.pel || st.pelDay!==today()){ pickClass({kind:sg.kind, mins:sg.mins}); save(); }
-  $("pelSug").innerHTML=`<b>Suggested: ${PCLASS[sg.kind].name} ${sg.mins}.</b> ${sg.why}`;
+  $("pelSug").innerHTML=`<b>Suggested: ${PCLASS[sg.kind].name} ${sg.mins}.</b> ${sg.why}`
+    + (PCLASS[st.pel.kind] && PCLASS[st.pel.kind].legDay && legsLoaded() ? ` Climbing on loaded legs: expect about 15% less output.` : "");
   const kr=$("pelKind"); kr.innerHTML="";
   Object.entries(PCLASS).forEach(([k,c])=>{
-    const b=chip(kr, c.name, st.pel.kind===k, ()=>{ pickClass({kind:k, mins: k==="ftp"?20:st.pel.mins}); commit(); });
+    /* keep the length you had if this class comes in it; otherwise 45, or the class's own */
+    const ms=c.mins||PCLASS_MINS, mins = ms.includes(st.pel.mins) ? st.pel.mins : ms.includes(45) ? 45 : ms[0];
+    const b=chip(kr, c.name, st.pel.kind===k, ()=>{ pickClass({kind:k, mins}); commit(); });
     if (k===sg.kind) b.classList.add("sug"); });
   const mr=$("pelMins"); mr.innerHTML="";
-  (st.pel.kind==="ftp"?[20]:[20,30,45,60]).forEach(m=>
+  (PCLASS[st.pel.kind].mins||PCLASS_MINS).forEach(m=>
     chip(mr, `${m} min`, st.pel.mins===m, ()=>{ st.pel.mins=m; st.pelDay=today(); commit(); }));
   $("ftpIn").value=st.ftp||""; $("ftpDate").textContent = st.ftpDate ? `${st.ftpDate} (${daysSince(st.ftpDate)} days ago)` : "Never";
 }

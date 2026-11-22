@@ -18,3 +18,7 @@
 #cEff button{padding:10px 0;font-size:15px}
 .shfields{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .shfields .track{margin-top:0}
+/* asking for reps in reserve: the planned answer is marked */
+.feel.ask button:nth-child(3){border:2px dashed var(--accent)}
+.shfields .xname{flex:1 1 100%}
+.shfields .xname input{flex:1;min-width:0;text-align:left}

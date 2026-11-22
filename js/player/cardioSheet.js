@@ -8,14 +8,14 @@ import { MNAME, UNITS, DEF_UNIT, LEVEL_LAB } from "../data/cardio.js";
 import { P } from "./state.js";
 import { CUE, say } from "./audio.js";
 import { logLeaving } from "./session.js";
-import { sheetShow, nextBtn, continueTo } from "./sheet.js";
+import { sheetShow, nextBtn, continueTo, sheetParts } from "./sheet.js";
 
 function openCardioSheet(){
   const cur=P.steps[P.i], m=cur.mach;
   logLeaving(P.i+1); const row=P.lastCardio && P.lastCardio.segment===cur.name ? P.lastCardio : null;
   st.cardioUnit=st.cardioUnit||{};
   const prev=[...st.cardio].reverse().find(r=>r!==row && r.modality===m && r.metric!=="" && r.metric!==undefined);
-  $("shRate").hidden=true; $("shRestWrap").hidden=true; $("shDrop").hidden=true; $("shCardio").hidden=false;
+  sheetParts({cardio:true});
   $("shKick").textContent = `${MNAME(m)} · ${fmtSecs(Math.round(P.t))}${P.t>cur.dur+5?` (planned ${fmtSecs(cur.dur)})`:""}`;
   $("shTitle").textContent = cur.name + " done";
   $("cLast").innerHTML = prev ? `Last time on the ${MNAME(m).toLowerCase()}: <b>${prev.metric} ${prev.metric_unit}</b> in ${fmtSecs(prev.seconds)}${prev.level!==""?`, ${(LEVEL_LAB[m]||"level").toLowerCase()} ${prev.level}`:""}.` : "Type what the machine's screen shows, so next time has a number to beat. Skip it if you'd rather not.";

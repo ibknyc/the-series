@@ -6,7 +6,7 @@ import { TEMPLATE } from "../data/catalog.js";
 
 export const COLS = {
   sessions:["session_id","date","start_time","end_time","tz","location","phase","template","whoop_activity","session_rpe","completed","notes","duration_min","recovery_color","entry","whoop_strain","avg_hr","max_hr","zone45_min"],
-  sets:["session_id","start_time","block","exercise","set_no","side","reps_or_seconds","measure","load","load_type","RIR","planned_load","planned_reps","swapped_from","stage"],
+  sets:["session_id","start_time","block","exercise","set_no","side","reps_or_seconds","measure","load","load_type","RIR","planned_load","planned_reps","swapped_from","stage","added"],
   cardio:["session_id","start_time","modality","segment","seconds","duration_min","metric","metric_unit","level","effort","intervals","target_zone","target_seconds","swapped_from"],
   gates:["date","gate","result","pass"]
 };
@@ -34,6 +34,7 @@ sets.csv      one row per set, per side for single-arm or single-leg moves (side
               assistance = the help an assisted pull-up or dip machine gave you (less is harder).
               RIR = reps in reserve, 4 means 4 or more, blank = not rated. planned_* is what the app prescribed.
               stage is the version you did, 1 easier, 2 as planned, 3 harder (blank for moves without stages).
+              added = y for an exercise logged by hand, outside the plan.
               swapped_from is the exercise it replaced. Warm-up, flow and cooldown moves are logged with seconds done.
 cardio.csv    one row per cardio block or leg, with start_time (HH:MM:SS) so it can be cut out of the WHOOP heart rate.
               metric + metric_unit = what the machine's screen said (meters, miles, kJ...); level = resistance/incline/damper; effort 1-10.

@@ -7,7 +7,7 @@ export function renderWeights(){
   const atGym = st.loc==="gym";
   $("dbLabel").textContent = atGym ? "Dumbbells at the gym" : "Dumbbells at home";
   $("dbOn").parentElement.style.display = atGym ? "none" : "";
-  $("lbHeavy").textContent = atGym ? "Heavy pair (rows, RDLs, goblet)" : "Heavy pair";
+  $("lbHeavy").textContent = atGym ? "Heavy pair (rows, RDLs, front-rack squat)" : "Heavy pair";
   $("lbLight").textContent = atGym ? "Light pair (presses, split squats)" : "Light pair, for pressing";
   $("dbOn").checked=st.dbOn;
   $("wHeavy").value = atGym ? st.gymHeavy : st.heavy;

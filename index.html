@@ -107,6 +107,10 @@ try{ var s=JSON.parse(localStorage.getItem("the-series-v1")||"{}"), h=document.d
       <p class="wnote" id="stairNote"></p>
       <details class="parkprog" id="parkProg"><summary>Park progress</summary><div id="parkBody"></div></details>
     </div>
+    <div class="secondbox" id="legsBox" hidden>
+      <div class="switchrow"><label for="legsOn">Legs off today</label><input type="checkbox" class="switch" id="legsOn" role="switch"></div>
+      <p class="wnote" id="legsNote"></p>
+    </div>
     <div class="secondbox">
       <div class="switchrow">
         <label for="secOn">Second session today</label>
@@ -145,6 +149,7 @@ try{ var s=JSON.parse(localStorage.getItem("the-series-v1")||"{}"), h=document.d
   <section class="plan">
     <h2>Today's sequence</h2>
     <p class="plannote" id="planNote" hidden></p>
+    <p class="plannote" id="balNote" hidden style="border-left-color:var(--yellow)"></p>
     <ol id="planList"></ol>
   </section>
 
@@ -212,7 +217,7 @@ try{ var s=JSON.parse(localStorage.getItem("the-series-v1")||"{}"), h=document.d
       <h2 class="pname" id="pName"></h2>
       <p class="psub" id="pSub"></p>
       <div class="chips" id="pChips"></div>
-      <button class="swapbtn" id="pSwap" hidden>Swap</button> <button class="swapbtn" id="pPlus" hidden>+1 round</button><br>
+      <button class="swapbtn" id="pSwap" hidden>Swap or skip</button> <button class="swapbtn" id="pPlus" hidden>+1 round</button> <button class="swapbtn" id="pAdd">+ Exercise</button><br>
       <label class="track" id="pTrack" for="pTrackIn" hidden><span>Weight used</span><button type="button" class="stp" data-for="pTrackIn" data-step="-5" aria-label="5 pounds less">−5</button><input id="pTrackIn" type="number" inputmode="decimal" step="2.5" min="0"><button type="button" class="stp" data-for="pTrackIn" data-step="5" aria-label="5 pounds more">+5</button><span id="pTrackU">lb</span></label>
       <div class="lights" id="lights" hidden aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
       <div class="clock" id="pTime" aria-live="off"></div>
@@ -246,10 +251,35 @@ try{ var s=JSON.parse(localStorage.getItem("the-series-v1")||"{}"), h=document.d
       <h4 style="margin-top:0">Reps left in the tank</h4>
       <div class="feel rir" id="shFeel"></div>
       <div class="shfields">
-        <label class="track" id="shReps"><span id="shRepsLab">Reps done</span><input id="shRepsIn" type="number" inputmode="numeric" min="0" max="300"></label>
+        <label class="track" id="shReps" for="shRepsIn"><span id="shRepsLab">Reps done</span><button type="button" class="stp" id="shRepsDn" data-for="shRepsIn" data-step="-1" aria-label="One rep less">−1</button><input id="shRepsIn" type="number" inputmode="numeric" min="0" max="300"><button type="button" class="stp" id="shRepsUp" data-for="shRepsIn" data-step="1" aria-label="One rep more">+1</button></label>
         <label class="track" id="shTrack" for="shTrackIn" hidden><span>Weight</span><button type="button" class="stp" data-for="shTrackIn" data-step="-5" aria-label="5 pounds less">−5</button><input id="shTrackIn" type="number" inputmode="decimal" step="2.5" min="0"><button type="button" class="stp" data-for="shTrackIn" data-step="5" aria-label="5 pounds more">+5</button><span id="shTrackU">lb</span></label>
       </div>
       <p class="shadvice" id="shAdvice"></p>
+    </div>
+    <p class="shadvice" id="shNotNote" hidden>Not logged. Pick what's next.</p>
+    <button class="shlink" id="shNotDone" hidden></button>
+    <div id="shBest" hidden>
+      <div class="shfields">
+        <label class="track" for="shBestIn"><span>Best hold</span><button type="button" class="stp" data-for="shBestIn" data-step="-1" aria-label="One second less">−1</button><input id="shBestIn" type="number" inputmode="decimal" min="0" max="600" step="0.5"><button type="button" class="stp" data-for="shBestIn" data-step="1" aria-label="One second more">+1</button><span>sec</span></label>
+      </div>
+      <p class="shadvice" id="shBestNote"></p>
+    </div>
+    <div id="shExtra" hidden>
+      <div class="shfields">
+        <label class="track xname" for="xName"><span>Exercise</span><input id="xName" type="text" list="xNames" autocomplete="off" autocapitalize="sentences" placeholder="e.g. Dead hang"></label>
+        <datalist id="xNames"></datalist>
+      </div>
+      <div class="chiprow" id="xMeasure" style="margin-top:10px"></div>
+      <div class="shfields">
+        <label class="track" for="xSets"><span>Sets</span><button type="button" class="stp" data-for="xSets" data-step="-1" aria-label="One set less">−1</button><input id="xSets" type="number" inputmode="numeric" min="1" max="10"><button type="button" class="stp" data-for="xSets" data-step="1" aria-label="One set more">+1</button></label>
+        <label class="track" for="xAmt"><span id="xAmtLab">Reps</span><button type="button" class="stp" id="xAmtDn" data-for="xAmt" data-step="-1" aria-label="Less">−1</button><input id="xAmt" type="number" inputmode="numeric" min="0" max="600"><button type="button" class="stp" id="xAmtUp" data-for="xAmt" data-step="1" aria-label="More">+1</button></label>
+      </div>
+      <div class="chiprow" id="xLoadType" style="margin-top:10px"></div>
+      <div class="shfields" id="xLoadWrap" hidden>
+        <label class="track" for="xLoad"><span>Weight</span><button type="button" class="stp" data-for="xLoad" data-step="-5" aria-label="5 pounds less">−5</button><input id="xLoad" type="number" inputmode="decimal" min="0" step="2.5"><button type="button" class="stp" data-for="xLoad" data-step="5" aria-label="5 pounds more">+5</button><span id="xLoadU">lb</span></label>
+      </div>
+      <div id="xRirWrap"><h4>Reps left in the tank <small style="font-weight:400;color:var(--ink-2)">optional</small></h4><div class="chiprow" id="xRir"></div></div>
+      <p class="shadvice" id="xNote"></p>
     </div>
     <h4 id="shNextH">What's next?</h4>
     <label class="restck" id="shRestWrap" style="margin:0 0 10px"><input type="checkbox" id="shRest"> Rest 60 seconds first</label>
@@ -267,6 +297,7 @@ try{ var s=JSON.parse(localStorage.getItem("the-series-v1")||"{}"), h=document.d
     <p class="rpekey">Reps in reserve for each set. Fix a mis-tap or fill a blank: blanks can't steer next time's weights.</p>
     <div id="doneSetList"></div>
   </div>
+  <button class="ghost" id="doneAdd" style="margin-top:12px">Add an exercise you did</button>
   <h2 class="rpeh">How hard was the whole session?</h2>
   <p class="rpekey">1 barely working · 5 moderate · 7 hard · 10 everything you had</p>
   <div class="rpegrid" id="rpeGrid"></div>

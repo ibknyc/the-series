@@ -10,3 +10,7 @@
 .track input{width:72px;border:0;background:var(--bg);border-radius:8px;padding:6px 8px;font-family:var(--display);font-weight:700;font-size:18px;color:var(--ink);text-align:center}
 .track .stp{flex:none;min-width:44px;height:38px;padding:0 6px;border:2px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-family:var(--display);font-weight:700;font-size:15px;touch-action:manipulation}
 .track .stp:active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chiprow{display:flex;flex-wrap:wrap;gap:6px}
+.chiprow button{background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:999px;padding:7px 12px;font-weight:700;font-size:14px}
+.chiprow button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chiprow button.sug{border-color:var(--green)}

@@ -3,7 +3,7 @@
    install downloads every file fresh, and only then does the new version take over.
    Everything is served from that cache. Bump CACHE (and APP_VER in js/version.js) with every release;
    ASSETS must list every file the app loads. tools/check.mjs verifies both. */
-const CACHE = "series-v46";
+const CACHE = "series-v47";
 const ASSETS = [
   "./",
   "./index.html",
@@ -43,8 +43,10 @@ const ASSETS = [
   "./js/data/guide.js",
   "./js/data/looks.js",
   "./js/data/poses.js",
+  "./js/data/patterns.js",
   "./js/data/stretches.js",
   "./js/engine/build.js",
+  "./js/engine/balance.js",
   "./js/engine/capoeira.js",
   "./js/engine/cardio.js",
   "./js/engine/context.js",
@@ -70,6 +72,8 @@ const ASSETS = [
   "./js/player/controls.js",
   "./js/player/exitSheet.js",
   "./js/player/cooldownSheet.js",
+  "./js/player/bestSheet.js",
+  "./js/player/extraSheet.js",
   "./js/player/figure.js",
   "./js/player/session.js",
   "./js/player/setSheet.js",
@@ -79,6 +83,7 @@ const ASSETS = [
   "./js/player/view.js",
   "./js/progress/advice.js",
   "./js/progress/cardioChoice.js",
+  "./js/progress/balance.js",
   "./js/progress/effort.js",
   "./js/progress/holds.js",
   "./js/progress/laps.js",
@@ -94,6 +99,8 @@ const ASSETS = [
   "./js/ui/gates.js",
   "./js/ui/home.js",
   "./js/ui/look.js",
+  "./js/ui/legsOff.js",
+  "./js/ui/balance.js",
   "./js/ui/park.js",
   "./js/ui/plan.js",
   "./js/ui/resume.js",

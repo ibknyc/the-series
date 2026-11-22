@@ -10,6 +10,7 @@ import { showStep, renderSound } from "./view.js";
 import { setRun, wake, advance, back, retotal } from "./session.js";
 import { openSwap } from "./swapSheet.js";
 import { openExit } from "./exitSheet.js";
+import { openExtra } from "./extraSheet.js";
 
 /* one more round on the interval block you're in */
 function plusRound(){
@@ -25,6 +26,7 @@ export function initControls(){
   $("pPlus").onclick=plusRound;
   $("pSwap").onclick=()=>openSwap();
   $("pExit").onclick=()=>openExit();
+  $("pAdd").onclick=()=>openExtra(P.sid, true);
   $("pSound").onclick=()=>{ st.sound=(st.sound+1)%3; save(); renderSound(); if (st.sound===2) hush(); };
   /* the weight field under the exercise name: whatever's in it is what you used */
   $("pTrackIn").oninput=$("pTrackIn").onchange=e=>{ const s=P.steps[P.i]; if (s && s.track) logW(s.track, e.target.value); };

@@ -5,6 +5,12 @@ import { tagUnit } from "./steps.js";
 /* is step i the last step of its set? */
 export const unitEnds = (steps, i) => { const s=steps[i]; return !!(s && s.unit && (!steps[i+1] || steps[i+1].unit!==s.unit)); };
 
+/* rounds still to come in the circuit you're in: one rest sits between each round */
+export function roundsLeft(steps, i){
+  let n=0;
+  for (let k=i+1;k<steps.length && steps[k].block==="strength";k++) if (steps[k].isRest) n++;
+  return n;
+}
 /* the other exercises still to do in this round */
 export function remainingUnitsInSet(steps, i){
   const cur=steps[i], units=[];

@@ -3,6 +3,7 @@ import { st, save } from "../store.js";
 import { today } from "../util/time.js";
 import { fmtSecs } from "../util/format.js";
 import { stageOf } from "./stages.js";
+import { GATES } from "../data/catalog.js";
 
 export function reviewSession(id){
   /* wall squats: every hold at the full 2 minutes moves you a stage deeper next time */
@@ -18,5 +19,12 @@ export function reviewSession(id){
   if (ft){ const old=st.ftp, nf=Math.round(+ft.metric*.95); st.ftp=nf; st.ftpDate=today(); save(); isoNote += ` New FTP: ${nf} W${old?` (was ${old}, ${nf>=old?"+":""}${nf-old})`:""}. Your Power Zone targets update from here.`; }
   const dh = st.sets.filter(r=>r.session_id===id && r.exercise==="Dead hang");
   if (dh.length){ const b=Math.max(...dh.map(r=>+r.reps_or_seconds||0)); isoNote += ` Dead hang best today: ${fmtSecs(b)}.`; }
+  /* crow: a best hold that meets this phase's test */
+  const cr = st.sets.filter(r=>r.session_id===id && r.exercise==="Crow");
+  if (cr.length){
+    const b=Math.max(...cr.map(r=>+r.reps_or_seconds||0)), gi=(GATES[st.phase]||[]).findIndex(t=>/^Crow held (\d+) seconds/.test(t));
+    const need = gi>=0 ? +GATES[st.phase][gi].match(/(\d+) seconds/)[1] : 0, ticked = gi>=0 && (st.gates[st.phase]||[])[gi];
+    isoNote += ` Crow best today: ${b} s.` + (need && b>=need && !ticked ? ` That passes the Phase ${st.phase} test: tick it under the gate.` : "");
+  }
   return isoNote;
 }

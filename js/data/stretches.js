@@ -16,7 +16,9 @@ export const MACH_AREAS = {
 export const SLOT_AREAS = {
   squat:["quads","glutes","innerthighs"], squat2:["quads","glutes","innerthighs"], lunge:["quads","hipflexors","glutes"], lateral:["innerthighs","glutes"],
   hinge:["hamstrings","glutes"], bridge:["glutes","hipflexors"], push:["chest"], overhead:["chest","lats"],
-  pull:["lats"], pull2:["lats"], hang:["lats","chest"], finish:["lats"], core:["spine","hipflexors"], plank:["spine"], birddog:["spine"]
+  pull:["lats"], pull2:["lats"], hang:["lats","chest"], finish:["lats"], core:["spine","hipflexors"], plank:["spine"], birddog:["spine"],
+  push2:["chest"], rotation:["spine","lats"],
+  "bal-singleleg":["quads","glutes","hipflexors"], "bal-lateral":["innerthighs","glutes"], "bal-core":["spine"], "bal-rotation":["spine","lats"]
 };
 export const BLOCK_AREAS = { capoeira:["innerthighs","hipflexors","hamstrings"], invert:["chest","spine"] };
 

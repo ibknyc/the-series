@@ -58,14 +58,16 @@ export const catcow = () => step("Cat and cow","flow","Move with the breath. Fiv
 export const downdog = () => step("Down dog","flow","Pedal the heels for the first few breaths, then settle. Bend the knees if the hamstrings round your back.",ddBreaths(6),{chips:["6 breaths"]});
 export const child = () => hold("Child's pose","childs",60,"close","Knees wide, forehead down. A red day practice is still practice.");
 
+/* crow is measured by your best hold: the player asks for it, and logs it as "Crow", in seconds */
+const crow = h => Object.assign(h, {ask:"best", logAs:"Crow"});
 export function inversions(phase){
   if (phase===2) return [hold("Dolphin","dolphin",20,"invert","Forearms down, hips high, walk the feet in. This is headstand strength."),
-    hold("Crow attempts","crow",30,"invert","Knees on the backs of your arms, lean until the toes get light. Toes can stay down. Pillow in front of your face.")];
-  if (phase===3) return [hold("Crow","crow",20,"invert","Toes off the floor. Look forward, not down."),
+    crow(hold("Crow attempts","crow",30,"invert","Knees on the backs of your arms, lean until the toes get light. Toes can stay down. Pillow in front of your face. Count your best hold."))];
+  if (phase===3) return [crow(hold("Crow","crow",20,"invert","Toes off the floor. Look forward, not down. Count your best hold.")),
     hold("Tucked headstand at the wall","headtuck",30,"invert","Forearms down, fingers laced, crown light. Walk in, lift knees to chest. Never kick up."),
     hold("L-handstand","lhandstand",30,"invert","Hands a leg-length from the wall, walk the feet up to hip height. Push the floor away.")];
   if (phase===4) return [hold("Headstand","headstand",45,"invert","Freestanding. Shoulders pushing up away from the floor the whole time."),
     hold("Wall handstand","handstand",45,"invert","Chest to the wall if you can. Stack wrists, shoulders, hips."),
-    hold("Crow","crow",20,"invert","Hold, then try to float the feet back an inch.")];
+    crow(hold("Crow","crow",20,"invert","Hold, then try to float the feet back an inch. Count your best hold."))];
   return [];
 }

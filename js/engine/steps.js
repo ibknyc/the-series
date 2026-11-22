@@ -22,7 +22,8 @@ export function sided(make){ return [make(false,"Right side"), make(true,"Left s
 export function repeat(n, fn){ const o=[]; for(let i=0;i<n;i++) o.push(...fn(i)); return o; }
 
 export function restStep(secs){ const r=step("Rest","strength","Shake it out. Sip water. Next set is coming.",[T("mountain",secs,"Rest")],{chips:[fmtSecs(secs)]}); r.isRest=true; return r; }
-/* a slot = one movement pattern with interchangeable variants (first = default) */
+/* a slot = one movement pattern with interchangeable variants (first = default).
+   slot.sets, if set, caps how many rounds it appears in (rotation work: 2 sets in a 3-round circuit). */
 export function SL(slot, ...fs){
   const v=[], names=[];
   fs.filter(Boolean).forEach(f=>{ const n=[].concat(f(""))[0].name; if (!names.includes(n)){ names.push(n); v.push(f); } });
@@ -37,8 +38,10 @@ export function circuit(sets, restSecs, slots, restFn){
   const out=[];
   slots = slots.map((x,i)=> typeof x==="function" ? {slot:"x"+i, v:[x], names:[[].concat(x(""))[0].name]} : x).filter(o=>o && o.v && o.v.length);
   for(let s=1;s<=sets;s++){
-    const sl = sets>1 ? `Set ${s} of ${sets}` : "";
-    slots.forEach(o=>{ const vi=Math.min(o.di||0, o.v.length-1); out.push(...tagUnit(o.v[vi](sl), o, vi, s, sets, sl)); });
+    slots.forEach(o=>{
+      const n=Math.min(sets, o.sets||sets); if (s>n) return;
+      const sl = n>1 ? `Set ${s} of ${n}` : "", vi=Math.min(o.di||0, o.v.length-1);
+      out.push(...tagUnit(o.v[vi](sl), o, vi, s, n, sl)); });
     if (s<sets) out.push(restFn ? restFn(s, restSecs) : restStep(restSecs));
   }
   return out;

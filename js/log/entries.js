@@ -25,11 +25,6 @@ export function closeEntry(sid, steps, startedAt, partial){
   save(); return e;
 }
 export function touch(sid){ const e=entryById(sid); if (e) e.lastAt=hhmm(new Date()); }
-/* a session the phone killed, closed from the home screen: r is its saved live state */
-export function closeInterrupted(r){
-  const e=entryById(r.sid);
-  if (e){ e.live=false; e.done="partial"; e.partial=true; e.end=e.lastAt||hhmm(new Date(r.at)); e.m=Math.max(1,Math.round((r.at-r.startedAt)/60000)); save(); }
-}
 /* leave without logging: the session and everything recorded in it goes */
 export function discard(sid){
   st.log=st.log.filter(l=>l.id!==sid); st.sets=st.sets.filter(r=>r.session_id!==sid); st.cardio=st.cardio.filter(r=>r.session_id!==sid); save();

@@ -14,7 +14,7 @@ export const BLOCKS = {
 export const PHASES = [{n:1, name:"Foundation"}, {n:2, name:"Load"}, {n:3, name:"Flow and flight"}, {n:4, name:"Your series"}];
 export const GATES = {
   1:["Practiced 5+ days a week for 2 straight weeks","5 rounds of Sun A with 8 clean push-ups and 10 squats","45-second forearm plank"],
-  2:["Goblet squat 2×10 at your heavy pair, 2–3 reps in reserve","10 full push-ups per Sun A round","Crow held 5 seconds","Dolphin 30s and side plank 30s per side"],
+  2:["Front-rack DB squat 2×10 with your heavy pair, 2–3 reps in reserve","10 full push-ups per Sun A round","Crow held 5 seconds","Dolphin 30s and side plank 30s per side"],
   3:["Crow held 15 seconds","Tucked forearm headstand at the wall, 20s, controlled","L-handstand 30 seconds","Low, controlled aú in both directions"],
   4:["Freestanding headstand 30 seconds","Wall handstand 60 seconds","Full aú both sides","Queda de rins 10s per side"]
 };

@@ -6,7 +6,7 @@ import { BLOCKS, TYPE_NAME } from "../data/catalog.js";
 import { GUIDE } from "../data/guide.js";
 import { total } from "../engine/steps.js";
 import { whoopFor } from "../engine/whoop.js";
-import { sessionFor, abNext } from "../progress/today.js";
+import { sessionFor, abNext, legsOffDay, legsOff, setLegsOff } from "../progress/today.js";
 import { liftedRecently } from "../progress/recovery.js";
 import { estW, homeInv } from "../progress/weights.js";
 import { holdBest } from "../progress/holds.js";
@@ -17,11 +17,12 @@ import { start } from "../player/session.js";
 function renderNote(){
   const pn=$("planNote"), lifting = (st.type==="strength" || (st.type==="full" && st.phase>=2)) && st.rec!=="red";
   if (st.rec==="red" && st.type==="strength"){ pn.hidden=false; pn.textContent = st.loc==="gym" && (st.eq.rower||st.eq.climber) ? "Red day. Lifting is off. Easy cardio and mobility instead." : "Red day. Lifting is off. This is a mobility session."; }
-  else if (liftedRecently() && lifting){
-    const L=liftedRecently();
+  else if (liftedRecently() && lifting && !legsOff()){
+    const L=liftedRecently(), legs=/legs|hamstrings/.test(L.what) && legsOffDay();
     pn.hidden=false; pn.style.borderLeftColor="var(--yellow)";
-    pn.innerHTML = `You lifted ${L.when} (${L.what}). The same muscles want about 48 hours. <b>Cardio or yoga is the better call today.</b> If you lift anyway, the gym gives you the other session (${abNext()?"B":"A"}), and expect to stay at last time's weights. <button type="button" class="ghost" id="toCardio" style="margin-top:8px">Make today cardio</button>`;
+    pn.innerHTML = `You lifted ${L.when} (${L.what}). The same muscles want about 48 hours. <b>Cardio or yoga is the better call today.</b> If you lift anyway, the gym gives you the other session (${abNext()?"B":"A"}), and expect to stay at last time's weights. <button type="button" class="ghost" id="toCardio" style="margin-top:8px">Make today cardio</button>${legs ? ` <button type="button" class="ghost" id="toLegsOff" style="margin-top:8px">Lift, legs off</button>` : ""}`;
     $("toCardio").onclick=()=>{ st.type="cardio"; commit(); };
+    if (legs) $("toLegsOff").onclick=()=>{ setLegsOff(true); commit(); };
   }
   else if (st.loc==="home" && !st.dbOn && lifting){
     pn.hidden=false; pn.style.borderLeftColor="var(--yellow)";

@@ -8,6 +8,7 @@ import { entryById } from "../log/entries.js";
 import { reviewSession } from "../progress/review.js";
 import { setEffort, lastComparable, effortLine } from "../progress/effort.js";
 import { exportZip } from "../export/index.js";
+import { openExtra } from "../player/extraSheet.js";
 
 let doneId = null;
 
@@ -72,5 +73,6 @@ export function initDone(){
   $("doneNotes").oninput=e=>{ const en=entryById(doneId); if (en){ en.notes=e.target.value; save(); } };
   Object.entries(EFFORT_FIELDS).forEach(([id,key])=>{ $(id).oninput=e=>{ const en=entryById(doneId); if (en){ setEffort(en, key, e.target.value); save(); } }; });
   $("doneExp").onclick=()=>{ if (doneId) exportZip(doneId); };
+  $("doneAdd").onclick=()=>openExtra(doneId, false, ()=>renderDoneSets(doneId));
   $("doneBtn").onclick=()=>{ show("home"); changed(); window.scrollTo(0,0); };
 }

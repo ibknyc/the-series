@@ -7,7 +7,7 @@ export function exerciseKit(c){
 
   const EX = {
     goblet: n => sl => useDb
-      ? reps("Front-rack squat","gobletup","goblet",n,3,"strength","A dumbbell on each shoulder, elbows up. Sit between your heels, chest tall, knees out. Leave 2 to 3 reps in the tank.",{...dbo("AB",H,"Front-rack squat"),chips:[sl]})
+      ? reps("Front-rack DB squat","gobletup","goblet",n,3,"strength","A dumbbell on each shoulder, elbows up. Sit between your heels, chest tall, knees out. Leave 2 to 3 reps in the tank.",{...dbo("AB",H,"Front-rack DB squat"),chips:[sl]})
       : reps("Slow air squat","mountain","squat",n+2,4,"strength","Three seconds down, one up. Heels stay heavy.",{chips:[sl]}),
     row: n => sl => sided((f,s)=> useDb
       ? reps("Single-arm row","rowdown","row",n,3,"strength","Hinge with a flat back, hand on your knee or a bench. Pull the elbow toward your hip.",{...dbo("B",H,"Single-arm row"),flip:f,chips:[sl,s]})
@@ -25,6 +25,10 @@ export function exerciseKit(c){
     oh: n => sl => sided((f,s)=> useDb
       ? reps("Single-arm press","ohdown","ohpress",n,3,"strength","Squeeze glutes and ribs down so the press comes from the shoulder, not the lower back.",{...dbo("B",L,"Single-arm press"),flip:f,chips:[sl,s]})
       : reps("Pike push-up","downdog","dolphin",n,3,"strength","Hips high, lower the head toward the floor between your hands.",{flip:f,chips:[sl,s]})),
+    /* rotation without a cable: one bell, or none */
+    chop: n => sl => sided((f,s)=> useDb
+      ? reps("Dumbbell woodchop","chopHigh","chopLow",n,2.6,"strength","One bell in both hands. From over one shoulder, chop down across to the opposite hip, turning through the hips and chest. Control it back up.",{...dbo("B",L,"Dumbbell woodchop"),flip:f,chips:[sl,s]})
+      : reps("Standing woodchop","chopHigh","chopLow",n+2,2.4,"strength","Hands together, no weight. Reach high over one shoulder, chop down across to the opposite hip, turning through the hips.",{flip:f,chips:[sl,s]})),
     renegade: n => sl => sided((f,s)=> useDb
       ? reps("Renegade row","plank","renegade",n,3,"strength","Feet wide, hips square to the floor. Row without rocking.",{...dbo("AB",H,"Renegade row"),flip:f,chips:[sl,s]})
       : reps("Shoulder taps","plank","renegade",n+4,2,"strength","Feet wide, tap the opposite shoulder, hips don't sway.",{flip:f,chips:[sl,s]}))
@@ -84,7 +88,7 @@ export function exerciseKit(c){
     dbrow:     sl => sided((f,sd)=>reps("Dumbbell row","rowdown","row",r8+X,3,"strength","One knee and hand on the bench, flat back. Pull the elbow past your hip.",{db:"B",weight:wt(H),track:"Dumbbell row",setup:10,flip:f,chips:[sl,sd]})),
     dbrdl:     sl => reps("Dumbbell RDL","mountain","rdl",r10+X,3.5,"strength","Soft knees, push the hips back, bells slide down the thighs. Flat back.",{db:"AB",weight:wt(H),track:"Dumbbell RDL",setup:10,chips:[sl]}),
     dbsplit:   sl => sided((f,sd)=>reps("Split squat","splittop","splitsquat",r8+X,3,"strength","Long stance, bells at your sides. Back knee straight down, front heel planted.",{db:"AB",weight:wt(L),track:"Split squat",setup:10,flip:f,chips:[sl,sd]})),
-    dbgoblet:  sl => reps("Goblet squat","gobletup","goblet",r10+X,3,"strength","One bell at your chest. Sit between your heels, chest tall, knees out.",{db:"B",weight:wt(H),track:"Goblet squat",setup:10,chips:[sl]}),
+    dbfront:   sl => reps("Front-rack DB squat","gobletup","goblet",r10+X,3,"strength","A dumbbell on each shoulder, elbows up. Sit between your heels, chest tall, knees out. The weight is per hand.",{db:"AB",weight:wt(H),track:"Front-rack DB squat",setup:10,chips:[sl]}),
     dbslrdl:   sl => sided((f,sd)=>reps("Single-leg RDL","slrdlTop","slrdlBottom",r8+X,3.4,"strength","Stand on one leg, one bell in the opposite hand. Push the free leg back as you hinge, hips square, bell close to the standing leg.",{db:"B",weight:wt(L),track:"Single-leg RDL",setup:8,flip:f,chips:[sl,sd]})),
     hipthrust: sl => reps("Dumbbell hip thrust","bridgedbdown","bridgedbup",r10+X,3,"strength","Shoulders on the bench edge, one heavy bell across the hips. Drive through the heels, chin tucked, squeeze at the top.",{db:"B",weight:wt(H),track:"Dumbbell hip thrust",setup:12,chips:[sl]}),
     dbwalk:    sl => reps("Walking lunges","splittop","splitsquat",2*(r8+X),2.6,"strength","Bells at your sides, long steps, back knee kisses the floor. Count every step.",{db:"AB",weight:wt(L),track:"Walking lunge",setup:8,chips:[sl],unitWord:"steps"}),
@@ -93,6 +97,10 @@ export function exerciseKit(c){
     pullthrough: sl => reps("Cable pull-through","mountain","rdl",r10+X+2,3,"strength","Air cable set low, rope between your legs, facing away. Push the hips back until the hamstrings load, then drive them through. Arms are just hooks.",{track:"Cable pull-through",setup:10,chips:[sl]}),
     assistpull: sl => reps("Assisted pull-up","hang","pullup",r8+X,3.5,"strength","Knees on the pad. Dead hang to chin over the bar, shoulders down first. The weight is the help you're getting: less is harder.",{track:"Assisted pull-up",assist:true,setup:12,chips:[sl]}),
     assistdip: sl => reps("Assisted dip","dipUp","dipDown",r8+X,3,"strength","Knees on the pad, slight forward lean. Lower until your shoulders are level with your elbows, press to straight arms. The weight is the help you're getting: less is harder.",{track:"Assisted dip",assist:true,setup:12,chips:[sl]}),
+    landmine:  sl => sided((f,sd)=>reps("Landmine press","ohdown","ohpress",r8+X,3,"strength","Bar end at your shoulder, staggered stance. Press up and forward, ribs down, don't lean back.",{track:"Landmine press",setup:12,flip:f,chips:[sl,sd]})),
+    /* rotation: turning through the trunk, and resisting being turned */
+    woodchop:  sl => sided((f,sd)=>reps("Cable woodchop","chopHigh","chopLow",10,2.6,"strength","Air cable set high, side-on to it, feet wide. Pull from the high shoulder down across to the opposite hip, turning through the hips and chest, arms long. Control it back up.",{track:"Cable woodchop",setup:8,flip:f,chips:[sl,sd]})),
+    pallof:    sl => sided((f,sd)=>reps("Pallof press","pallofIn","pallofOut",10,3,"strength","Cable at chest height, stand side-on, handle at your chest. Press straight out, hold a beat, bring it back. Don't let it turn you: that's the work.",{track:"Pallof press",setup:8,flip:f,chips:[sl,sd]})),
     dbohp:     sl => sided((f,sd)=>reps("Single-arm press","ohdown","ohpress",r8+X,3,"strength","Glutes and ribs tight so the press comes from the shoulder, not the lower back.",{db:"B",weight:wt(L),track:"Single-arm press",setup:10,flip:f,chips:[sl,sd]}))
   };
   return {EX, HOME, BW, TRX, GYM, bridge, birddog, plank};

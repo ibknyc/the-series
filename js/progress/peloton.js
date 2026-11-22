@@ -8,7 +8,7 @@ import { riding, ridingAfterLifting } from "./cardioChoice.js";
 export function pelSuggest(){
   const days = n => dkey(new Date(Date.now()-n*864e5));
   const recent = realLog().filter(l=>[days(1),days(2),today()].includes(l.d));
-  const hardCardio = recent.some(l=>l.t==="cardio" && (st.cardio||[]).some(r=>r.session_id===l.id && (/Interval|Max|Power Zone(?! Endurance)|stairs/.test(r.segment||"") || r.modality==="stairs")));
+  const hardCardio = recent.some(l=>l.t==="cardio" && (st.cardio||[]).some(r=>r.session_id===l.id && (/Interval|Max|Power Zone(?! Endurance)|Climb|4×4|stairs/.test(r.segment||"") || r.modality==="stairs")));
   const legs = (()=>{ const L=liftedRecently(); return L && /legs|hamstrings/.test(L.what); })();
   const ftpAge = st.ftpDate ? Math.round((Date.now()-new Date(st.ftpDate))/864e5) : null;
   const lastEnd = (st.cardio||[]).filter(r=>/Endurance|Free ride/.test(r.segment||"")).map(r=>r.session_id).sort().pop();

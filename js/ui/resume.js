@@ -1,9 +1,8 @@
 /* A session the phone killed mid-way: offer to pick it up, or log what was done. */
 import { $ } from "../util/dom.js";
-import { live, changed } from "../store.js";
-import { closeInterrupted } from "../log/entries.js";
+import { live } from "../store.js";
 import { unlockAudio } from "../player/audio.js";
-import { resume } from "../player/session.js";
+import { resume, endInterrupted } from "../player/session.js";
 
 export function renderResume(){
   const r=live.read(), box=$("resumeBox");
@@ -13,5 +12,6 @@ export function renderResume(){
 }
 export function initResume(){
   $("resumeBtn").onclick=()=>{ const r=live.read(); if (r){ unlockAudio(); resume(r); } else renderResume(); };
-  $("resumeEnd").onclick=()=>{ const r=live.read(); live.clear(); if (r) closeInterrupted(r); changed(); };
+  /* rebuild it, move it on by the time away, and finish: the done screen shows what was logged */
+  $("resumeEnd").onclick=()=>{ const r=live.read(); if (r) endInterrupted(r); else renderResume(); };
 }

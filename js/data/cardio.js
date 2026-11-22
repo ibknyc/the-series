@@ -38,10 +38,16 @@ export const PCLASS = {
   pzend: {name:"Power Zone Endurance", zones:[2,3],   zoneLab:"PZ 2–3", tempo:.85, label:"Steady",         cue:"Most of it in Zone 2, a little Zone 3. It should feel too easy. That's the point: this is the aerobic base."},
   pzmax: {name:"Power Zone Max",       zones:[5,6,7], zoneLab:"PZ 5–7", tempo:.5,  label:"Max efforts",    cue:"Short, all-out efforts with real recovery. Only on green days, never the day after legs."},
   ivl:   {name:"Intervals",            zones:[4,5,6], zoneLab:"Hard/easy", tempo:.55, label:"Intervals",   cue:"Hard means hard. Recover fully between efforts so the next one is just as strong."},
+  climb: {name:"Climb",                zones:[3,4,5], zoneLab:"Climbs", tempo:.8,  label:"Climb",          legDay:true, cue:"Long climbs at heavy resistance, 60–80 rpm. Stay seated unless the instructor calls a stand, and keep the pedal stroke smooth. Best two or more days after a leg day; the day after legs still works, at about 15% less output."},
+  x4:    {name:"4×4 free ride",        zones:[],      zoneLab:"4×4",    tempo:.55, label:"4×4",            mins:[43],
+          plan:{warm:600, rounds:4, work:240, easy:180, cool:300, hard:[105,110]},
+          cue:"Just Ride, timed by the app. 10 minutes easy, then 4 rounds: 4 minutes hard at 80–90 rpm, 3 minutes easy at about 30% resistance. Heart rate should pass 160 by minute 2 of each hard round and fall back to 110–130 in the easy minutes. 5 minutes easy to finish."},
   free:  {name:"Free ride",            zones:[2],     zoneLab:"PZ 2",   tempo:.9,  label:"Steady",         cue:"Your own pace, Zone 2: you could hold a conversation."},
   low:   {name:"Low impact",           zones:[1,2],   zoneLab:"PZ 1–2", tempo:1,   label:"Easy",           cue:"Recovery ride. Light resistance, easy legs. It should leave you fresher than you started."},
-  ftp:   {name:"FTP test",             zones:[],      zoneLab:"Test",   tempo:.5,  label:"All-out 20",     cue:"Take the FTP warm-up first. Start the 20 minutes a little under what you think you can hold, build, empty it in the last 3 minutes. Your FTP is 95% of your average output."}
+  ftp:   {name:"FTP test",             zones:[],      zoneLab:"Test",   tempo:.5,  label:"All-out 20",     mins:[20], cue:"Take the FTP warm-up first. Start the 20 minutes a little under what you think you can hold, build, empty it in the last 3 minutes. Your FTP is 95% of your average output."}
 };
+/* class lengths to pick from, unless the class sets its own */
+export const PCLASS_MINS = [20,30,45,60];
 export const PZ_PCT = {1:[0,55],2:[56,75],3:[76,90],4:[91,105],5:[106,120],6:[121,150],7:[151,999]};
 
 /* Interval shape per machine. 30-second bursts never got the heart rate past zone 3 (Oct 14, Oct 20),

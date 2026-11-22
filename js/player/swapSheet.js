@@ -21,7 +21,7 @@ function skipExercise(cur){
 }
 export function openSwap(){
   const cur=P.steps[P.i];
-  sheetParts({cardio:false}); clearNext();
+  sheetParts(); clearNext();
   if (cur.mach){
     const pool=SWAP_POOL[P.loc==="gym" ? "gym" : "home"].filter(k=>k!==cur.mach);
     const ticked=pool.filter(k=>st.eq[k]), list=ticked.length?ticked:pool;
@@ -30,9 +30,9 @@ export function openSwap(){
     nextBtn("Never mind", "", true, ()=>sheetShow(false));
     sheetShow(true); return;
   }
-  sheetHead("Station taken, or not feeling it?", `Instead of ${cur.name.toLowerCase()}`, cur.vnames && cur.vnames.length>1 ? "Swap to" : "Options");
-  (cur.vnames||[]).forEach((n,vi)=>{ if (vi===cur.vi) return; nextBtn(n, "Also swaps the remaining sets", false, ()=>replan(swapVariant(P.steps, P.i, cur.slot, vi))); });
-  nextBtn(`Skip ${cur.name.toLowerCase()} today`, "Drops every set of it", false, ()=>skipExercise(cur));
+  sheetHead("Station taken, or not feeling it?", `Instead of ${cur.name.toLowerCase()}`, "Skip it, or swap it");
+  nextBtn(`Skip ${cur.name.toLowerCase()} today`, "Drops every set of it, nothing logged", false, ()=>skipExercise(cur));
+  (cur.vnames||[]).forEach((n,vi)=>{ if (vi===cur.vi) return; nextBtn(`Swap to ${n.toLowerCase()}`, "Also swaps the remaining sets", false, ()=>replan(swapVariant(P.steps, P.i, cur.slot, vi))); });
   remainingUnitsInSet(P.steps, P.i).filter(u=>u!==cur.unit).forEach(u=>{
     const first=P.steps.find((s,k)=>k>P.i && s.unit===u);
     nextBtn(`Do ${first.name.toLowerCase()} first`, "Come back to this one", false, ()=>replan(unitFirst(P.steps, cur, u)));

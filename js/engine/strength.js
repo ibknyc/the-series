@@ -53,26 +53,38 @@ export function strengthBlocks(c, kit){
     if (phase>=2) list.forEach(sl=>{ if (sl && sl.v && sl.v.length>1 && sl.slot!=="hinge" && sl.slot!=="squat2") sl.di = HB % sl.v.length; });
     return circuit(sets, rest, list, phase>=2 ? activeRest : null);
   }
+  /* The gym circuit. Each round opens with the dead hang, while the grip is fresh, and grip-heavy moves
+     are spaced apart. A and B alternate gym days:
+       A: hang, squat (leg press), pull (pulldown), push (DB bench), single-leg hinge, overhead press, rotation
+       B: hang, hinge (DB RDL), push (incline), pull (cable row), squat (front-rack), lunge, rotation
+     Rotation runs 2 sets. Legs off drops every leg slot and adds a second push and pull. */
   function gymStrength(sets, rest){
-    const bb=eq.barbell, sm=eq.smith, mc=eq.machines, bn=eq.bench;
-    const B = o.ab ? 1 : 0; /* which session of the pair */
-    /* each slot lists its variants; B sessions start one variant along */
-    /* Dumbbell moves need the bench area ticked, so a machines-only circuit never sends you off for a dumbbell.
-       New variants go after the first two of a slot: those two are what Session A and B open with. */
-    const ac=eq.aircable, firstOr = (slot, fallback, ...fs) => { const sl=SL(slot, ...fs); return sl.v.length ? sl : SL(slot, fallback); };
-    const squat = firstOr("squat", BW.squat(r10+X), mc&&GYM.legpress, bn&&GYM.dbgoblet, bn&&GYM.dbsplit, trx&&TRX.pistol, sm&&GYM.smithsquat, bb&&GYM.backsquat);
-    const pull  = SL("pull", trx&&TRX.row, mc&&GYM.pulldown, mc&&GYM.cablerow, mc&&GYM.assistpull, bn&&GYM.dbrow, sm&&GYM.smithrow, bb&&GYM.bbrow, EX.row(r8+X));
-    const push  = SL("push", bn&&GYM.dbbench, trx&&TRX.push, bn&&GYM.dbincline, sm&&GYM.smithbench, bb&&GYM.bench, mc&&GYM.assistdip, BW.pushups(10+X));
+    const bb=eq.barbell, sm=eq.smith, mc=eq.machines, bn=eq.bench, ac=eq.aircable, cable=mc||ac;
+    const B = o.ab ? 1 : 0, P3 = phase>=3 && trx;
+    /* a slot with nothing ticked for it falls back to one move that needs nothing */
+    const firstOr = (slot, fallback, ...fs) => { const sl=SL(slot, ...fs); return sl.v.length ? sl : SL(slot, fallback); };
+    /* open with the first of these that's available; otherwise A takes the first variant, B the second */
+    const open = (sl, ...names) => { const i=names.map(n=>sl.names.indexOf(n)).find(i=>i>=0); sl.di = i!==undefined ? i : B % sl.v.length; return sl; };
+    /* Dumbbell moves need the bench area ticked, so a machines-only circuit never sends you off for a dumbbell. */
+    const squat = firstOr("squat", BW.squat(r10+X), mc&&GYM.legpress, bn&&GYM.dbfront, bn&&GYM.dbsplit, trx&&TRX.pistol, sm&&GYM.smithsquat, bb&&GYM.backsquat);
+    const pull  = SL("pull", mc&&GYM.pulldown, mc&&GYM.cablerow, trx&&TRX.row, mc&&GYM.assistpull, bn&&GYM.dbrow, sm&&GYM.smithrow, bb&&GYM.bbrow, EX.row(r8+X));
+    const push  = SL("push", bn&&GYM.dbbench, bn&&GYM.dbincline, trx&&TRX.push, sm&&GYM.smithbench, bb&&GYM.bench, mc&&GYM.assistdip, BW.pushups(10+X));
     /* the glute bridge is the last resort: only when nothing else is ticked */
-    const hinge = firstOr("hinge", bridge, bn&&GYM.dbrdl, bn&&GYM.dbslrdl, trx&&TRX.ham, sm&&GYM.smithrdl, bb&&(phase>=4?GYM.deadlift:GYM.bbrdl), mc&&GYM.legcurl, ac&&GYM.pullthrough, bn&&GYM.hipthrust);
-    const over  = SL("overhead", trx&&TRX.y, sm&&GYM.smithohp, bb&&GYM.ohp, bn&&GYM.dbohp, BW.pike(r8+X));
-    /* the fifth move: a lunge on B days when the dumbbells are there, otherwise a second pull */
-    const accessory = phase>=3 ? over : (B && bn) ? SL("lunge", GYM.dbwalk, GYM.dbsplit, HOME.revlunge(r8+X)) : SL("pull2", mc&&GYM.cablerow, mc&&GYM.assistpull, bn&&GYM.dbrow, EX.renegade(6+X));
-    /* dead hang closes each round when there's a bar: hold as long as you can, the seconds are the measure.
-       Target = your best + 5s, capped at 90. */
-    const hang = SL("hang", deadHang(o.hangT));
-    const list = (B ? [hinge, pull, squat, push, accessory] : [squat, push, pull, hinge, accessory]).concat(trx ? [SL("core", TRX.tuck)] : []).concat(eq.bar ? [hang] : []);
-    list.forEach(sl=>{ if (sl.v.length>1 && sl.slot!=="lunge") sl.di = B % sl.v.length; });
+    const hinge = firstOr("hinge", bridge, bn&&GYM.dbslrdl, bn&&GYM.dbrdl, trx&&TRX.ham, sm&&GYM.smithrdl, bb&&(phase>=4?GYM.deadlift:GYM.bbrdl), mc&&GYM.legcurl, ac&&GYM.pullthrough, bn&&GYM.hipthrust);
+    const over  = SL("overhead", bn&&GYM.dbohp, bb&&GYM.landmine, trx&&TRX.y, sm&&GYM.smithohp, bb&&GYM.ohp, BW.pike(r8+X));
+    const lunge = bn ? SL("lunge", GYM.dbwalk, GYM.dbsplit, HOME.revlunge(r8+X)) : null;
+    const pull2 = SL("pull2", mc&&GYM.cablerow, mc&&GYM.pulldown, mc&&GYM.assistpull, bn&&GYM.dbrow, EX.renegade(6+X));
+    const push2 = SL("push2", bn&&GYM.dbincline, bn&&GYM.dbbench, mc&&GYM.assistdip, BW.pushups(10+X));
+    const rot   = SL("rotation", cable&&(B?GYM.pallof:GYM.woodchop), cable&&(B?GYM.woodchop:GYM.pallof), EX.chop(10)); rot.sets=2;
+    /* dead hang: hold as long as you can, the seconds are the measure. Target = your best + 5s, capped at 90. */
+    const hang  = eq.bar ? SL("hang", deadHang(o.hangT)) : null;
+    const core  = trx ? SL("core", TRX.tuck) : null;
+    if (B){ open(hinge,"Dumbbell RDL"); open(push, P3?"TRX push-up":"Incline dumbbell press"); open(pull, P3?"TRX row":"Seated cable row"); open(squat,"Front-rack DB squat"); }
+    else  { open(squat,"Leg press"); open(pull,"Lat pulldown"); open(push,"Dumbbell bench press"); open(hinge,"Single-leg RDL"); open(over,"Single-arm press"); }
+    const list = (o.legsOff
+      ? (B ? [hang, push, pull, pull2, over] : [hang, pull, push, pull2, over, push2])
+      : (B ? [hang, hinge, push, pull, squat, lunge || pull2] : [hang, squat, pull, push, hinge, over])
+    ).concat([core, rot]).filter(Boolean);
     /* don't run the same movement twice in one session */
     const taken=new Set();
     list.forEach(sl=>{

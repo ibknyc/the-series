@@ -8,6 +8,7 @@ import { initSheet } from "./player/sheet.js";
 import { initSetSheet } from "./player/setSheet.js";
 import { initCardioSheet } from "./player/cardioSheet.js";
 import { initCooldownSheet } from "./player/cooldownSheet.js";
+import { initBestSheet } from "./player/bestSheet.js";
 import { applyLook } from "./ui/look.js";
 import { initHome, renderHome } from "./ui/home.js";
 import { initToday } from "./ui/today.js";
@@ -15,6 +16,8 @@ import { initCardioPick } from "./ui/cardioPick.js";
 import { initStairs } from "./ui/stairsBox.js";
 import { initWeights } from "./ui/weightsBox.js";
 import { initPlan } from "./ui/plan.js";
+import { initLegsOff } from "./ui/legsOff.js";
+import { initBalance } from "./ui/balance.js";
 import { initWeek } from "./ui/week.js";
 import { initResume } from "./ui/resume.js";
 import { initDone } from "./ui/done.js";
@@ -22,8 +25,8 @@ import { initSettings } from "./ui/settings.js";
 
 load();
 applyLook();
-[initSession, initControls, initSheet, initSetSheet, initCardioSheet, initCooldownSheet,
- initHome, initToday, initCardioPick, initStairs, initWeights, initPlan, initWeek, initResume, initDone, initSettings].forEach(init=>init());
+[initSession, initControls, initSheet, initSetSheet, initCardioSheet, initCooldownSheet, initBestSheet,
+ initHome, initToday, initCardioPick, initStairs, initLegsOff, initWeights, initPlan, initBalance, initWeek, initResume, initDone, initSettings].forEach(init=>init());
 initSteppers();
 renderHome();
 window.__booted = true;   /* tells the boot guard in index.html that the app started */
